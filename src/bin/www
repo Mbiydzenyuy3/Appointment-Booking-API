@@ -4,7 +4,7 @@
  * Module dependencies.
  */
 
-import http, { Server } from "node:http";
+import http from "node:http";
 import deb from "debug";
 import app from "../app.js";
 import logger from "../utils/logger.js";
@@ -39,9 +39,9 @@ function normalizePort(val) {
 }
 
 const signals = {
-  SIGHUP: 1,
-  SIGINT: 2,
-  SIGTERM: 15,
+  'SIGHUP': 1,
+  'SIGINT': 2,
+  'SIGTERM': 15,
 };
 
 let shuttingDown = false;
