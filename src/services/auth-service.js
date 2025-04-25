@@ -13,7 +13,7 @@ export async function hashPassword(plainPassword) {
 // Function to create a new user
 export async function createUser({ name, email, password, role = "user" }) {
   const passwordHash = await hashPassword(password);
-  return UserModel.register({ name, email, passwordHash, role });
+  return UserModel.register({ name, email, password, role });
 }
 
 // Function to verify the password
@@ -31,7 +31,7 @@ export async function login({ email, password }) {
   const user = await UserModel.findByEmail(email);
   if (!user) throw new Error("Invalid credentials");
 
-  const isPasswordValid = await verifyPassword(password, user.password_hash);
+  const isPasswordValid = await verifyPassword(password, user.password);
   if (!isPasswordValid) throw new Error("Invalid credentials");
 
   const token = signToken({ sub: user.id, role: user.role });

@@ -1,10 +1,10 @@
 // src/config/db.js
+import dotenv from "dotenv";
+dotenv.config();
 
 import pg from "pg";
-import dotenv from "dotenv";
 import { logInfo, logError, logDebug } from "../utils/logger.js";
 
-dotenv.config();
 const { Pool } = pg;
 
 // Destructure env vars
@@ -33,13 +33,15 @@ if (
   process.exit(1);
 }
 
-// ✅ Create a pool instance
 const pool = new Pool({
-  user: DB_USER,
-  host: DB_HOST,
-  database: NODE_ENV === "test" ? DB_NAME_TEST : DB_NAME,
-  password: String(DB_PASSWORD), // 🔧 Ensure password is string
-  port: Number(DB_PORT),
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database:
+    process.env.NODE_ENV === "test"
+      ? process.env.DB_NAME_TEST
+      : process.env.DB_NAME,
+  password: process.env.DB_PASSWORD, // <- make sure this is a string!
+  port: parseInt(process.env.DB),
   connectionTimeoutMillis: 2000,
 });
 

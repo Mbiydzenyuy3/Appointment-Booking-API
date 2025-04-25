@@ -1,15 +1,19 @@
+//user-model.js
 import pg from "pg";
 const { Pool } = pg;
 const pool = new Pool(); // Reads connection params from env vars
 
 export default {
   // Register a new user and return the row
-  async register({ name, email, passwordHash, role = "user" }) {
+  async register({ name, email, password, role = "user" }) {
+    // if (typeof passwordHash !== "string") {
+    //   throw new Error("Password must be a string");
+    // }
     const { rows } = await pool.query(
-      `INSERT INTO users(name, email, password_hash, role)
+      `INSERT INTO users(name, email, password, role)
       VALUES ($1, $2, $3, $4)
       RETURNING id, name, email, role`,
-      [name, email, passwordHash, role]
+      [name, email, password, role]
     );
     return rows[0];
   },
