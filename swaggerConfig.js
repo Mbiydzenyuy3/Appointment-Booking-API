@@ -1,3 +1,4 @@
+//swaggerConfig.js
 import swaggerJSDoc from "swagger-jsdoc";
 
 const swaggerOptions = {

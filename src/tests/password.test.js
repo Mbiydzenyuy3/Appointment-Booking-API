@@ -1,23 +1,29 @@
-import { hashPassword, comparePassword } from "../utils/password.js";
-import {  test } from "node:test";
+// tests/password.test.js
+
+import { test } from "node:test";
+import assert from "node:assert"; // <-- Missing before!
+import { hashPassword, verifyPassword } from "../utils/password.js"; // <-- use correct function names!
 
 test("hashPassword returns a hashed string", async () => {
   const plainPassword = "mySecret123";
   const hash = await hashPassword(plainPassword);
-  // Regular expression to check bcrypt hash format
+
+  // Check if the returned hash matches bcrypt's pattern
   assert.match(hash, /^\$2[aby]\$.{56}$/);
 });
 
-test("comparePassword returns true for matching passwords", async () => {
+test("verifyPassword returns true for matching passwords", async () => {
   const plainPassword = "mySecret123";
   const hash = await hashPassword(plainPassword);
-  const result = await comparePassword(plainPassword, hash);
+
+  const result = await verifyPassword(plainPassword, hash);
   assert.strictEqual(result, true);
 });
 
-test("comparePassword returns false for non-matching passwords", async () => {
+test("verifyPassword returns false for non-matching passwords", async () => {
   const plainPassword = "mySecret123";
   const hash = await hashPassword(plainPassword);
-  const result = await comparePassword("wrongPassword", hash);
+
+  const result = await verifyPassword("wrongPassword", hash);
   assert.strictEqual(result, false);
 });

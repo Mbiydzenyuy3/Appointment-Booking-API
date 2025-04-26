@@ -1,3 +1,5 @@
+//models/provider-model.js
+
 import pool from "../config/db.js"
 
 export default {

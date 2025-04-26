@@ -1,3 +1,5 @@
+//tests/auth.test.js
+
 import { describe, it, before, after } from "node:test";
 import assert from "node:assert";
 import request from "supertest";

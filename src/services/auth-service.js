@@ -1,3 +1,4 @@
+//services/auth-service.js
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import UserModel from "../models/user-model.js";
@@ -13,12 +14,12 @@ export async function hashPassword(plainPassword) {
 // Function to create a new user
 export async function createUser({ name, email, password, role = "user" }) {
   const passwordHash = await hashPassword(password);
-  return UserModel.register({ name, email, password, role });
+  return UserModel.register({ name, email, password: passwordHash, role });
 }
 
 // Function to verify the password
-export async function verifyPassword(plainPassword, hashedPassword) {
-  return bcrypt.compare(plainPassword, hashedPassword);
+export async function verifyPassword(Password, hashedPassword) {
+  return bcrypt.compare(Password, hashedPassword);
 }
 
 // Function to sign the JWT token
@@ -32,7 +33,7 @@ export async function login({ email, password }) {
   if (!user) throw new Error("Invalid credentials");
 
   const isPasswordValid = await verifyPassword(password, user.password);
-  if (!isPasswordValid) throw new Error("Invalid credentials");
+  if (!isPasswordValid) throw new Error("Invalid password");
 
   const token = signToken({ sub: user.id, role: user.role });
   return { user, token };

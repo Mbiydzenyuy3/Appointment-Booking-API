@@ -1,4 +1,5 @@
-//user-model.js
+//models/user-model.js
+
 import pg from "pg";
 const { Pool } = pg;
 const pool = new Pool(); // Reads connection params from env vars
@@ -6,9 +7,7 @@ const pool = new Pool(); // Reads connection params from env vars
 export default {
   // Register a new user and return the row
   async register({ name, email, password, role = "user" }) {
-    // if (typeof passwordHash !== "string") {
-    //   throw new Error("Password must be a string");
-    // }
+    
     const { rows } = await pool.query(
       `INSERT INTO users(name, email, password, role)
       VALUES ($1, $2, $3, $4)
@@ -20,9 +19,9 @@ export default {
 
   // Find a user by email
   async findByEmail(email) {
-    const { rows } = await pool.query(
-      `SELECT * FROM users WHERE email = $1 LIMIT 1`,
-      [email]
+    const { rows } = await pool.query(`
+      SELECT * FROM users WHERE email = $1 LIMIT 1
+      `, [email]
     );
     return rows[0] ?? null;
   },

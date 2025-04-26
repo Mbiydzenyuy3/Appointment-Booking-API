@@ -1,3 +1,4 @@
+//utils/jwt.js
 import jwt from "jsonwebtoken";
 
 // Secret key from environment variables or fallback to 'dev-secret' if not available

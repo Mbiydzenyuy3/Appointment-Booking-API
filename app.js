@@ -1,6 +1,8 @@
+//app.js
+
 import { fileURLToPath } from "node:url";
 import path, { dirname } from "node:path";
-
+import cors from "cors"
 import express from "express";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
@@ -21,19 +23,30 @@ const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+//setup logger format
 const morganFormat = process.env.NODE_ENV === "production" ? "dev" : "combined";
 app.use(morgan(morganFormat));
 
+//middlewares
+app.use(cors())
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
-// app.use("/", indexRouter);
-// app.use("/users", usersRouter);
-app.use("/auth", authRouter);
-// app.use("/tasks", tasksRouter);
 
+app.use("/auth", authRouter);
+//app.use("/appointments", appointmentRouter)
+//app.use()
+//app.use("/provides", providerRouter);
+//app.use("/slots", slotRouter)
+
+//Swagger API Docs
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// Fallback error handler (optional)
+// app.use((err, req, res, next) => {
+//   console.error(err.stack);
+//   res.status(500).send('Something broke!');
+// });
 
 export default app;

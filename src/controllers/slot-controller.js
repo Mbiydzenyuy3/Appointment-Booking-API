@@ -1,3 +1,5 @@
+//controller/slot-controller.js
+
 import * as SlotService from "../services/slot-service.js";
 
 export async function create(req, res, next) {

@@ -1,3 +1,4 @@
+//routes/slot.js
 import express from "express";
 import * as SlotController from "../controllers/slot-controller.js"
 import { requireProvider } from "../middlewares/role-middleware.js";

@@ -1,3 +1,4 @@
+//validator/slot-validator.js
 import Joi from "joi";
 
 export const slotSchema = Joi.object({

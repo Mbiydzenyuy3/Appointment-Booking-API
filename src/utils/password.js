@@ -1,3 +1,4 @@
+//utils/password.js
 import bcrypt from "bcryptjs";
 
 // Function to hash the password

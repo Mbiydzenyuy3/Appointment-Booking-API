@@ -1,3 +1,5 @@
+//controller/auth-controller.js
+
 import * as AuthService from "../services/auth-service.js";
 import { logInfo } from "../utils/logger.js";
 

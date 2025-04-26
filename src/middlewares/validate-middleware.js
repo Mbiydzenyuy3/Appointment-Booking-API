@@ -1,3 +1,4 @@
+//middleware/validate-middleware.js
 export function validate(schema) {
   return (req, res, next) => {
     const { error } = schema.validate(req.body);
