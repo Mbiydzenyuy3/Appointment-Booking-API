@@ -6,7 +6,7 @@
 
 import http from "node:http";
 import deb from "debug";
-import app from "../app.js";
+import { app, initSocket } from "../app.js";
 import { logInfo, logError, logDebug } from "../src/utils/logger.js";
 import { connectToDb, initializeDbSchema } from "../src/config/db.js";
 const debug = deb("appointment-booking:server");
@@ -22,6 +22,8 @@ let port = normalizePort(process.env.PORT || "5000");
  */
 
 const server = http.createServer(app);
+
+const io = initSocket(server);
 
 function normalizePort(val) {
   const port = parseInt(val, 10);

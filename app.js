@@ -2,17 +2,16 @@
 
 import { fileURLToPath } from "node:url";
 import path, { dirname } from "node:path";
-import cors from "cors"
+import cors from "cors";
 import express from "express";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
 import swaggerUi from "swagger-ui-express";
 import swaggerSpec from "./swaggerConfig.js";
-
-// import winstonLogger from "./src/utils/logger.js";
+import { initSocket } from "./src/sockets/socket.js";
 
 import authRouter from "./src/routes/auth.js";
-// import indexRouter from "./routes/index.js";
+import indexRouter from "./src/routes/index.js";
 // import usersRouter from "./routes/users.js";
 // import appointmentRouter from "./routes/appointment.js"
 //import providerRouter from "./routes/provider.js"
@@ -28,14 +27,14 @@ const morganFormat = process.env.NODE_ENV === "production" ? "dev" : "combined";
 app.use(morgan(morganFormat));
 
 //middlewares
-app.use(cors())
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
-
 app.use("/auth", authRouter);
+app.use("/api", indexRouter);
 //app.use("/appointments", appointmentRouter)
 //app.use()
 //app.use("/provides", providerRouter);
@@ -49,4 +48,4 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 //   res.status(500).send('Something broke!');
 // });
 
-export default app;
+export { app, initSocket };
