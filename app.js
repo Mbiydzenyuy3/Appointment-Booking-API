@@ -12,6 +12,7 @@ import { initSocket } from "./src/sockets/socket.js";
 
 import authRouter from "./src/routes/auth.js";
 import indexRouter from "./src/routes/index.js";
+import { errorHandler } from "./src/middlewares/error-middleware.js";
 
 
 const app = express();
@@ -36,5 +37,7 @@ app.use("/api", indexRouter);
 
 //Swagger API Docs
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+app.use(errorHandler);
 
 export { app, initSocket };
