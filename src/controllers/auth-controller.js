@@ -1,14 +1,18 @@
 //controller/auth-controller.js
 
 import * as AuthService from "../services/auth-service.js";
-import { logInfo } from "../utils/logger.js";
+import { logError, logInfo } from "../utils/logger.js";
 
 // Controller function for user registration
 export async function register(req, res, next) {
   try {
     const user = await AuthService.createUser(req.body);
     logInfo("New user registered", user.email);
-    res.status(201).json(user);
+    res.status(201).json({
+      success: true,
+      message: "User registered successfully",
+      data: user,
+    });
   } catch (err) {
     next(err);
   }
@@ -21,6 +25,7 @@ export async function login(req, res, next) {
     logInfo("User logged in", user.email);
     res.json({ user, token });
   } catch (err) {
+    logError("Error registering user", err);
     next(err);
   }
 }
