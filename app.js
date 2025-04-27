@@ -12,10 +12,7 @@ import { initSocket } from "./src/sockets/socket.js";
 
 import authRouter from "./src/routes/auth.js";
 import indexRouter from "./src/routes/index.js";
-// import usersRouter from "./routes/users.js";
-// import appointmentRouter from "./routes/appointment.js"
-//import providerRouter from "./routes/provider.js"
-// import slotRouter from "./routes/slot.js";
+
 
 const app = express();
 
@@ -33,19 +30,11 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
+//Routers
 app.use("/auth", authRouter);
 app.use("/api", indexRouter);
-//app.use("/appointments", appointmentRouter)
-//app.use()
-//app.use("/provides", providerRouter);
-//app.use("/slots", slotRouter)
 
 //Swagger API Docs
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-// Fallback error handler (optional)
-// app.use((err, req, res, next) => {
-//   console.error(err.stack);
-//   res.status(500).send('Something broke!');
-// });
 
 export { app, initSocket };
