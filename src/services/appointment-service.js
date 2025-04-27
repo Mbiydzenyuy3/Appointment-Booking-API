@@ -1,10 +1,10 @@
-// import {
-//   emitAppointmentBooked,
-//   emitAppointmentCancelled,
-// } from "../sockets/socket.js";
+import {
+  emitAppointmentBooked,
+  emitAppointmentCancelled,
+} from "../sockets/socket.js";
 
-// //after booking
-// emitAppointmentBooked(appointment);
+//after booking
+emitAppointmentBooked(appointment);
 
-// //after appointment is cancelled
-// emitAppointmentCancelled(appointment);
+//after appointment is cancelled
+emitAppointmentCancelled(appointment);

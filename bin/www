@@ -5,17 +5,16 @@
  */
 
 import http from "node:http";
-import deb from "debug";
+import debug from "debug";
 import { app, initSocket } from "../app.js";
 import { logInfo, logError, logDebug } from "../src/utils/logger.js";
 import { connectToDb, initializeDbSchema } from "../src/config/db.js";
-const debug = deb("appointment-booking:server");
 
 /**
  * Get port from environment and store in Express
  */
 
-let port = normalizePort(process.env.PORT || "5000");
+const PORT = normalizePort(process.env.PORT || "5000");
 
 /**
  * Create HTTP server
@@ -25,77 +24,49 @@ const server = http.createServer(app);
 
 const io = initSocket(server);
 
+const dbg = deb("appointment-booking:server");
+
+
 function normalizePort(val) {
   const port = parseInt(val, 10);
-
-  if (isNaN(port)) {
-    return val;
-  }
-
-  if (port >= 0) {
-    return port;
-  }
-  return false;
+  return isNaN(port) ? val : port >= 0 ? port : false;
 }
 
-const signals = {
-  SIGHUP: 1,
-  SIGINT: 2,
-  SIGTERM: 15,
-};
-
-let shuttingDown = false;
-
-const shutdown = (signal, value) => {
-  if (shuttingDown) {
-    logInfo(`Already shutting down.  Received ${signal} again`);
-    return;
-  }
-
-  shuttingDown = true;
-  logInfo(`Received ${signal}. Shutting
-    down gracefully`);
-  server.close((err) => {
-    if (err) {
-      logError("Error closing server", err);
-      process.exit(1);
-    } else {
-      logInfo("server closed. Exiting the process");
-      process.exit(0);
-    }
-  });
-};
-
-Object.keys(signals).forEach((signal) => {
-  process.on(signal, () => {
-    logInfo(`Received ${signal}`);
-    shutdown(signal, signals[signal]);
-  });
+["SIGHUP", "SIGINT", "SIGTERM"].forEach((signal) => {
+  process.on(signal, gracefulShutdown);
 });
+
+async function gracefulShutdown(signal) {
+  logInfo(`Received ${signal}. Shutting down...`);
+  try {
+    await server.close();
+    logInfo("Server closed gracefully. Exiting...");
+    process.exit(0);
+  } catch (err) {
+    logError("Error closing server:", err);
+    process.exit(1);
+  }
+}
 
 /**
  * Event listener for HTTP server "error" event.
  */
 
 function onError(error) {
-  if (error.syscall !== "listen") {
-    throw error;
-  }
+  if (error.syscall !== "listen") throw error;
 
-  const bind = typeof port === "string" ? "Pipe " + port : "Port " + port;
+  const bind = typeof PORT === "string" ? `Pipe ${PORT}` : `Port ${PORT}`;
 
   // handle specific listen errors with friendly messages
   switch (error.code) {
     case "EACCES":
-      logError(bind + " requires elevated privileges");
+      logError(`${bind} requires elevated privileges`);
       process.exit(1);
-      break;
     case "EADDRINUSE":
-      logError(bind + " is already in use");
-      logInfo("trying to make it run on the next available port");
-      startServer();
-      // process.exit(1);
-      break;
+      logError(`${bind} is already in use`);
+      logInfo("Trying next available port...");
+      // Ideally, pick random available port logic could go here
+      process.exit(1);
     default:
       throw error;
   }
@@ -107,23 +78,22 @@ function onError(error) {
 
 function onListening() {
   const addr = server.address();
-  const bind = typeof addr === "string" ? "pipe " + addr : "port " + addr.port;
-  logDebug("Listening on " + bind);
+  const bind = typeof addr === "string" ? `pipe ${addr}` : `port ${addr.port}`;
+  logDebug(`Listening on ${bind}`);
 }
 
-const startServer = async () => {
+async function startServer() {
   try {
-    logInfo(`Attempting to Start server on port ${port}`);
+    logInfo(`Attempting to start server on port ${PORT}`);
     await connectToDb();
-    await initializeDbSchema();
-    logInfo(`Starting server on port ${port}`);
-    server.listen(port);
+    await initializeDbSchema(); // optional, depending on your use case
+    server.listen(PORT);
     server.on("error", onError);
     server.on("listening", onListening);
   } catch (error) {
-    logError("Failed during server startup process: ", error);
+    logError("Server startup failed: ", error);
     process.exit(1);
   }
-};
+}
 
 startServer();

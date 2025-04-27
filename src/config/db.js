@@ -1,6 +1,4 @@
 // src/config/db.js
-import dotenv from "dotenv";
-dotenv.config();
 
 import pg from "pg";
 import { logInfo, logError, logDebug } from "../utils/logger.js";
@@ -34,14 +32,11 @@ if (
 }
 
 const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database:
-    process.env.NODE_ENV === "test"
-      ? process.env.DB_NAME_TEST
-      : process.env.DB_NAME,
-  password: process.env.DB_PASSWORD, // <- make sure this is a string!
-  port: parseInt(process.env.DB),
+  user: DB_USER,
+  host: DB_HOST,
+  database: NODE_ENV === "test" ? DB_NAME_TEST : DB_NAME,
+  password: DB_PASSWORD,
+  port: parseInt(DB_PORT, 10),
   connectionTimeoutMillis: 2000,
 });
 
@@ -59,6 +54,18 @@ pool.on("error", (err) => {
   logError("🚨 Unexpected error on idle client", err);
   process.exit(-1);
 });
+
+// 🔌 Connect to the DB pool (used in app startup)
+const connectToDb = async () => {
+  try {
+    const client = await pool.connect();
+    logInfo("✅ Database connection pool established");
+    client.release();
+  } catch (error) {
+    logError("❌ Unable to establish DB connection", error);
+    process.exit(1);
+  }
+};
 
 // ✅ Ensures DB schema creation is safe, consistent, and non-concurrent
 const initializeDbSchema = async () => {
@@ -84,7 +91,6 @@ const initializeDbSchema = async () => {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
-    logInfo("✅ Users table ensured");
 
     // SERVICE PROVIDER TABLE
     await client.query(`
@@ -94,17 +100,17 @@ const initializeDbSchema = async () => {
         service VARCHAR(255) NOT NULL
       )
     `);
-    logInfo("✅ Service provider table ensured");
 
     // APPOINTMENTS TABLE
     await client.query(`
       CREATE TABLE IF NOT EXISTS appointment (
         client_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         service_provider_id UUID NOT NULL REFERENCES service_provider(id) ON DELETE CASCADE,
-        PRIMARY KEY (client_id, service_provider_id)
+        PRIMARY KEY (client_id, service_provider_id),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
-    logInfo("✅ Appointment table ensured");
 
     // TIME SLOT TABLE
     await client.query(`
@@ -121,7 +127,6 @@ const initializeDbSchema = async () => {
         UNIQUE (service_provider_id, day, start_time, end_time)
       )
     `);
-    logInfo("✅ Time slot table ensured");
 
     // INDEXES
     await client.query(
@@ -130,15 +135,14 @@ const initializeDbSchema = async () => {
     await client.query(
       "CREATE INDEX IF NOT EXISTS idx_service_provider_user_id ON service_provider(user_id)"
     );
-    await client.query(
-      "CREATE INDEX IF NOT EXISTS idx_appointment_user_id ON appointment(client_id)"
-    );
+    // await client.query(
+    //   "CREATE INDEX IF NOT EXISTS idx_appointment_user_id ON appointment(client_id)"
+    // );
     await client.query(
       "CREATE INDEX IF NOT EXISTS idx_time_slot_user_id ON time_slot(service_provider_id)"
     );
-    logInfo("📌 Indexes ensured");
 
-    // TRIGGER FUNCTION
+    // TRIGGER FUNCTION ONLY FOR TABLES WITH Updated_at_column
     await client.query(`
       CREATE OR REPLACE FUNCTION update_updated_at_column()
       RETURNS TRIGGER AS $$
@@ -148,7 +152,6 @@ const initializeDbSchema = async () => {
       END;
       $$ language 'plpgsql';
     `);
-    logDebug("🔁 Trigger function ensured");
 
     // TRIGGERS
     await client.query(`
@@ -173,7 +176,6 @@ const initializeDbSchema = async () => {
         END IF;
       END$$;
     `);
-    logDebug("✅ Triggers ensured");
 
     await client.query("COMMIT");
     logInfo("🎉 DB schema initialized successfully!");
@@ -187,35 +189,19 @@ const initializeDbSchema = async () => {
   }
 };
 
-// 🔌 Connect to the DB pool (used in app startup)
-const connectToDb = async () => {
-  try {
-    const client = await pool.connect();
-    logInfo("✅ Database connection pool established");
-    client.release();
-  } catch (error) {
-    logError("❌ Unable to establish DB connection", error);
-    process.exit(1);
-  }
-};
-
 // 🛠️ Utility to run arbitrary SQL queries
 const query = async (text, params) => {
   const start = Date.now();
   try {
     const result = await pool.query(text, params);
     const duration = Date.now() - start;
-    logInfo(
-      `🧪 Executed query: ${text.slice(0, 80)}... | Params: ${JSON.stringify(
-        params
-      )} | Time: ${duration}ms`
-    );
+    if (NODE_ENV !== "production") {
+      logDebug(`🧪 Query: ${text.slice(0, 80)}... | ${duration}ms`);
+    }
     return result;
-  } catch (error) {
-    logError(
-      `❌ Query failed: ${text.slice(0, 80)}... | Error: ${error.message}`
-    );
-    throw error;
+  } catch (err) {
+    logError(`❌ Query failed: ${text.slice(0, 80)}...`, err);
+    throw err;
   }
 };
 
