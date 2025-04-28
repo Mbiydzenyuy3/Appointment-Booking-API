@@ -1,17 +1,17 @@
 import ProviderModel from "../models/provider-model.js";
 import { logError } from "../utils/logger.js";
 
-//list all providers
-export async function listProviders(req, res, next) {
+export async function create(req, res, next) {
   try {
-    const providers = await ProviderModel.listAll();
-    return res.status(200).json({
+    const providerData = req.body; // assuming you're passing data in the request body
+    const newProvider = await ProviderModel.create(providerData); // assuming a create function in the model
+    return res.status(201).json({
       success: true,
-      message: "Providers fetched successfully",
-      data: providers,
+      message: "Provider created successfully",
+      data: newProvider,
     });
   } catch (err) {
-    logError("Error fetching providers", err);
-    next(err); 
+    logError("Error creating provider", err);
+    next(err); // pass the error to the next middleware (e.g., global error handler)
   }
 }

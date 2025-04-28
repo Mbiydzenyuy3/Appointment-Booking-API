@@ -1,5 +1,5 @@
 // src/services/appointment-service.js
-import AppointmentModel from "../models/appointment-model.js";
+import { CreateAppointment } from "../models/appointment-model.js";
 import {
   emitAppointmentBooked,
   emitAppointmentCancelled,
@@ -7,29 +7,30 @@ import {
 import { logError, logInfo } from "../utils/logger.js";
 
 // Book a new appointment
-export async function book({ userId, providerId, slotId, date }) {
+export async function book({ userId, slotId }) {
   try {
-    const appointment = await AppointmentModel.create({
+    const appointment = await CreateAppointment({
       userId,
-      providerId,
       slotId,
-      date,
     });
 
     emitAppointmentBooked(appointment); // Real-time emit
     logInfo("Appointment booked", appointment.id);
-
-    return appointment;
+    return res.status(201).json({
+      success: true,
+      message: "Appointment created successfully",
+      data: appointment,
+    });
   } catch (err) {
     logError("Error booking appointment", err);
-    throw new Error("Unable to book appointment.");
+    throw err;
   }
 }
 
 // Cancel an appointment
 export async function cancel(appointmentId) {
   try {
-    const appointment = await AppointmentModel.cancelById(appointmentId);
+    const appointment = await CreateAppointment.cancelById(appointmentId);
     if (!appointment) throw new Error("Appointment not found.");
 
     emitAppointmentCancelled(appointment); // Real-time emit
@@ -38,17 +39,17 @@ export async function cancel(appointmentId) {
     return appointment;
   } catch (err) {
     logError("Error cancelling appointment", err);
-    throw new Error("Unable to cancel appointment.");
+    next(err);
   }
 }
 
 // List appointments for a specific user
 export async function list(userId) {
   try {
-    const appointments = await AppointmentModel.findByUserId(userId);
+    const appointments = await CreateAppointment.findByUserId(userId);
     return appointments;
   } catch (err) {
     logError("Error listing appointments", err);
-    throw new Error("Unable to list appointments.");
+    next(err);
   }
 }

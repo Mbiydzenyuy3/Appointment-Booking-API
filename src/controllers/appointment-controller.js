@@ -7,18 +7,30 @@ import { logError } from "../utils/logger.js";
  */
 
 //Book a new appointment
-export async function bookAppointment(req, res, next) {
+export async function CreateAppointment(req, res) {
   try {
-    const { user, body } = req; // Destructure to get user from req
-    const appointment = await appointmentService.book(req.body, req.user.id);
+     req.user = { id: 1 };
+
+     const { slotId } = req.body.slotId;
+     const userId = req.user.id;
+
+    const appointment = await appointmentService.book({
+      userId,
+      slotId,
+      date: new Date(), // or from body if needed
+    });
+
+    if (!appointment) {
+      return res.status(400).json({ message: "Failed to create appointment" });
+    }
+
     return res.status(201).json({
-      success: true,
       message: "Appointment created successfully",
-      data: appointment,
+      appointmentId: appointment.id,
     });
   } catch (err) {
-    logError("Error creating appointment, verify details and try again", err)
-    next(err);
+    console.error(err);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
 }
 
@@ -35,7 +47,7 @@ export async function cancelAppointment(req, res, next) {
     }
     return res.json({ appointment });
   } catch (err) {
-    next(err); 
+    next(err);
   }
 }
 
@@ -46,10 +58,10 @@ export async function cancelAppointment(req, res, next) {
 export async function listAppointments(req, res, next) {
   try {
     const { user } = req; // Destructure to get user from req
-    const appointments = await appointmentService.list(req.user.id); // 
+    const appointments = await appointmentService.list(req.user.id); //
     return res.json({ appointments });
   } catch (err) {
-    logError("Error fetching list appointments, try again later", err)
-    next(err); 
+    logError("Error fetching list appointments, try again later", err);
+    next(err);
   }
 }

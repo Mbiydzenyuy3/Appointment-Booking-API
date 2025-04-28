@@ -1,11 +1,40 @@
-import { io } from "socket.io-client";
+import { Server } from "socket.io";
+import { createServer } from "node:http";
+import Client from "socket.io-client";
+import { describe, it, expect } from "node:test";
 
-const socket = io("http://localhost:3000");
+describe("WebSocket Connection", () => {
+  let io, serverSocket, clientSocket;
 
-socket.on("appointmentBooked", (data) => {
-  console.log("Appointment Booked:", data);
-});
+  beforeAll((done) => {
+    const httpServer = createServer();
+    io = new Server(httpServer);
+    httpServer.listen(() => {
+      const port = httpServer.address().port;
+      clientSocket = Client(`http://localhost:${port}`);
 
-socket.on("appointmentCancelled", (data) => {
-  console.log("Appointment Cancelled:", data);
+      io.on("connection", (socket) => {
+        serverSocket = socket;
+      });
+
+      clientSocket.on("connect", done);
+    });
+  });
+
+  afterAll(() => {
+    io.close();
+    clientSocket.close();
+  });
+
+  it("should connect to WebSocket server", () => {
+    expect(clientSocket.connected).toBe(true);
+  });
+
+  it("should emit and receive an event", (done) => {
+    serverSocket.on("hello", (arg) => {
+      expect(arg).toBe("world");
+      done();
+    });
+    clientSocket.emit("hello", "world");
+  });
 });

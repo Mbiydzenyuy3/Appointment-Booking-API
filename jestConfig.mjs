@@ -1,6 +1,6 @@
-// // jest.config.js
-// export default {
-//   transform: {},
-//   extensionsToTreatAsEsm: [".js"],
-//   testEnvironment: "node",
-// };
+// jestConfig.js
+export default {
+  transform: {},
+  extensionsToTreatAsEsm: [".js"],
+  testEnvironment: "node",
+};

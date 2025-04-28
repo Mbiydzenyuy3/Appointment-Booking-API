@@ -1,5 +1,4 @@
 //middleware/validate-middleware.js
-import { ValidationError } from "joi";
 import { logError } from "../utils/logger.js";
 
 

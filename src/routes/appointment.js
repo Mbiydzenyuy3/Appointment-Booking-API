@@ -1,14 +1,23 @@
 // src/routes/appointment.js
 import express from "express";
 import * as AppointmentController from "../controllers/appointment-controller.js";
-import { appointmentValidator } from "../validators/appointment-validator.js"; // Validator for appointment data
+import { validate } from "../middlewares/validate-middleware.js";
+import {
+  appointmentValidator,
+  appointmentSchema,
+} from "../validators/appointment-validator.js"; // Validator for appointment data
 
 const router = express.Router();
 
 // Route to book a new appointment
 // This route accepts POST requests to '/appointments' and creates an appointment.
 // The request body is validated using the 'appointmentValidator'.
-router.post("/", appointmentValidator, AppointmentController.bookAppointment);
+router.post(
+  "/",
+  validate(appointmentSchema),
+  appointmentValidator,
+  AppointmentController.CreateAppointment
+);
 
 // Route to cancel an existing appointment
 // This route accepts DELETE requests to '/appointments/:appointmentId' to cancel a specific appointment by its ID.

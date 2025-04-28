@@ -2,11 +2,11 @@
 import bcrypt from "bcryptjs";
 
 // Function to hash the password
-export const hashPassword = async (password) => {
-  return await bcrypt.hash(password, 10);
+export const hashPassword = (plainPassword) => {
+  return bcrypt.hash(plainPassword, 10);
 };
 
 // Function to verify the password
-export const verifyPassword = async (password, hash) => {
-  return await bcrypt.compare(password, hash);
+export const verifyPassword = (plainPassword, hashedPassword) => {
+  return bcrypt.compare(plainPassword, hashedPassword);
 };

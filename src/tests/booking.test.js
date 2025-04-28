@@ -3,7 +3,7 @@
 import { describe, it, before, after } from "node:test";
 import assert from "node:assert";
 import request from "supertest";
-import app from "../../app.js";
+import { app } from "../../app.js";
 
 import { query, pool, connectToDb, initializeDbSchema } from "../config/db.js";
 
@@ -55,6 +55,8 @@ describe("Appointment Booking API (/appointments)", () => {
     const res = await request(app)
       .post("/appointments")
       .send({
+        providerId: providerIdFromSetup,
+        slotId: slotIdFromSetup,
         client_id: clientId,
         service_provider_id: providerId,
       })
@@ -62,6 +64,8 @@ describe("Appointment Booking API (/appointments)", () => {
       .expect(201); // 201 Created
 
     assert.ok(res.body);
+    assert.strictEqual(res.body.providerId, providerIdFromSetup);
+     assert.strictEqual(res.body.slotId, slotIdFromSetup);
     assert.strictEqual(res.body.client_id, clientId);
     assert.strictEqual(res.body.service_provider_id, providerId);
   });

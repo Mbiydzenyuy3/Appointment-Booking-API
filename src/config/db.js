@@ -87,6 +87,7 @@ const initializeDbSchema = async () => {
         name VARCHAR(50) NOT NULL,
         email VARCHAR(50) UNIQUE NOT NULL,
         password VARCHAR(255) NOT NULL,
+        role VARCHAR(50) DEFAULT 'user',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
@@ -106,7 +107,8 @@ const initializeDbSchema = async () => {
       CREATE TABLE IF NOT EXISTS appointment (
         client_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         service_provider_id UUID NOT NULL REFERENCES service_provider(id) ON DELETE CASCADE,
-        PRIMARY KEY (client_id, service_provider_id),
+        slot_id UUID NOT NULL REFERENCES time_slot(id) ON DELETE CASCADE,
+        PRIMARY KEY (client_id,  slot_id, service_provider_id),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )

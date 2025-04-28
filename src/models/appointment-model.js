@@ -1,7 +1,7 @@
 // src/models/appointment-model.js
 import { query } from "../config/db.js"; // ✅ Correct import
 
-export const createAppointment = async ({ slotId, userId }) => {
+export const CreateAppointment = async ({ slotId, userId }) => {
   try {
     const { rows } = await query(
       `INSERT INTO appointment (slot_id, user_id) VALUES ($1, $2) RETURNING *`,
@@ -25,11 +25,13 @@ export const deleteAppointment = async (appointmentId) => {
   }
 };
 
-export const findAppointmentsByUser = async (userId) => {
+export const findAppointmentsByUser = async (userId, slotId) => {
   try {
     const { rows } = await query(
-      `SELECT * FROM appointment WHERE user_id = $1`,
-      [userId]
+      ` INSERT INTO appointment (slot_id, user_id)
+    VALUES ($1, $2)
+    RETURNING *;`,
+      [userId, slotId]
     );
     return rows;
   } catch (err) {

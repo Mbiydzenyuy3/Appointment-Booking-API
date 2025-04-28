@@ -1,8 +1,6 @@
 //middleware/role-middleware.js
 import { logError } from "../utils/logger.js";
 
-import { logError } from "../utils/logger.js";
-
 // Middleware to ensure the user is a provider
 export function requireProvider(req, res, next) {
   if (req.user && req.user.role === "provider") {

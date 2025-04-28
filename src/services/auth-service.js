@@ -1,7 +1,6 @@
-//services/auth-service.js
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import UserModel from "../models/user-model.js";
+import { UserModel, findByEmail } from "../models/user-model.js";
 import { logError } from "../utils/logger.js";
 
 // Secret and expiration for JWT
@@ -27,15 +26,25 @@ export async function hashPassword(plainPassword) {
 }
 
 // Function to create a new user
-export async function createUser({ name, email, password, role = "user" }) {
+export async function createUser({ name, email, password }) {
   try {
+    // Check if the email is already taken (or any other unique constraint checks)
+    const existingUser = await findByEmail(email);
+    if (existingUser) {
+      throw new AuthError("Email already in use.");
+    }
+
+    // Hash the password
     const passwordHash = await hashPassword(password);
-    return await UserModel.register({
+
+    // Create the user (Assuming `UserModel.create` is the correct method for your ORM)
+    const newUser = await UserModel({
       name,
       email,
-      password: passwordHash,
-      role,
+      password: passwordHash, // Store the hashed password
     });
+
+    return newUser; // Return the created user
   } catch (err) {
     logError("Error creating user:", err);
     throw new AuthError("Error creating user.");
@@ -65,7 +74,7 @@ export function signToken(payload) {
 // Function to login a user
 export async function login({ email, password }) {
   try {
-    const user = await UserModel.findByEmail(email);
+    const user = await findByEmail(email);
     if (!user) throw new AuthError("Invalid credentials.");
 
     const isPasswordValid = await verifyPassword(password, user.password);

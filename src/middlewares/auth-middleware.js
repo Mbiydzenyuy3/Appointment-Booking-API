@@ -1,21 +1,38 @@
 import jwt from "jsonwebtoken";
-import { logError } from "../utils/logger.js";
+import { logError, logInfo, logDebug } from "../utils/logger.js";
 
-// JWT Authentication middleware
-export const authenticateJWT = (req, res, next) => {
-  const token = req.header("Authorization")?.split(" ")[1]; // Extract token from header
+const authMiddleware = (req, res, next) => {
+  const authHeader = req.header("Authorization");
+  const token =
+    authHeader && authHeader.startsWith("Bearer ")
+      ? authHeader.split(" ")[1]
+      : null;
+
   if (!token) {
-    logError("Authorization token missing");
-    return res.status(401).json({ error: "Authorization token is required" });
+    logInfo(`Auth middleware: no token provided`);
+    return res
+      .status(401)
+      .json({ message: "No token, authorization has been denied" });
   }
-
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) {
-      logError("JWT verification failed", err);
-      return res.status(403).json({ error: "Token is not valid" });
-    }
-
-    req.user = user; // Set the user information from the JWT token to req.user
+  try {
+    const decoded = jwt.decode(token, process.env.JWT_SECRET);
+    req.user = decoded.user;
+    logDebug(`Auth middleware: Token verified for user ID ${req.user.id}`);
     next();
-  });
+  } catch (error) {
+    logError("Auth iddleware: token verification failed", err);
+    if (err.name === "TokenExpiredError") {
+      return res.status(401).json({ message: "Token is expired" });
+    }
+    if (error.name === "JsonWebTokenError") {
+      return res.status(401).json({ message: "Token is not valid" });
+    }
+    return res
+      .status(error.status || 500)
+      .json({
+        message: error.message || "server error during token verification",
+      });
+  }
 };
+
+export default authMiddleware;

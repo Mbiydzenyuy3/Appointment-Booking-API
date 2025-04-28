@@ -5,13 +5,13 @@ import { query } from "../config/db.js";
 /**
  * Create a new user in the database
  */
-export const createUser = async ({ name, email, password, role = "user" }) => {
+export const UserModel = async ({ name, email, password }) => {
   try {
     const { rows } = await query(
-      `INSERT INTO users (name, email, password, role)
-       VALUES ($1, $2, $3, $4)
-       RETURNING id, name, email, role`,
-      [name, email, password, role]
+      `INSERT INTO users (name, email, password)
+       VALUES ($1, $2, $3)
+       RETURNING id, name, email`,
+      [name, email, password]
     );
     return rows[0];
   } catch (error) {
