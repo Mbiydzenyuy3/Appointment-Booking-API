@@ -1,26 +1,38 @@
-import db from "../config/db.js";
+// src/models/appointment-model.js
+import { query } from "../config/db.js"; // ✅ Correct import
 
-export const createAppointment = async (appointment) => {
-  const { slotId, userId } = appointment;
-  const { rows } = await db.query(
-    `INSERT INTO appointments (slot_id, user_id) VALUES ($1, $2) RETURNING *`,
-    [slotId, userId]
-  );
-  return rows[0];
+export const createAppointment = async ({ slotId, userId }) => {
+  try {
+    const { rows } = await query(
+      `INSERT INTO appointment (slot_id, user_id) VALUES ($1, $2) RETURNING *`,
+      [slotId, userId]
+    );
+    return rows[0];
+  } catch (err) {
+    throw new Error("Failed to create appointment");
+  }
 };
 
 export const deleteAppointment = async (appointmentId) => {
-  const { rows } = await db.query(
-    `DELETE FROM appointments WHERE id = $1 RETURNING *`,
-    [appointmentId]
-  );
-  return rows[0];
+  try {
+    const { rows } = await query(
+      `DELETE FROM appointment WHERE id = $1 RETURNING *`,
+      [appointmentId]
+    );
+    return rows[0];
+  } catch (err) {
+    throw new Error("Failed to delete appointment");
+  }
 };
 
 export const findAppointmentsByUser = async (userId) => {
-  const { rows } = await db.query(
-    `SELECT * FROM appointments WHERE user_id = $1`,
-    [userId]
-  );
-  return rows;
+  try {
+    const { rows } = await query(
+      `SELECT * FROM appointment WHERE user_id = $1`,
+      [userId]
+    );
+    return rows;
+  } catch (err) {
+    throw new Error("Failed to fetch appointments");
+  }
 };

@@ -1,12 +1,18 @@
-//models/provider-model.js
+// src/models/provider-model.js
+import { query } from "../config/db.js";
 
-import pool from "../config/db.js"
-
-export default {
+const ProviderModel = {
   async listAll() {
-    const { rows } = await pool.query(
-      `SELECT id, name, email FROM users WHERE role = 'provider'`
-    );
-    return rows
-  }
-}
+    try {
+      const { rows } = await query(`
+        SELECT id, service
+        FROM service_provider
+      `);
+      return rows;
+    } catch (error) {
+      throw new Error("Failed to fetch service providers");
+    }
+  },
+};
+
+export default ProviderModel;
