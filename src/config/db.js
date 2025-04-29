@@ -87,7 +87,7 @@ const initializeDbSchema = async () => {
         name VARCHAR(50) NOT NULL,
         email VARCHAR(50) UNIQUE NOT NULL,
         password VARCHAR(255) NOT NULL,
-        role VARCHAR(50) DEFAULT 'user',
+        role VARCHAR CHECK (role IN ('client', 'provider')) NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
@@ -98,17 +98,21 @@ const initializeDbSchema = async () => {
       CREATE TABLE IF NOT EXISTS service_provider (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        service VARCHAR(255) NOT NULL
+        service VARCHAR(255) NOT NULL,
+        name VARCHAR(50) NOT NULL,
+        email VARCHAR(50) UNIQUE NOT NULL
       )
     `);
 
     // APPOINTMENTS TABLE
     await client.query(`
       CREATE TABLE IF NOT EXISTS appointment (
-        client_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        service_provider_id UUID NOT NULL REFERENCES service_provider(id) ON DELETE CASCADE,
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         slot_id UUID NOT NULL REFERENCES time_slot(id) ON DELETE CASCADE,
-        PRIMARY KEY (client_id, service_provider_id),
+        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        service_provider_id UUID NOT NULL REFERENCES service_provider(id) ON DELETE CASCADE,
+        appointment_date DATE NOT NULL,
+        appointment_time TIME NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
@@ -119,7 +123,6 @@ const initializeDbSchema = async () => {
       CREATE TABLE IF NOT EXISTS time_slot (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         day DATE NOT NULL,
-        slot_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         start_time TIME NOT NULL,
         end_time TIME NOT NULL,
         service_provider_id UUID NOT NULL REFERENCES service_provider(id) ON DELETE CASCADE,

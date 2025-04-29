@@ -1,21 +1,23 @@
-//services/slot-service.js
-import { logError } from "../utils/logger.js";
-import SlotModel from "../models/slot-model.js";
+// src/services/slot-service.js
+import { createSlot, getSlotsByProviderId } from "../models/slot-model.js";
+import { logError, logInfo } from "../utils/logger.js";
 
-export async function createSlot({ providerId, startTime, endTime }) {
+export async function create({ providerId, day, startTime, endTime }) {
   try {
-    return await SlotModel.create({ providerId, startTime, endTime });
+    const slot = await createSlot({ providerId, day, startTime, endTime });
+    logInfo("Slot created", slot.id);
+    return slot;
   } catch (err) {
-    logError("Error creating slot", err);
-    throw new Error("Unable to create slot.");
+    logError("Slot service failed to create slot", err);
+    throw err;
   }
 }
 
 export async function getSlotsByProvider(providerId) {
   try {
-    return await SlotModel.getByProvider(providerId);
+    return await getSlotsByProvider(providerId);
   } catch (err) {
-    logError("Error fetching slots", err);
-    throw new Error("Unable to fetch slots for provider.");
+    logError("Failed to fetch provider's slots", err);
+    throw err;
   }
 }

@@ -1,18 +1,34 @@
-//validator/slot-validator.js
+// src/validators/slot-validator.js
 import Joi from "joi";
 
-export const slotSchema = Joi.object({
-  day: Joi.date()
-    .required()
-    .messages({ "date.base": "Day must be a valid date" }),
+/**
+ * Validator for creating a time slot
+ */
 
+export const slotSchema = Joi.object({
+  day: Joi.date().required().messages({
+    "date.base": "Day must be a valid date",
+    "any.required": "Day is required",
+  }),
   startTime: Joi.string()
     .pattern(/^([0-1]\d|2[0-3]):([0-5]\d)$/)
     .required()
-    .messages({ "string.pattern.base": "Start time must be in HH:MM format" }),
-
+    .messages({
+      "string.pattern.base": "Start time must be in HH:MM format",
+      "any.required": "Start time is required",
+    }),
   endTime: Joi.string()
     .pattern(/^([0-1]\d|2[0-3]):([0-5]\d)$/)
     .required()
-    .messages({ "string.pattern.base": "End time must be in HH:MM format" }),
+    .messages({
+      "string.pattern.base": "End time must be in HH:MM format",
+      "any.required": "End time is required",
+    }),
+}).custom((value, helpers) => {
+  const [startH, startM] = value.startTime.split(":").map(Number);
+  const [endH, endM] = value.endTime.split(":").map(Number);
+  if (startH * 60 + startM >= endH * 60 + endM) {
+    return helpers.message("End time must be after start time");
+  }
+  return value;
 });

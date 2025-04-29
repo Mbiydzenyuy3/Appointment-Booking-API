@@ -1,4 +1,3 @@
-// swaggerConfig.js
 import swaggerJsdoc from "swagger-jsdoc";
 
 const swaggerOptions = {
@@ -8,10 +7,10 @@ const swaggerOptions = {
       title: "Appointment Booking API",
       version: "1.0.0",
       description:
-        "API documentation for an Appointment Booking system with authentication, service providers, time slots, and booking appointments.",
+        "Comprehensive API documentation for an Appointment Booking system including user authentication, service providers, time slots, and appointment scheduling.",
       contact: {
         name: "API Support",
-        email: "support@example.com", 
+        email: "support@example.com",
       },
       license: {
         name: "MIT",
@@ -23,7 +22,6 @@ const swaggerOptions = {
         url: `http://localhost:${process.env.PORT || 4000}/api`,
         description: "Development Server",
       },
-      // You can later add staging/production servers here.
     ],
     components: {
       securitySchemes: {
@@ -31,7 +29,7 @@ const swaggerOptions = {
           type: "http",
           scheme: "bearer",
           bearerFormat: "JWT",
-          description: "Enter your JWT token",
+          description: "Provide your JWT token to authorize requests",
         },
       },
       schemas: {
@@ -42,7 +40,7 @@ const swaggerOptions = {
             name: { type: "string" },
             email: { type: "string", format: "email" },
             role: { type: "string", enum: ["user", "provider"] },
-            created_at: { type: "string", format: "date-time" },
+            createdAt: { type: "string", format: "date-time" },
           },
           required: ["id", "name", "email", "role"],
         },
@@ -50,52 +48,52 @@ const swaggerOptions = {
           type: "object",
           properties: {
             id: { type: "string", format: "uuid" },
+            name: { type: "string" },
+            email: { type: "string", format: "email" },
             service: { type: "string" },
-            user_id: { type: "string", format: "uuid" },
           },
-          required: ["id", "service", "user_id"],
+          required: ["id", "name", "email"],
         },
         Slot: {
           type: "object",
           properties: {
             id: { type: "string", format: "uuid" },
             day: { type: "string", format: "date" },
-            start_time: { type: "string", format: "time" },
-            end_time: { type: "string", format: "time" },
-            service_provider_id: { type: "string", format: "uuid" },
-            is_available: { type: "boolean" },
+            startTime: { type: "string", example: "09:00" },
+            endTime: { type: "string", example: "10:00" },
+            serviceProviderId: { type: "string", format: "uuid" },
+            isAvailable: { type: "boolean" },
           },
-          required: [
-            "id",
-            "day",
-            "start_time",
-            "end_time",
-            "service_provider_id",
-          ],
+          required: ["id", "day", "startTime", "endTime", "serviceProviderId"],
         },
         Appointment: {
           type: "object",
           properties: {
-            client_id: { type: "string", format: "uuid" },
-            service_provider_id: { type: "string", format: "uuid" },
+            id: { type: "string", format: "uuid" },
+            providerId: { type: "string", format: "uuid" },
+            slotId: { type: "string", format: "uuid" },
+            appointmentDate: { type: "string", format: "date" },
+            appointmentTime: { type: "string", example: "14:00" },
           },
-          required: ["client_id", "service_provider_id"],
+          required: [
+            "id",
+            "providerId",
+            "slotId",
+            "appointmentDate",
+            "appointmentTime",
+          ],
         },
         Error: {
           type: "object",
           properties: {
-            message: { type: "string" },
+            message: { type: "string", example: "Error message description" },
           },
         },
       },
     },
-    security: [
-      {
-        bearerAuth: [],
-      },
-    ],
+    security: [{ bearerAuth: [] }],
   },
-  apis: ["./src/routes/*.js"], // Route files where we can add endpoint documentation
+  apis: ["./src/routes/*.js"], // Paths to your route files with Swagger annotations
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);

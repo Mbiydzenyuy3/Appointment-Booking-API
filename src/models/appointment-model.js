@@ -1,17 +1,27 @@
 // src/models/appointment-model.js
-import { query } from "../config/db.js"; // ✅ Correct import
+import { query } from "../config/db.js";
 
-export const CreateAppointment = async ({ slotId, userId }) => {
+export const CreateAppointment = async ({
+  slotId,
+  userId,
+  providerId,
+  appointmentDate,
+  appointmentTime,
+}) => {
   try {
     const { rows } = await query(
-      `INSERT INTO appointment (slot_id, user_id) VALUES ($1, $2) RETURNING *`,
-      [slotId, userId]
+      `INSERT INTO appointment (
+        slot_id, user_id, service_provider_id, appointment_date, appointment_time
+      ) VALUES ($1, $2, $3, $4, $5)
+      RETURNING *`,
+      [slotId, userId, providerId, appointmentDate, appointmentTime]
     );
     return rows[0];
   } catch (err) {
     throw new Error("Failed to create appointment");
   }
 };
+
 
 export const deleteAppointment = async (appointmentId) => {
   try {
@@ -25,7 +35,7 @@ export const deleteAppointment = async (appointmentId) => {
   }
 };
 
-export const findAppointmentsByUser = async (userId, slo) => {
+export const findAppointmentsByUser = async (userId, slotId) => {
   try {
     const { rows } = await query(
       ` INSERT INTO appointment (slot_id, user_id)

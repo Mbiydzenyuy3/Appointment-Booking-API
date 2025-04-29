@@ -1,4 +1,5 @@
 //controller/auth-controller.js
+import { token } from "morgan";
 import * as AuthService from "../services/auth-service.js";
 import { logError, logInfo } from "../utils/logger.js";
 
@@ -42,6 +43,7 @@ export async function login(req, res, next) {
     logInfo("User logged in", user.email);
     res.status(201).json({
       success: true,
+      token: token,
       message: "User LoggedIn successfully",
       data: user,
     });

@@ -17,7 +17,7 @@ export function requireProvider(req, res, next) {
 
 // Middleware to ensure the user is a client
 export function requireClient(req, res, next) {
-  if (req.user && req.user.role === "client") {
+  if (req.user && req.user.role === "user") {
     return next();
   } else {
     logError("Unauthorized access attempt by non-client.");

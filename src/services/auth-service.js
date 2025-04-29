@@ -80,7 +80,11 @@ export async function login({ email, password }) {
     const isPasswordValid = await verifyPassword(password, user.password);
     if (!isPasswordValid) throw new AuthError("Invalid password.");
 
-    const token = signToken({ sub: user.id, role: user.role });
+    const token = signToken({
+      sub: user.id,
+      role: user.role,
+      email: user.email,
+    });
     return { user, token };
   } catch (err) {
     if (err instanceof AuthError) {

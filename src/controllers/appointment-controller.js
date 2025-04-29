@@ -1,35 +1,31 @@
 //src/controllers/appointment.js
 import * as appointmentService from "../services/appointment-service.js";
 import { logError } from "../utils/logger.js";
+
 /**
  * Controller function for booking an appointment
  *
  */
-
-//Book a new appointment
 export async function CreateAppointment(req, res) {
   try {
-     req.user = { id: 1 };
-
-     const { slotId } = req.body.slotId;
-     const userId = req.user.id;
+    const { slotId, providerId, appointmentDate, appointmentTime } = req.body;
+    const userId = req.user.id;
 
     const appointment = await appointmentService.book({
       userId,
       slotId,
-      date: new Date(), // or from body if needed
+      providerId,
+      appointmentDate,
+      appointmentTime,
     });
-
-    if (!appointment) {
-      return res.status(400).json({ message: "Failed to create appointment" });
-    }
 
     return res.status(201).json({
+      success: true,
       message: "Appointment created successfully",
-      appointmentId: appointment.id,
+      data: appointment,
     });
   } catch (err) {
-    console.error(err);
+    logError("Create appointment failed", err);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 }
@@ -41,27 +37,33 @@ export async function CreateAppointment(req, res) {
 export async function cancelAppointment(req, res, next) {
   try {
     const { appointmentId } = req.params;
-    const appointment = await appointmentService.cancel(appointmentId);
-    if (!appointment) {
+    const result = await appointmentService.cancel(appointmentId);
+
+    if (!result) {
       return res.status(404).json({ message: "Appointment not found" });
     }
-    return res.json({ appointment });
+
+    return res.json({ message: "Appointment cancelled", data: result });
   } catch (err) {
+    logError("Cancel appointment failed", err);
     next(err);
   }
 }
+
 
 /**
  * Controller function for listing all appointments for the authenticated user
  *
  */
+// List user appointments
 export async function listAppointments(req, res, next) {
   try {
-    const { user } = req; // Destructure to get user from req
-    const appointments = await appointmentService.list(req.user.id); //
+    const userId = req.user.id;
+    const appointments = await appointmentService.list(userId);
+
     return res.json({ appointments });
   } catch (err) {
-    logError("Error fetching list appointments, try again later", err);
+    logError("List appointments failed", err);
     next(err);
   }
 }
