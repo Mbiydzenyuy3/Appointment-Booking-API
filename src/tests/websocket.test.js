@@ -1,12 +1,12 @@
 import { Server } from "socket.io";
 import { createServer } from "node:http";
 import Client from "socket.io-client";
-import { describe, it, expect } from "node:test";
+import { describe, before, after, it } from "node:test";
 
 describe("WebSocket Connection", () => {
   let io, serverSocket, clientSocket;
 
-  beforeAll((done) => {
+  before((done) => {
     const httpServer = createServer();
     io = new Server(httpServer);
     httpServer.listen(() => {
@@ -21,7 +21,7 @@ describe("WebSocket Connection", () => {
     });
   });
 
-  afterAll(() => {
+  after(() => {
     io.close();
     clientSocket.close();
   });

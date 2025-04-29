@@ -1,5 +1,6 @@
 import request from "supertest";
 import { app } from "../../app.js"; // Import your Express app
+import { describe, it, expect } from "vitest";
 
 describe("Authentication Flow", () => {
   const userData = {

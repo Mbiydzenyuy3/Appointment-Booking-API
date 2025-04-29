@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "test": "NODE_ENV=test  node --env-file=.env --test --experimental-test-coverage",
+    "test": "vitest",
     "start": "node --env-file=.env ./bin/www",
     "dev": "nodemon --env-file=.env ./bin/www"
   },
@@ -29,6 +29,7 @@
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
-    "nodemon": "^3.1.9"
+    "nodemon": "^3.1.9",
+    "vitest": "^3.1.2"
   }
 }

@@ -108,7 +108,7 @@ const initializeDbSchema = async () => {
         client_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         service_provider_id UUID NOT NULL REFERENCES service_provider(id) ON DELETE CASCADE,
         slot_id UUID NOT NULL REFERENCES time_slot(id) ON DELETE CASCADE,
-        PRIMARY KEY (client_id,  slot_id, service_provider_id),
+        PRIMARY KEY (client_id, service_provider_id),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
@@ -119,6 +119,7 @@ const initializeDbSchema = async () => {
       CREATE TABLE IF NOT EXISTS time_slot (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         day DATE NOT NULL,
+        slot_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         start_time TIME NOT NULL,
         end_time TIME NOT NULL,
         service_provider_id UUID NOT NULL REFERENCES service_provider(id) ON DELETE CASCADE,

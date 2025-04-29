@@ -25,7 +25,7 @@ export const deleteAppointment = async (appointmentId) => {
   }
 };
 
-export const findAppointmentsByUser = async (userId, slotId) => {
+export const findAppointmentsByUser = async (userId, slo) => {
   try {
     const { rows } = await query(
       ` INSERT INTO appointment (slot_id, user_id)
