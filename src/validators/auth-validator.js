@@ -1,3 +1,32 @@
+// //validator/auth-validator.js
+// import Joi from "joi";
+
+// // Common middleware for any schema
+// export const validate = (schema) => (req, res, next) => {
+//   const { error } = schema.validate(req.body);
+//   if (error) {
+//     return res.status(400).json({ message: error.details[0].message });
+//   }
+//   next();
+// };
+
+// // Registration schema
+// export const registerSchema = Joi.object({
+//   name: Joi.string().min(3).max(30).required(),
+//   email: Joi.string().email({ maxDomainSegments: 2 }).required(),
+//   password: Joi.string().pattern(new RegExp("^[a-zA-Z0-9]{3,30}$")).required(),
+//   // confirmPassword: Joi.valid(Joi.ref("password"))
+//   //   .required()
+//   //   .messages({ "any.only": "Passwords must match" }),
+//   role: Joi.string().valid("user", "provider").default("user"),
+// });
+
+// // Login schema
+// export const loginSchema = Joi.object({
+//   email: Joi.string().email({ maxDomainSegments: 2 }).required(),
+//   password: Joi.string().required(),
+// });
+
 import Joi from "joi";
 
 // Common middleware for any schema
@@ -11,17 +40,42 @@ export const validate = (schema) => (req, res, next) => {
 
 // Registration schema
 export const registerSchema = Joi.object({
-  name: Joi.string().min(3).max(30).required(),
-  email: Joi.string().email({ maxDomainSegments: 2 }).required(),
-  password: Joi.string().pattern(new RegExp("^[a-zA-Z0-9]{3,30}$")).required(),
-  confirmPassword: Joi.valid(Joi.ref("password"))
+  name: Joi.string().min(3).max(30).required().messages({
+    "string.min": "Name should have at least 3 characters",
+    "string.max": "Name should have at most 30 characters",
+    "any.required": "Name is required",
+  }),
+  email: Joi.string().email({ minDomainSegments: 2 }).required().messages({
+    "string.email": "Please provide a valid email address",
+    "any.required": "Email is required",
+  }),
+  password: Joi.string()
+    .min(6)
+    .max(30)
+    .pattern(new RegExp("^[a-zA-Z0-9]{6,30}$"))
     .required()
-    .messages({ "any.only": "Passwords must match" }),
-  role: Joi.string().valid("user", "provider").default("user"),
+    .messages({
+      "string.pattern.base":
+        "Password must be alphanumeric and between 6 and 30 characters",
+      "string.min": "Password should have at least 6 characters",
+      "string.max": "Password should have at most 30 characters",
+      "any.required": "Password is required",
+    }),
+  confirmPassword: Joi.string().valid(Joi.ref("password")).required().messages({
+    "any.only": "Passwords must match",
+    "any.required": "Confirm password is required",
+  }),
+  user_type: Joi.string().valid("client", "provider").default("client"),
 });
 
 // Login schema
 export const loginSchema = Joi.object({
-  email: Joi.string().email({ maxDomainSegments: 2 }).required(),
-  password: Joi.string().required(),
+  email: Joi.string().email({ minDomainSegments: 2 }).required().messages({
+    "string.email": "Please provide a valid email address",
+    "any.required": "Email is required",
+  }),
+  password: Joi.string().required().messages({
+    "any.required": "Password is required",
+  }),
 });
+

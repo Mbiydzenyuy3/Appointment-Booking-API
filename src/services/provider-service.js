@@ -1,13 +1,45 @@
-//services/provider-service.js
+// // src/services/provider-service.js
+// import ProviderModel from "../models/provider-model.js";
+// import { logError } from "../utils/logger.js";
+
+// export async function createProvider({ user_id, bio, rating }) {
+//   try {
+//     // Validate inputs if needed here
+//     return await ProviderModel.create({ user_id, bio, rating });
+//   } catch (err) {
+//     logError("Service error - creating provider", err);
+//     throw new Error("Unable to create provider.");
+//   }
+// }
+
+// export async function listProviders() {
+//   try {
+//     return await ProviderModel.listAll();
+//   } catch (err) {
+//     logError("Service error - listing providers", err);
+//     throw new Error("Unable to fetch providers.");
+//   }
+// }
+
+// src/services/provider-service.js
 import ProviderModel from "../models/provider-model.js";
 import { logError } from "../utils/logger.js";
 
-export async function createProvider(providerData) {
+export async function createProvider({ user_id, bio, rating }) {
   try {
-    return await ProviderModel.create(providerData);
+    if (!user_id || typeof bio !== "string" || (rating && isNaN(rating))) {
+      throw new Error("Invalid input for provider creation");
+    }
+
+    const existing = await ProviderModel.findByUserId(user_id);
+    if (existing) {
+      throw new Error("Provider already exists for this user.");
+    }
+
+    return await ProviderModel.create({ user_id, bio, rating });
   } catch (err) {
     logError("Service error - creating provider", err);
-    throw new Error("Unable to create provider.");
+    throw new Error(err.message || "Unable to create provider.");
   }
 }
 

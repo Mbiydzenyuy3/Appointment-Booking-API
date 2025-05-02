@@ -1,14 +1,18 @@
-
-// src/models/slot-model.js
 import { query } from "../config/db.js";
 
-export async function createSlot({ providerId, day, startTime, endTime }) {
+export async function createSlot({
+  provider_id,
+  day,
+  start_time,
+  end_time,
+  service_id,
+}) {
   try {
     const { rows } = await query(
-      `INSERT INTO slot (provider_id, day, start_time, end_time)
-       VALUES ($1, $2, $3, $4)
+      `INSERT INTO time_slots (provider_id, day, start_time, end_time, service_id)
+       VALUES ($1, $2, $3, $4, $5)
        RETURNING *`,
-      [providerId, day, startTime, endTime]
+      [provider_id, day, start_time, end_time, service_id]
     );
     return rows[0];
   } catch (err) {
@@ -16,11 +20,13 @@ export async function createSlot({ providerId, day, startTime, endTime }) {
   }
 }
 
-export async function getSlotsByProviderId(providerId) {
+export async function getSlotsByProviderId(provider_id) {
   try {
     const { rows } = await query(
-      `SELECT * FROM slot WHERE provider_id = $1 ORDER BY day, start_time`,
-      [providerId]
+      `SELECT * FROM time_slots
+       WHERE provider_id = $1
+       ORDER BY day, start_time`,
+      [provider_id]
     );
     return rows;
   } catch (err) {

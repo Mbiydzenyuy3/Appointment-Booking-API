@@ -11,16 +11,16 @@ export async function book({
   userId,
   slotId,
   providerId,
-  appointmentDate,
-  appointmentTime,
+  // appointmentDate,
+  // appointmentTime,
 }) {
   try {
     const appointment = await CreateAppointment({
       userId,
       slotId,
       providerId,
-      appointmentDate,
-      appointmentTime,
+      // appointmentDate,
+      // appointmentTime,
     });
 
     emitAppointmentBooked(appointment);

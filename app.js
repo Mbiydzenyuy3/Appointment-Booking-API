@@ -16,6 +16,7 @@ import authRouter from "./src/routes/auth.js";
 import appointmentRouter from "./src/routes/appointment.js";
 import slotRouter from "./src/routes/slot.js";
 import providerRouter from "./src/routes/provider.js";
+import serviceRoutes from "./src/routes/service.js";
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/appointments", appointmentRouter);
 app.use("/api/slots", slotRouter);
 app.use("/api/providers", providerRouter);
+app.use("/api/services", serviceRoutes);
 
 // Swagger Documentation
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));

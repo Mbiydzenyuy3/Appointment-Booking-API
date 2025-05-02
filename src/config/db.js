@@ -83,70 +83,93 @@ const initializeDbSchema = async () => {
     // USERS TABLE
     await client.query(`
       CREATE TABLE IF NOT EXISTS users (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         name VARCHAR(50) NOT NULL,
-        email VARCHAR(50) UNIQUE NOT NULL,
+        email VARCHAR(100) UNIQUE NOT NULL,
         password VARCHAR(255) NOT NULL,
-        role VARCHAR CHECK (role IN ('client', 'provider')) NOT NULL,
+        user_type VARCHAR(50) CHECK(user_type IN ('client', 'provider')) NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
+      );
     `);
 
     // SERVICE PROVIDER TABLE
     await client.query(`
-      CREATE TABLE IF NOT EXISTS service_provider (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        service VARCHAR(255) NOT NULL,
-        name VARCHAR(50) NOT NULL,
-        email VARCHAR(50) UNIQUE NOT NULL
-      )
-    `);
-
-    // APPOINTMENTS TABLE
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS appointment (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        slot_id UUID NOT NULL REFERENCES time_slot(id) ON DELETE CASCADE,
-        user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-        service_provider_id UUID NOT NULL REFERENCES service_provider(id) ON DELETE CASCADE,
-        appointment_date DATE NOT NULL,
-        appointment_time TIME NOT NULL,
+      CREATE TABLE IF NOT EXISTS providers (
+        provider_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id UUID NOT NULL UNIQUE REFERENCES users(user_id) ON DELETE CASCADE,
+        bio TEXT,
+        rating DECIMAL CHECK (rating >= 0 AND rating <= 5),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
+      );
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS services (
+        service_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        provider_id UUID NOT NULL REFERENCES providers(provider_id) ON DELETE CASCADE,
+        service_name VARCHAR(100) NOT NULL,
+        description TEXT,
+        price DECIMAL(10, 2) NOT NULL,
+        duration_minutes INTEGER NOT NULL CHECK (duration_minutes > 0)
+      );
     `);
 
     // TIME SLOT TABLE
     await client.query(`
-      CREATE TABLE IF NOT EXISTS time_slot (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      CREATE TABLE IF NOT EXISTS time_slots (
+        timeslot_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        provider_id UUID NOT NULL REFERENCES providers(provider_id) ON DELETE CASCADE,
         day DATE NOT NULL,
         start_time TIME NOT NULL,
         end_time TIME NOT NULL,
-        service_provider_id UUID NOT NULL REFERENCES service_provider(id) ON DELETE CASCADE,
-        is_available BOOLEAN NOT NULL DEFAULT TRUE,
+        is_booked BOOLEAN DEFAULT FALSE,
+        is_available BOOLEAN DEFAULT TRUE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        CHECK (start_time < end_time),
-        UNIQUE (service_provider_id, day, start_time, end_time)
-      )
+        CONSTRAINT time_slot_duration CHECK (start_time < end_time)
+      );
+    `);
+
+    // APPOINTMENTS TABLE
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS appointments (
+        appointment_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+        provider_id UUID NOT NULL REFERENCES providers(provider_id) ON DELETE CASCADE,
+        service_id UUID NOT NULL REFERENCES services(service_id) ON DELETE CASCADE,
+        time_slot_id UUID NOT NULL REFERENCES time_slots(timeslot_id) ON DELETE CASCADE,
+        status VARCHAR(20) CHECK (status IN ('booked', 'canceled', 'completed', 'no-show')) DEFAULT 'booked',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
     `);
 
     // INDEXES
     await client.query(
       "CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)"
     );
+
     await client.query(
-      "CREATE INDEX IF NOT EXISTS idx_service_provider_user_id ON service_provider(user_id)"
+      "CREATE INDEX IF NOT EXISTS idx_providers_user_id ON providers(user_id);"
     );
-    // await client.query(
-    //   "CREATE INDEX IF NOT EXISTS idx_appointment_user_id ON appointment(client_id)"
-    // );
+
     await client.query(
-      "CREATE INDEX IF NOT EXISTS idx_time_slot_user_id ON time_slot(service_provider_id)"
+      "CREATE INDEX IF NOT EXISTS idx_services_provider_id ON services(provider_id);"
     );
+
+    await client.query(
+      "CREATE INDEX IF NOT EXISTS idx_time_slots_provider_day ON time_slots(provider_id, day);"
+    );
+
+    // Split the index creation queries for appointments table into two separate queries (fixed multi-query issue)
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_appointments_user_status ON appointments(user_id, status);
+    `);
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_appointments_provider_status ON appointments(provider_id, status);
+    `);
 
     // TRIGGER FUNCTION ONLY FOR TABLES WITH Updated_at_column
     await client.query(`
@@ -156,32 +179,36 @@ const initializeDbSchema = async () => {
         NEW.updated_at = NOW();
         RETURN NEW;
       END;
-      $$ language 'plpgsql';
+      $$ LANGUAGE plpgsql;
     `);
 
     // TRIGGERS
     await client.query(`
       DO $$
       BEGIN
-        IF NOT EXISTS (
-          SELECT 1 FROM pg_trigger WHERE tgname = 'update_time_slots_updated_at'
-        ) THEN
-          CREATE TRIGGER update_time_slots_updated_at
-          BEFORE UPDATE ON time_slot
-          FOR EACH ROW
-          EXECUTE FUNCTION update_updated_at_column();
+        IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_users_updated_at') THEN
+          CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
         END IF;
 
-        IF NOT EXISTS (
-          SELECT 1 FROM pg_trigger WHERE tgname = 'update_appointments_updated_at'
-        ) THEN
-          CREATE TRIGGER update_appointments_updated_at
-          BEFORE UPDATE ON appointment
-          FOR EACH ROW
-          EXECUTE FUNCTION update_updated_at_column();
+        IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_providers_updated_at') THEN
+          CREATE TRIGGER update_providers_updated_at BEFORE UPDATE ON providers FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
         END IF;
-      END$$;
+
+        IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_services_updated_at') THEN  -- Added trigger for services table
+          CREATE TRIGGER update_services_updated_at BEFORE UPDATE ON services FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+        END IF;
+
+        IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_time_slots_updated_at') THEN
+          CREATE TRIGGER update_time_slots_updated_at BEFORE UPDATE ON time_slots FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+        END IF;
+
+        IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'update_appointments_updated_at') THEN
+          CREATE TRIGGER update_appointments_updated_at BEFORE UPDATE ON appointments FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+        END IF;
+      END $$;
     `);
+
+    logDebug("All Triggers checked and created");
 
     await client.query("COMMIT");
     logInfo("🎉 DB schema initialized successfully!");

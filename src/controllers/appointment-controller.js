@@ -8,15 +8,13 @@ import { logError } from "../utils/logger.js";
  */
 export async function CreateAppointment(req, res) {
   try {
-    const { slotId, providerId, appointmentDate, appointmentTime } = req.body;
+    const { slotId } = req.body;
     const userId = req.user.id;
 
     const appointment = await appointmentService.book({
-      userId,
       slotId,
-      providerId,
-      appointmentDate,
-      appointmentTime,
+      // appointmentDate,
+      // appointmentTime,
     });
 
     return res.status(201).json({

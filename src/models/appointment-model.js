@@ -4,17 +4,16 @@ import { query } from "../config/db.js";
 export const CreateAppointment = async ({
   slotId,
   userId,
-  providerId,
-  appointmentDate,
-  appointmentTime,
+  // appointmentDate,
+  // appointmentTime,
 }) => {
   try {
     const { rows } = await query(
       `INSERT INTO appointment (
-        slot_id, user_id, service_provider_id, appointment_date, appointment_time
-      ) VALUES ($1, $2, $3, $4, $5)
+        slot_id, user_id
+      ) VALUES ($1, $2)
       RETURNING *`,
-      [slotId, userId, providerId, appointmentDate, appointmentTime]
+      [slotId, userId]
     );
     return rows[0];
   } catch (err) {

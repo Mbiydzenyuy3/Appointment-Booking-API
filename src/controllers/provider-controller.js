@@ -1,74 +1,74 @@
-import jwt from "jsonwebtoken"
+
+// src/controllers/provider-controller.js
+
+// src/controllers/provider-controller.js
 import ProviderModel from "../models/provider-model.js";
-import { logError } from "../utils/logger.js";
+import { logError, logDebug } from "../utils/logger.js";
 
-export async function create(req, res, next) {
+export async function createProvider(req, res, next) {
   try {
-    const providerData = req.body;
-    const newProvider = await ProviderModel.create(providerData); // assuming a create function in the model
+    logDebug("createProvider: called");
 
-    // Generate JWT token for the newly created provider
-    const token = jwt.sign(
-      { sub: newProvider.id, role: "provider" }, // include role in token
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
+    const { bio, rating } = req.body;
+    const user_id = req.user?.id; // Make sure you're using `id` not `user_id`
+
+    logDebug("createProvider: extracted from req", {
+      bio,
+      rating,
+      user_id,
+      fullUser: req.user,
+    });
+
+    if (!user_id) {
+      logError("createProvider: Missing user ID");
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized: user ID missing in request",
+      });
+    }
+
+    const existing = await ProviderModel.findByUserId(user_id);
+    logDebug("createProvider: existing provider check", { exists: !!existing });
+
+    if (existing) {
+      return res.status(409).json({
+        success: false,
+        message: "Provider profile already exists",
+      });
+    }
+
+    const newProvider = await ProviderModel.create({
+      user_id,
+      bio,
+      rating,
+    });
+
+    logDebug("createProvider: new provider created", newProvider);
 
     return res.status(201).json({
       success: true,
-      message: "Provider created successfully",
+      message: "Provider profile created successfully",
       data: newProvider,
     });
   } catch (err) {
-    logError("Error creating provider", err);
-    next(err); // pass the error to the next middleware (e.g., global error handler)
-  }
-}
+    logError("createProvider: unexpected error", err);
 
-export async function list(req, res, next) {
-  try {
-    const providers = await ProviderModel.listAll();
-    return res.status(200).json({
-      success: true,
-      message: "Providers fetched successfully",
-      data: providers,
-    });
-  } catch (err) {
-    logError("Error fetching providers", err);
+    if (!res.headersSent) {
+      return res.status(500).json({
+        success: false,
+        message: "Internal server error",
+      });
+    }
+
     next(err);
   }
 }
 
-
-// export const create = async (req, res) => {
-//   try {
-//     const providerData = req.body;
-//     const newProvider = await ProviderModel.create(providerData);
-//     // Generate JWT token for the newly created provider
-//     const token = jwt.sign(
-//       { sub: newProvider.id, role: "provider" }, // include role in token
-//       process.env.JWT_SECRET,
-//       { expiresIn: "1h" }
-//     );
-
-//     if (!userId) {
-//       return res.status(400).json({ error: "Missing user ID" });
-//     }
-
-//     const provider = await ProviderModel.create({
-//       name,
-//       email,
-//       userId,
-//       service,
-//     });
-//     return res.status(200).json({
-//       success: true,
-//       message: "Providers fetched successfully",
-//       data: provider,
-//     });
-//   } catch (err) {
-//     logError("Error creating provider", err);
-//     res.status(500).json({ error: "Failed to create service provider" });
-//   }
-// };
-
+export const getAllProviders = async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM providers");
+    return res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: "Error fetching providers" });
+  }
+};

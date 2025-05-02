@@ -1,13 +1,15 @@
 //middleware/validate-middleware.js
-import { logError } from "../utils/logger.js";
-
-
-// Validation middleware to catch validation errors and send a response
-export const validate = (schema) => async (req, res, next) => {
-  const { error } = schema.validate(req.body);
-  if (error) {
-    logError("Validation error", error.details);
-    return res.status(400).json({ error: error.details[0].message });
-  }
-  next();
-};
+export function validate(schema) {
+  return (req, res, next) => {
+    const { error } = schema.validate(req.body, { abortEarly: false });
+    if (error) {
+      const messages = error.details.map((d) => d.message);
+      return res.status(400).json({
+        success: false,
+        message: "Validation error",
+        errors: messages,
+      });
+    }
+    next();
+  };
+}

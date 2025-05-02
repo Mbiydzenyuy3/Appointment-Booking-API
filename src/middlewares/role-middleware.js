@@ -1,28 +1,31 @@
-//middleware/role-middleware.js
-import { logError } from "../utils/logger.js";
+// middleware/role-middleware.js
+import { logDebug } from "../utils/logger.js";
 
-// Middleware to ensure the user is a provider
-export function requireProvider(req, res, next) {
-  if (req.user && req.user.role === "provider") {
-    return next();
-  } else {
-    logError("Unauthorized access attempt by non-provider.");
-    return res
-      .status(403)
-      .json({
-        error: "Forbidden: You must be a provider to access this route.",
+export function requireRole(requiredRole) {
+  return function (req, res, next) {
+    const role = req.user?.user_type?.trim().toLowerCase();
+
+    logDebug(`Role check: required=${requiredRole}, actual=${role}`);
+    logDebug("Full user object:", req.user);
+
+    if (role !== requiredRole.toLowerCase()) {
+      logDebug(
+        `Unauthorized access: requires '${requiredRole}', but found '${
+          role || "undefined"
+        }'`
+      );
+      return res.status(403).json({
+        success: false,
+        message: `Forbidden: ${requiredRole} role required`,
       });
-  }
+    }
+
+    next();
+  };
 }
 
-// Middleware to ensure the user is a client
-export function requireClient(req, res, next) {
-  if (req.user && req.user.role === "user") {
-    return next();
-  } else {
-    logError("Unauthorized access attempt by non-client.");
-    return res
-      .status(403)
-      .json({ error: "Forbidden: You must be a client to access this route." });
-  }
-}
+/**
+ * Optional legacy alias for provider role.
+ * Use requireRole("provider") instead for flexibility.
+ */
+export const requireProvider = requireRole("provider");

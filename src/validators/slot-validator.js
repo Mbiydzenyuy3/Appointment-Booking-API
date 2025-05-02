@@ -1,10 +1,8 @@
-// src/validators/slot-validator.js
 import Joi from "joi";
 
 /**
  * Validator for creating a time slot
  */
-
 export const slotSchema = Joi.object({
   day: Joi.date().required().messages({
     "date.base": "Day must be a valid date",
@@ -24,6 +22,10 @@ export const slotSchema = Joi.object({
       "string.pattern.base": "End time must be in HH:MM format",
       "any.required": "End time is required",
     }),
+  serviceId: Joi.string().uuid().required().messages({
+    "string.guid": "Service ID must be a valid UUID",
+    "any.required": "Service ID is required",
+  }),
 }).custom((value, helpers) => {
   const [startH, startM] = value.startTime.split(":").map(Number);
   const [endH, endM] = value.endTime.split(":").map(Number);
