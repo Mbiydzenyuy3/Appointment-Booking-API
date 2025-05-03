@@ -2,48 +2,48 @@
 import { query } from "../config/db.js";
 
 export const CreateAppointment = async ({
-  slotId,
+  timeslotId,
   userId,
-  // appointmentDate,
-  // appointmentTime,
+  providerId,
+  serviceId,
+  appointmentDate,
+  appointmentTime,
 }) => {
   try {
     const { rows } = await query(
-      `INSERT INTO appointment (
-        slot_id, user_id
-      ) VALUES ($1, $2)
+      `INSERT INTO appointments (
+        timeslot_id, user_id, provider_id, service_id, appointment_date, appointment_time, status
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *`,
-      [slotId, userId]
+      [
+        timeslotId,
+        userId,
+        providerId,
+        serviceId,
+        appointmentDate,
+        appointmentTime,
+        "booked",
+      ]
     );
     return rows[0];
   } catch (err) {
+    console.error("❌ Query failed:", err);
     throw new Error("Failed to create appointment");
   }
 };
 
-
 export const deleteAppointment = async (appointmentId) => {
-  try {
-    const { rows } = await query(
-      `DELETE FROM appointment WHERE id = $1 RETURNING *`,
-      [appointmentId]
-    );
-    return rows[0];
-  } catch (err) {
-    throw new Error("Failed to delete appointment");
-  }
+  const { rows } = await query(
+    `DELETE FROM appointments WHERE id = $1 RETURNING *`,
+    [appointmentId]
+  );
+  return rows[0];
 };
 
-export const findAppointmentsByUser = async (userId, slotId) => {
-  try {
-    const { rows } = await query(
-      ` INSERT INTO appointment (slot_id, user_id)
-    VALUES ($1, $2)
-    RETURNING *;`,
-      [userId, slotId]
-    );
-    return rows;
-  } catch (err) {
-    throw new Error("Failed to fetch appointments");
-  }
+export const findAppointmentsByUser = async (userId) => {
+  const { rows } = await query(
+    `SELECT * FROM appointments WHERE user_id = $1`,
+    [userId]
+  );
+  return rows;
 };

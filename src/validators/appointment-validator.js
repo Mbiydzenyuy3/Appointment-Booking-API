@@ -5,19 +5,21 @@ import Joi from "joi";
  * Used when booking a new appointment
  */
 export const appointmentSchema = Joi.object({
-  slotId: Joi.string().uuid().required(),
+  timeslotId: Joi.string().uuid().required(),
   // userId: Joi.string().uuid().required(),
-  // appointmentDate: Joi.date().required().messages({
-  //   "date.base": "Appointment date must be valid",
-  //   "any.required": "Appointment date is required",
-  // }),
-  // appointmentTime: Joi.string()
-  //   .pattern(/^([0-1]\d|2[0-3]):([0-5]\d)$/)
-  //   .required()
-  //   .messages({
-  //     "string.pattern.base": "Appointment time must be in HH:MM format",
-  //     "any.required": "Appointment time is required",
-  //   }),
+  appointmentDate: Joi.date().required().messages({
+    "date.base": "Appointment date must be valid",
+    "any.required": "Appointment date is required",
+  }),
+  appointmentTime: Joi.string()
+    .pattern(/^([0-1]\d|2[0-3]):([0-5]\d)$/)
+    .required()
+    .messages({
+      "string.pattern.base": "Appointment time must be in HH:MM format",
+      "any.required": "Appointment time is required",
+    }),
+  providerId: Joi.string().uuid().required(),
+  serviceId: Joi.string().uuid().required(),
 });
 /**
  * Used when canceling an existing appointment

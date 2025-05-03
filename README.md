@@ -1,55 +1,69 @@
-# APPOINTMENT BOOKING APP
+# Appointment Booking API
+A robust Node.js + Express backend API for scheduling appointments with real-time notifications using WebSockets. The system supports user registration, JWT authentication, provider management, slot creation, and appointment booking with comprehensive validation and Swagger documentation.
 
-🚀 Project Overview
-This is a Node.js/Express backend API for booking appointments with real-time WebSocket notifications.
-It handles user registration, authentication, service provider management, slot creation, and booking appointments.
+## 🚀 Features
+- User and provider registration/login with JWT
 
-## 📂 Project Structure
+- Role-based route protection
+
+- Time slot creation (by providers)
+
+- Appointment booking & retrieval
+
+- Real-time updates via Socket.IO (appointmentBooked, appointmentCancelled)
+
+- Input validation with Joi
+
+- API documentation with Swagger
+
+- Unit + integration testing with Jest & Supertest
+
+
+## 📁 Project Structure
 
 /src
-├── config/
-├── controllers/
-├── models/
-├── routes/
-├── services/
-├── sockets/
-├── middlewares/
-├── utils/
-└── validators/
-tests/
-app.js
-www
-swaggerConfig.js
-jestConfig.js
-.env
+├── config/         # Configuration files
+├── controllers/    # Route logic
+├── models/         # DB models
+├── routes/         # API endpoints
+├── services/       # Business logic
+├── sockets/        # WebSocket events
+├── middlewares/    # Auth, error handling, etc.
+├── utils/          # Helper functions
+├── validators/     # Joi schemas
+/tests              # Jest test cases
+app.js              # Entry point
+www                 # Server launcher
+swaggerConfig.js    # Swagger setup
+jestConfig.js       # Jest setup
+.env                # Environment variables
 
-## 🛠️ Technologies Used
-
-- Node.js (ESM syntax)
+## 🛠️ Tech Stack
+- Node.js (ESM)
 
 - Express.js
 
-- PostgreSQL (pg driver)
+- PostgreSQL (via pg)
 
-- Socket.IO
+- Socket.IO (WebSocket support)
 
-- JWT for Authentication
+- JWT (Authentication)
 
-- Joi for Validation
+- Joi (Validation)
 
-- Swagger for API Documentation
+- Swagger (API Docs)
 
-## ⚙️ Setup Instructions
+- Jest + Supertest (Testing)
 
-### Clone Repository
+
+## ⚙️ Getting Started
+### 📦 Clone & Install
 
 - git clone https://github.com/Mbiydzenyuy3/Appointment-Booking-API.git
 - cd appointment-booking-api
-- Install Dependencies
 - npm install
-
-## Configure Environment Variables Create a .env file:
-
+- 🔐 Configure .env
+Create a .env file in the root:
 DB_USER=your_db_user
 DB_PASSWORD=your_db_password
 DB_HOST=localhost
@@ -61,32 +75,39 @@ JWT_SECRET=your_secret_key
 JWT_EXPIRES_IN=2h
 NODE_ENV=development
 
-## Start Development Server
-command: npm run dev
+## 🚀 Start Dev Server
+To start server run the command:
+- npm run dev
 
-View API Docs Visit http://localhost:4000/api-docs after starting server.
+### To see application Docs
+- API Docs available at: http://localhost:4000/api-docs
 
-## Run Tests
-npm test
+## 📖 API Endpoint Summary
+Resource	    |  Method	     |    Path	                      |   Description
+Auth	        |   POST	     |   /api/auth/register	          |   Register a new user
+Auth	        |   POST	     |   api/auth/login	              |   Login and receive JWT token
+Appointments  |   POST	     |   /api/appointments	          |   Book a new appointment
+Appointments	|   GET	       |   /api/appointments	          |   View all user's appointments
+Providers	    |   GET	       |   /api/providers	              |   List all registered service providers
+Slots	        |   POST	     |    /api/slots (provider only)	|   Create time slots
+Slots	        |   GET	       |    /api/slots/:providerId	    |   View slots by provider
 
-## API Endpoints Summary
-Resource      | Method |      Path                    |      Description
-Auth          | POST   |   /api/auth/register         |   Register a new user
-Auth          | POST   |   /api/auth/login            |   Login and get JWT token
-Appointments  | POST   |   /api/appointments          |   Book a new appointment
-Appointments  | GET    |   /api/appointments          |   Get user's appointments
-Providers     | GET    |   /api/providers             |   List all service providers
-Slots         | POST   |   /api/slots (provider-only) |   Create available time slots
-Slots         | GET    |   /api/slots/:providerId     |   Get slots by provider
+## ⚡ WebSocket Events
+Event Name	Triggered On
+- appointmentBooked	When an appointment is created
+- appointmentCancelled	When an appointment is cancelled
 
+## 🔒 Authentication
+For all protected routes, include the JWT in the Authorization header:
 
-## ⚡ Real-time Features
-- appointmentBooked event (broadcasted when appointment created).
-
-- appointmentCancelled event (broadcasted when appointment cancelled).
+### Authorization: Bearer <your_token>
 
 ## 🧪 Testing
-Test files located under /tests:
+To run the full test suite:
+
+- npm test
+
+### Test files are located in /tests:
 
 - auth.test.js
 
@@ -96,12 +117,5 @@ Test files located under /tests:
 
 - websocket.test.js
 
-## Simply run:
-npm test
-
-## 🔒 Authentication
-All protected routes require sending the JWT token in the Authorization header:
-Authorization: Bearer <token>
-
-## 🎯 Future Enhancements
-  The app is open to contributions and enhancement, 👉 feel free to contribute .
+## 🤝 Contributing
+The project is open to enhancements! Feel free to fork the repo, create a branch, and submit a pull request. Contributions are welcome.

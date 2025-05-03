@@ -1,4 +1,3 @@
-
 // src/controllers/provider-controller.js
 
 // src/controllers/provider-controller.js
@@ -10,7 +9,7 @@ export async function createProvider(req, res, next) {
     logDebug("createProvider: called");
 
     const { bio, rating } = req.body;
-    const user_id = req.user?.id; // Make sure you're using `id` not `user_id`
+    const user_id = req.user?.user_id; // Make sure you're using `id` not `user_id`
 
     logDebug("createProvider: extracted from req", {
       bio,
@@ -63,6 +62,52 @@ export async function createProvider(req, res, next) {
     next(err);
   }
 }
+
+export async function updateProvider(req, res, next) {
+  try {
+    logDebug("updateProvider: called");
+
+    const { bio, rating } = req.body;
+    const user_id = req.user?.user_id; // fixed from `id`
+
+    if (!user_id) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized: user ID missing in request",
+      });
+    }
+
+    const existing = await ProviderModel.findByUserId(user_id);
+
+    if (!existing) {
+      return res.status(404).json({
+        success: false,
+        message: "Provider profile not found",
+      });
+    }
+
+    const updated = await ProviderModel.updateByUserId(user_id, {
+      bio,
+      rating,
+    });
+
+    return res.json({
+      success: true,
+      message: "Provider profile updated successfully",
+      data: updated,
+    });
+  } catch (err) {
+    logError("updateProvider: unexpected error", err);
+    if (!res.headersSent) {
+      return res.status(500).json({
+        success: false,
+        message: "Internal server error",
+      });
+    }
+    next(err);
+  }
+}
+
 
 export const getAllProviders = async (req, res) => {
   try {

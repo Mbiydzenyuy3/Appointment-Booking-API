@@ -16,12 +16,22 @@ export async function register(req, res, next) {
     });
   }
 
+  if (!["client", "provider"].includes(user_type)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid user_type. Must be 'client' or 'provider'.",
+    });
+  }
+
+  const client = await query("BEGIN");
+
   try {
-    const existingUser = await query("SELECT * FROM users WHERE email = $1", [
+    const existingUser = await query("SELECT 1 FROM users WHERE email = $1", [
       email,
     ]);
 
     if (existingUser.rowCount > 0) {
+      await query("ROLLBACK");
       return res.status(400).json({
         success: false,
         message: "Email already in use.",
@@ -30,7 +40,6 @@ export async function register(req, res, next) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // ✅ Insert user and RETURN user_id
     const userInsertResult = await query(
       `INSERT INTO users (name, email, password, user_type)
        VALUES ($1, $2, $3, $4)
@@ -43,7 +52,6 @@ export async function register(req, res, next) {
     let providerId = null;
 
     if (user_type === "provider") {
-      // ✅ Now you have a valid userId
       const providerInsertResult = await query(
         `INSERT INTO providers (user_id, bio)
          VALUES ($1, $2)
@@ -53,6 +61,8 @@ export async function register(req, res, next) {
 
       providerId = providerInsertResult.rows[0].provider_id;
     }
+
+    await query("COMMIT");
 
     const token = jwt.sign(
       {
@@ -68,6 +78,7 @@ export async function register(req, res, next) {
     res.status(201).json({
       success: true,
       message: "User registered successfully.",
+      token,
       data: {
         user_id: userId,
         provider_id: providerId,
@@ -76,7 +87,8 @@ export async function register(req, res, next) {
       },
     });
   } catch (err) {
-    logError("Unexpected error during registration:", err);
+    await query("ROLLBACK");
+    logError("❌ Error during registration:", err);
     next(err);
   }
 }

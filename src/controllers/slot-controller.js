@@ -3,11 +3,9 @@ import { logError } from "../utils/logger.js";
 
 export async function create(req, res, next) {
   try {
-    const providerId = req.user.id;
     const { day, startTime, endTime, serviceId } = req.body;
 
     const slot = await SlotService.create({
-      providerId,
       day,
       startTime,
       endTime,

@@ -22,6 +22,26 @@ const ProviderModel = {
     }
   },
 
+  async updateByUserId(user_id, { bio, rating }) {
+    try {
+      const { rows } = await query(
+        `
+      UPDATE providers
+      SET bio = $1,
+          rating = $2,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE user_id = $3
+      RETURNING *;
+      `,
+        [bio, rating, user_id]
+      );
+      return rows[0];
+    } catch (err) {
+      logError("DB Error (update provider):", err);
+      throw new Error("Failed to update provider profile");
+    }
+  },
+
   async listAll() {
     try {
       const { rows } = await query(
@@ -54,5 +74,7 @@ const ProviderModel = {
     }
   },
 };
+
+
 
 export default ProviderModel;

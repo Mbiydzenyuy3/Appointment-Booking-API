@@ -1,16 +1,10 @@
+//services/slot-service.js
 import { createSlot, getSlotsByProviderId } from "../models/slot-model.js";
 import { logError, logInfo } from "../utils/logger.js";
 
-export async function create({
-  providerId,
-  day,
-  startTime,
-  endTime,
-  serviceId,
-}) {
+export async function create({ day, startTime, endTime, serviceId }) {
   try {
     const slot = await createSlot({
-      provider_id: providerId,
       day,
       start_time: startTime,
       end_time: endTime,

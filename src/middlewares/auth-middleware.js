@@ -47,7 +47,7 @@ const authMiddleware = async (req, res, next) => {
     req.user = {
       service_id: result.rows[0].provider_id,
       user_type: result.rows[0].user_type,
-      id: decoded.sub,
+      user_id: decoded.sub,
     };
 
    logDebug(

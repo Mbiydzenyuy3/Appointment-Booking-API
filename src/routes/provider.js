@@ -17,6 +17,16 @@ router.post(
   ProviderController.createProvider
 );
 
+// Update an existing provider profile
+router.put(
+  "/",
+  authMiddleware,
+  requireRole("provider"),
+  providerValidatorMiddleware,
+  ProviderController.updateProvider
+);
+
+
 // List all providers
 router.get("/providers", ProviderController.getAllProviders);
 

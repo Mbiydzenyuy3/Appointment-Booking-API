@@ -16,5 +16,5 @@ export function providerValidatorMiddleware(req, res, next) {
     });
   }
 
-  // return next(); // ✅ Only called if no validation errors
+   return next(); // ✅ Only called if no validation errors
 }

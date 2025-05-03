@@ -1,20 +1,36 @@
-//src/controllers/appointment.js
+
+// src/controllers/appointment-controller.js
 import * as appointmentService from "../services/appointment-service.js";
 import { logError } from "../utils/logger.js";
 
 /**
  * Controller function for booking an appointment
- *
  */
 export async function CreateAppointment(req, res) {
   try {
-    const { slotId } = req.body;
-    const userId = req.user.id;
+    const {
+      timeslotId,
+      appointmentDate,
+      appointmentTime,
+      providerId,
+      serviceId
+    } = req.body;
+
+    const userId = req.user?.user_id;
+
+    if (!userId || !providerId || !serviceId || !timeslotId || !appointmentDate || !appointmentTime) {
+      return res.status(400).json({
+        message: "Missing required fields"
+      });
+    }
 
     const appointment = await appointmentService.book({
-      slotId,
-      // appointmentDate,
-      // appointmentTime,
+      userId,
+      timeslotId,
+      providerId,
+      serviceId,
+      appointmentDate,
+      appointmentTime,
     });
 
     return res.status(201).json({
@@ -22,11 +38,13 @@ export async function CreateAppointment(req, res) {
       message: "Appointment created successfully",
       data: appointment,
     });
+
   } catch (err) {
     logError("Create appointment failed", err);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 }
+
 
 /**
  * Controller function for canceling an appointment
@@ -47,7 +65,6 @@ export async function cancelAppointment(req, res, next) {
     next(err);
   }
 }
-
 
 /**
  * Controller function for listing all appointments for the authenticated user

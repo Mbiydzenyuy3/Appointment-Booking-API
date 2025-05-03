@@ -121,6 +121,7 @@ const initializeDbSchema = async () => {
       CREATE TABLE IF NOT EXISTS time_slots (
         timeslot_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         provider_id UUID NOT NULL REFERENCES providers(provider_id) ON DELETE CASCADE,
+        service_id UUID NOT NULL REFERENCES services(service_id) ON DELETE CASCADE,
         day DATE NOT NULL,
         start_time TIME NOT NULL,
         end_time TIME NOT NULL,
@@ -134,12 +135,14 @@ const initializeDbSchema = async () => {
 
     // APPOINTMENTS TABLE
     await client.query(`
-      CREATE TABLE IF NOT EXISTS appointments (
+       CREATE TABLE IF NOT EXISTS appointments (
         appointment_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
         provider_id UUID NOT NULL REFERENCES providers(provider_id) ON DELETE CASCADE,
         service_id UUID NOT NULL REFERENCES services(service_id) ON DELETE CASCADE,
-        time_slot_id UUID NOT NULL REFERENCES time_slots(timeslot_id) ON DELETE CASCADE,
+        timeslot_id UUID NOT NULL REFERENCES time_slots(timeslot_id) ON DELETE CASCADE,
+        appointment_date DATE NOT NULL,
+        appointment_time TIME NOT NULL,
         status VARCHAR(20) CHECK (status IN ('booked', 'canceled', 'completed', 'no-show')) DEFAULT 'booked',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
