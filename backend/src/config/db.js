@@ -58,13 +58,18 @@ pool.on("error", (err) => {
 
 // 🔌 Connect to the DB pool (used in app startup)
 const connectToDb = async () => {
-  try {
-    const client = await pool.connect();
-    logInfo("✅ Database connection pool established");
-    client.release();
-  } catch (error) {
-    logError("❌ Unable to establish DB connection", error);
-    process.exit(1);
+  const maxRetries = 5;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const client = await pool.connect();
+      logInfo("✅ Database connection pool established");
+      client.release();
+      return;
+    } catch (error) {
+      logError(`❌ DB connection failed (attempt ${attempt})`, error);
+      if (attempt === maxRetries) process.exit(1);
+      await new Promise((res) => setTimeout(res, 3000)); // Wait 3s before retrying
+    }
   }
 };
 
