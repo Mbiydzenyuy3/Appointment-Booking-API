@@ -9,7 +9,7 @@ export async function createProvider(req, res, next) {
     logDebug("createProvider: called");
 
     const { bio, rating } = req.body;
-    const user_id = req.user?.user_id; // Make sure you're using `id` not `user_id`
+    const user_id = req.user?.user_id; 
 
     logDebug("createProvider: extracted from req", {
       bio,

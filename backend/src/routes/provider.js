@@ -3,7 +3,6 @@ import express from "express";
 import * as ProviderController from "../controllers/provider-controller.js";
 import { requireRole } from "../middlewares/role-middleware.js";
 import authMiddleware from "../middlewares/auth-middleware.js";
-// import { providerSchema } from "../validators/provider-validator.js";
 import { providerValidatorMiddleware } from "../validators/provider-validator.js";
 
 const router = express.Router();
