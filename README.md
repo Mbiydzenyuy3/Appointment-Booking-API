@@ -62,7 +62,8 @@ jestConfig.js       # Jest setup
 - git clone https://github.com/Mbiydzenyuy3/Appointment-Booking-API.git
 - cd appointment-booking-api
 - npm install
-- 🔐 Configure .env
+
+## 🔐 Configure .env
 Create a .env file in the root:
 DB_USER=your_db_user
 DB_PASSWORD=your_db_password
