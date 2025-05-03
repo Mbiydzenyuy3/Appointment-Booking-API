@@ -20,6 +20,7 @@ import slotRouter from "./src/routes/slot.js";
 import providerRouter from "./src/routes/provider.js";
 import serviceRoutes from "./src/routes/service.js";
 
+
 const app = express();
 
 // Setup __dirname (since ES modules don't have it by default)
@@ -35,12 +36,12 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 // API Routes
-app.use("/", indexRouter);
-app.use("/auth", authRouter);
-app.use("/auth/appointments", appointmentRouter);
-app.use("/auth/slots", slotRouter);
-app.use("/auth/providers", providerRouter);
-app.use("/auth/services", serviceRoutes);
+app.use("/api", indexRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/appointments", appointmentRouter);
+app.use("/api/slots", slotRouter);
+app.use("/api/providers", providerRouter);
+app.use("/api/services", serviceRoutes);
 
 // Swagger Documentation
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
