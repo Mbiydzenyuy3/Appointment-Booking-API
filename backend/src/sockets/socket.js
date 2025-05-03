@@ -1,6 +1,6 @@
 // src/sockets/socket.js
 import { Server } from "socket.io";
-import { socketHandler } from "../sockets/socket-handler.js"; // Import your detailed socket event handlers
+import { socketHandler } from "./socket-handler.js"; // Import your detailed socket event handlers
 import { logInfo } from "../utils/logger.js";
 
 let io;
