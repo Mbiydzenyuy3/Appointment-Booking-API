@@ -4,8 +4,8 @@
   "type": "module",
   "scripts": {
     "test": "vitest",
-    "start": "node --env-file=.env ./bin/www",
-    "dev": "nodemon --env-file=.env ./bin/www"
+    "start": "node ./bin/www",
+    "dev": "nodemon ./bin/www"
   },
   "keywords": [],
   "author": "leila",
