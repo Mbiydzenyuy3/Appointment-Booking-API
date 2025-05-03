@@ -17,7 +17,7 @@ const router = express.Router();
 router.use(authMiddleware); 
 
 // POST /appointments
-router.post("/", validate(appointmentSchema), CreateAppointment);
+router.post("/create-appointment", validate(appointmentSchema), CreateAppointment);
 
 // DELETE /appointments/:appointmentId
 router.delete("/:appointmentId", validate(cancelAppointmentSchema),cancelAppointment); // optional path param validation

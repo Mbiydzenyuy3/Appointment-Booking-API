@@ -9,7 +9,7 @@ const router = express.Router();
 
 // Create a new provider profile
 router.post(
-  "/",
+  "/create-provider-profile",
   authMiddleware,
   requireRole("provider"),
   providerValidatorMiddleware,
@@ -18,7 +18,7 @@ router.post(
 
 // Update an existing provider profile
 router.put(
-  "/",
+  "/:id/update-provider",
   authMiddleware,
   requireRole("provider"),
   providerValidatorMiddleware,
@@ -27,6 +27,6 @@ router.put(
 
 
 // List all providers
-router.get("/providers", ProviderController.getAllProviders);
+router.get("/", ProviderController.getAllProviders);
 
 export default router;
