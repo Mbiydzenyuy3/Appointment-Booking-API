@@ -35,12 +35,12 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 // API Routes
-app.use("/api", indexRouter);
-app.use("/api/auth", authRouter);
-app.use("/api/appointments", appointmentRouter);
-app.use("/api/slots", slotRouter);
-app.use("/api/providers", providerRouter);
-app.use("/api/services", serviceRoutes);
+app.use("/", indexRouter);
+app.use("/auth", authRouter);
+app.use("/appointments", appointmentRouter);
+app.use("/slots", slotRouter);
+app.use("/providers", providerRouter);
+app.use("/services", serviceRoutes);
 
 // Swagger Documentation
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));

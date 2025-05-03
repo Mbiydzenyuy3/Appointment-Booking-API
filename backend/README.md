@@ -84,14 +84,14 @@ To start server run the command:
 - API Docs available at: http://localhost:4000/api-docs
 
 ## 📖 API Endpoint Summary
-Resource	    |  Method	     |    Path	                      |   Description
-Auth	        |   POST	     |   /api/auth/register	          |   Register a new user
-Auth	        |   POST	     |   api/auth/login	              |   Login and receive JWT token
-Appointments  |   POST	     |   /api/appointments	          |   Book a new appointment
-Appointments	|   GET	       |   /api/appointments	          |   View all user's appointments
-Providers	    |   GET	       |   /api/providers	              |   List all registered service providers
-Slots	        |   POST	     |    /api/slots (provider only)	|   Create time slots
-Slots	        |   GET	       |    /api/slots/:providerId	    |   View slots by provider
+Resource	    |  Method	     |    Path	                    |   Description
+Auth	        |   POST	     |   /auth/register	            |   Register a new user
+Auth	        |   POST	     |   /auth/login	              |   Login and receive JWT token
+Appointments  |   POST	     |   /appointments	            |   Book a new appointment
+Appointments	|   GET	       |   /appointments	            |   View all user's appointments
+Providers	    |   GET	       |   /providers	                |   List all registered service providers
+Slots	        |   POST	     |   /slots (provider only)	    |   Create time slots
+Slots	        |   GET	       |   /slots/:providerId	        |   View slots by provider
 
 ## ⚡ WebSocket Events
 Event Name	Triggered On
