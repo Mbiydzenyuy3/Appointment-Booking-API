@@ -1,29 +1,24 @@
-// tests/password.test.js
+import { describe, it, expect } from "vitest";
+import { hashPassword, verifyPassword } from "../utils/password.js";
 
-import { test } from "node:test";
-import assert from "node:assert"; // <-- Missing before!
-import { hashPassword, verifyPassword } from "../utils/password.js"; // <-- use correct function names!
+describe("Password Utils", () => {
+  it("hashPassword returns a hashed string", async () => {
+    const plainPassword = "mySecret123";
+    const hash = await hashPassword(plainPassword);
+    expect(hash).toMatch(/^\$2[aby]\$.{56}$/);
+  });
 
-test("hashPassword returns a hashed string", async () => {
-  const plainPassword = "mySecret123";
-  const hash = await hashPassword(plainPassword);
+  it("verifyPassword returns true for matching passwords", async () => {
+    const plainPassword = "mySecret123";
+    const hash = await hashPassword(plainPassword);
+    const result = await verifyPassword(plainPassword, hash);
+    expect(result).toBe(true);
+  });
 
-  // Check if the returned hash matches bcrypt's pattern
-  assert.match(hash, /^\$2[aby]\$.{56}$/);
-});
-
-test("verifyPassword returns true for matching passwords", async () => {
-  const plainPassword = "mySecret123";
-  const hash = await hashPassword(plainPassword);
-
-  const result = await verifyPassword(plainPassword, hash);
-  assert.strictEqual(result, true);
-});
-
-test("verifyPassword returns false for non-matching passwords", async () => {
-  const plainPassword = "mySecret123";
-  const hash = await hashPassword(plainPassword);
-
-  const result = await verifyPassword("wrongPassword", hash);
-  assert.strictEqual(result, false);
+  it("verifyPassword returns false for non-matching passwords", async () => {
+    const plainPassword = "mySecret123";
+    const hash = await hashPassword(plainPassword);
+    const result = await verifyPassword("wrongPassword", hash);
+    expect(result).toBe(false);
+  });
 });
