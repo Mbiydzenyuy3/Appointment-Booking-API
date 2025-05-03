@@ -37,10 +37,10 @@ app.use(express.static(path.join(__dirname, "public")));
 // API Routes
 app.use("/", indexRouter);
 app.use("/auth", authRouter);
-app.use("/appointments", appointmentRouter);
-app.use("/slots", slotRouter);
-app.use("/providers", providerRouter);
-app.use("/services", serviceRoutes);
+app.use("/auth/appointments", appointmentRouter);
+app.use("/auth/slots", slotRouter);
+app.use("/auth/providers", providerRouter);
+app.use("/auth/services", serviceRoutes);
 
 // Swagger Documentation
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
