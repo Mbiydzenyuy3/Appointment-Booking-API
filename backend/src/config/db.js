@@ -1,5 +1,6 @@
 // src/config/db.js
-
+import dotenv from "dotenv";
+dotenv.config();
 import pg from "pg";
 import { logInfo, logError, logDebug } from "../utils/logger.js";
 
