@@ -27,6 +27,6 @@ router.put(
 
 
 // List all providers
-router.get("/", ProviderController.getAllProviders);
+router.get("/getallproviders", ProviderController.getAllProviders);
 
 export default router;

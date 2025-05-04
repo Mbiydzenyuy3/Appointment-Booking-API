@@ -23,7 +23,7 @@ router.post("/create-appointment", validate(appointmentSchema), CreateAppointmen
 router.delete("/:appointmentId", validate(cancelAppointmentSchema),cancelAppointment); // optional path param validation
 
 // GET /appointments
-router.get("/", listAppointments);
+router.get("/list", listAppointments);
 
 export default router;
 

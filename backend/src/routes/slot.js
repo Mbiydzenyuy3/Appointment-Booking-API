@@ -11,7 +11,7 @@ const router = express.Router();
 // Only a provider can create a slot. The request body is validated against 'slotSchema'.
 // This route accepts POST requests to '/slots' and creates a time slot for a provider.
 router.post(
-  "/",
+  "/create-slot",
   authMiddleware,
   validate(slotSchema),
   requireProvider,
