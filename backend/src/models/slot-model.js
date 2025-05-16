@@ -14,6 +14,19 @@ export const createSlot = async ({
   try {
     await client.query("BEGIN");
 
+    // Check for exact duplicate
+    const exactDuplicate = await client.query(
+      `
+  SELECT * FROM time_slots
+  WHERE provider_id = $1 AND day = $2 AND start_time = $3 AND end_time = $4
+  `,
+      [providerId, day, startTime, endTime]
+    );
+
+    if (exactDuplicate.rows.length > 0) {
+      throw new Error("An identical slot already exists.");
+    }
+
     // Check for overlapping slots
     const overlapCheck = await client.query(
       `
@@ -44,7 +57,6 @@ export const createSlot = async ({
     return newSlotInsert.rows[0];
   } catch (err) {
     await client.query("ROLLBACK");
-    console.error("Failed to create slot:", err);
     throw new Error(err.message || "Slot creation failed");
   } finally {
     client.release();
@@ -92,12 +104,17 @@ export const updateSlot = async (
     // Overlap check
     const overlap = await client.query(
       `SELECT * FROM time_slots
-       WHERE provider_id = $1 AND day = $2 AND id <> $3 AND ($4 < end_time AND $5 > start_time)`,
+       WHERE provider_id = $1 AND day = $2 AND timeslot_id <> $3 AND ($4 < end_time AND $5 > start_time)`,
       [providerId, slot.day, slotId, endTime, startTime]
     );
-    if (overlap.rows.length > 0)
-      throw new Error("Time overlaps with another slot");
-
+    if (overlap.rows.length > 0) {
+      //throw a custom conflict code error
+      return res.status(409).json({
+        success: true,
+        message: "Slot overlaps with an existing slot",
+        data: slot,
+      });
+    }
     const result = await client.query(
       `UPDATE time_slots SET start_time = $1, end_time = $2, service_id = $3 WHERE timeslot_id = $4 RETURNING *`,
       [startTime, endTime, serviceId, slotId]

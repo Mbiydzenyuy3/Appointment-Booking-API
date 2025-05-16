@@ -44,15 +44,16 @@ const authMiddleware = async (req, res, next) => {
       return res.status(401).json({ message: "User not found." });
     }
 
-    req.user.id = {
-      service_id: result.rows[0].provider_id,
+    req.user = {
+      provider_id: result.rows[0].provider_id,
       user_type: result.rows[0].user_type,
       user_id: decoded.sub,
     };
 
    logDebug(
      `Auth middleware: Token verified for user ID ${req.user.user_id} with role ${req.user.user_type}`
-    );
+   );
+
 
     next();
   } catch (error) {

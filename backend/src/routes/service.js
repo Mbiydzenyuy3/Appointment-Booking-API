@@ -9,7 +9,7 @@ const router = express.Router();
 
 // Create a new service
 router.post(
-  "/create-service",
+  "/create",
   authMiddleware,
   validate(serviceSchema),
   ServiceController.create

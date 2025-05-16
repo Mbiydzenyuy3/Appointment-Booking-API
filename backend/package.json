@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "test": "vitest",
+    "test": "node --test",
     "start": "node ./bin/www",
     "dev": "nodemon ./bin/www"
   },
@@ -30,7 +30,6 @@
     "uuidv4": "^6.2.13"
   },
   "devDependencies": {
-    "nodemon": "^3.1.9",
-    "vitest": "^3.1.2"
+    "nodemon": "^3.1.9"
   }
 }

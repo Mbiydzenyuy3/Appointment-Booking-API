@@ -29,6 +29,7 @@ export async function create({
     return slot;
   } catch (err) {
     logError("Slot service failed to create slot", err);
+    console.error("Detailed slot creation error:", err.message);
     throw new Error("Unable to create slot");
   }
 }

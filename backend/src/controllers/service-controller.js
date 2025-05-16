@@ -27,7 +27,7 @@ export async function create(req, res, next) {
       durationMinutes,
     });
 
-    const service = await ServiceService.createService({
+    const service = await ServiceService.createServices({
       providerId,
       name,
       description,

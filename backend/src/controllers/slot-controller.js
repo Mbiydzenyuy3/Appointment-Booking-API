@@ -29,6 +29,8 @@ export async function create(req, res, next) {
 export async function list(req, res, next) {
   try {
     const { providerId } = req.params;
+    // if (req.user.provider_id === providerId) return res.status(200).json();
+
     const slots = await SlotService.getSlotsByProvider(providerId);
 
     return res.status(200).json({
@@ -74,6 +76,8 @@ export async function search(req, res, next) {
       providerId: req.query.providerId,
       serviceId: req.query.serviceId,
       day: req.query.day, // expected as 'YYYY-MM-DD'
+      limit: parseInt(req.query.limit, 10) || 10,
+      offset: parseInt(req.query.offset, 10) || 0,
     };
 
     const slots = await SlotService.search(filters);
