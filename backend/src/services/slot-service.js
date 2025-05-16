@@ -1,6 +1,12 @@
 // src/services/slot-service.js
-import { createSlot, getSlotsByProviderId } from "../models/slot-model.js";
-import { searchAvailableSlots } from "../models/slot-model.js";
+import {
+  createSlot,
+  getSlotsByProviderId,
+  searchAvailableSlots,
+  updateSlot,
+  deleteSlot,
+} from "../models/slot-model.js";
+
 import { logError, logInfo } from "../utils/logger.js";
 
 export async function create({
@@ -19,7 +25,7 @@ export async function create({
       providerId,
     });
 
-    logInfo("Slot created", slot.id);
+    logInfo("Slot created", slot.timeslot_id);
     return slot;
   } catch (err) {
     logError("Slot service failed to create slot", err);
@@ -39,7 +45,7 @@ export async function getSlotsByProvider(providerId) {
 export async function update(slotId, data, providerId) {
   try {
     const slot = await updateSlot(slotId, { ...data, providerId });
-    logInfo("Slot updated", slot.id);
+    logInfo("Slot updated", slot.timeslot_id);
     return slot;
   } catch (err) {
     logError("Slot update failed", err);
@@ -50,7 +56,7 @@ export async function update(slotId, data, providerId) {
 export async function remove(slotId, providerId) {
   try {
     const deleted = await deleteSlot(slotId, providerId);
-    logInfo("Slot deleted", deleted.id);
+    logInfo("Slot deleted", deleted.timeslot_id);
     return deleted;
   } catch (err) {
     logError("Slot deletion failed", err);

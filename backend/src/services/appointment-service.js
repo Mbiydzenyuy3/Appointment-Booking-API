@@ -19,7 +19,7 @@ export async function book({ userId, timeslotId }) {
     // Emit targeted socket notification (assumes this function does targeting internally)
     emitAppointmentBooked(appointment);
 
-    logInfo(`✅ Appointment booked:`, appointment.id);
+    logInfo(`✅ Appointment booked:`, appointment.appointment_id);
     return appointment;
   } catch (err) {
     logError("❌ Error booking appointment:", err);

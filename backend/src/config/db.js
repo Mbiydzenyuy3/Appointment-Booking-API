@@ -112,18 +112,6 @@ const initializeDbSchema = async () => {
     `);
 
     await client.query(`
-      CREATE TABLE provider_availabilities (
-        id SERIAL PRIMARY KEY,
-        provider_id UUID REFERENCES providers(provider_id)       ON DELETE CASCADE,
-        day_of_week INT NOT NULL, -- 0=Sunday, 1=Monday ...       6=Saturday
-        start_time TIME NOT NULL,
-        end_time TIME NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-     );
-    `)
-
-    await client.query(`
       CREATE TABLE IF NOT EXISTS services (
         service_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         provider_id UUID NOT NULL REFERENCES providers(provider_id) ON DELETE CASCADE,

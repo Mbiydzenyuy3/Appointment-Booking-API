@@ -81,11 +81,11 @@ export const updateSlot = async (
 
     // Fetch slot to confirm it's not booked and belongs to provider
     const { rows } = await client.query(
-      `SELECT * FROM time_slots WHERE id = $1`,
+      `SELECT * FROM time_slots WHERE timeslot_id = $1`,
       [slotId]
     );
     const slot = rows[0];
-    if (!slot) throw new Error("Slot not found");
+    if (!slot) throw new Error(`Slot not found with ID ${slotId}`);
     if (slot.is_booked) throw new Error("Cannot update a booked slot");
     if (slot.provider_id !== providerId) throw new Error("Unauthorized");
 
@@ -99,7 +99,7 @@ export const updateSlot = async (
       throw new Error("Time overlaps with another slot");
 
     const result = await client.query(
-      `UPDATE time_slots SET start_time = $1, end_time = $2, service_id = $3 WHERE id = $4 RETURNING *`,
+      `UPDATE time_slots SET start_time = $1, end_time = $2, service_id = $3 WHERE timeslot_id = $4 RETURNING *`,
       [startTime, endTime, serviceId, slotId]
     );
 
@@ -119,7 +119,7 @@ export const deleteSlot = async (slotId, providerId) => {
     await client.query("BEGIN");
 
     const { rows } = await client.query(
-      `SELECT * FROM time_slots WHERE id = $1`,
+      `SELECT * FROM time_slots WHERE timeslot_id = $1`,
       [slotId]
     );
     const slot = rows[0];
@@ -127,7 +127,9 @@ export const deleteSlot = async (slotId, providerId) => {
     if (slot.is_booked) throw new Error("Cannot delete a booked slot");
     if (slot.provider_id !== providerId) throw new Error("Unauthorized");
 
-    await client.query(`DELETE FROM time_slots WHERE id = $1`, [slotId]);
+    await client.query(`DELETE FROM time_slots WHERE timeslot_id = $1`, [
+      slotId,
+    ]);
 
     await client.query("COMMIT");
     return slot;
@@ -139,28 +141,41 @@ export const deleteSlot = async (slotId, providerId) => {
   }
 };
 
-export async function searchAvailableSlots({ providerId, serviceId, day }) {
+export async function searchAvailableSlots({
+  providerId,
+  serviceId,
+  day,
+  limit = 10,
+  offset = 0,
+}) {
   let query = `
-    SELECT * FROM time_slots
-    WHERE is_available = true AND is_booked = false
+    SELECT ts.*, s.service_name
+    FROM time_slots ts
+    JOIN services s ON ts.service_id = s.service_id
+    WHERE ts.is_available = true AND ts.is_booked = false
   `;
+
   const params = [];
   let index = 1;
 
   if (providerId) {
-    query += ` AND provider_id = $${index++}`;
+    query += ` AND ts.provider_id = $${index++}`;
     params.push(providerId);
   }
+
   if (serviceId) {
-    query += ` AND service_id = $${index++}`;
+    query += ` AND ts.service_id = $${index++}`;
     params.push(serviceId);
   }
+
   if (day) {
-    query += ` AND day = $${index++}`;
+    query += ` AND ts.day = $${index++}`;
     params.push(day);
   }
 
-  query += ` ORDER BY day, start_time`;
+  query += ` ORDER BY ts.day, ts.start_time LIMIT $${index++} OFFSET $${index++}`;
+  params.push(limit);
+  params.push(offset);
 
   const result = await pool.query(query, params);
   return result.rows;

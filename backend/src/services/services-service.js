@@ -3,10 +3,10 @@ import * as ServiceModel from "../models/service-model.js";
 import { logError, logDebug } from "../utils/logger.js";
 
 // Create a new service
-export async function createService(serviceData) {
+export async function createServices(serviceData) {
   try {
     logDebug("createService: input", serviceData);
-    const newService = await ServiceModel.createServices(serviceData);
+    const newService = await ServiceModel.createService(serviceData);
     logDebug("createService: created", newService);
     return newService;
   } catch (err) {

@@ -12,7 +12,7 @@ export async function CreateAppointment(req, res) {
       timeslotId
     } = req.body;
 
-    const userId = req.user.id;
+    const userId = req.user?.user_id;
 
     if (!userId || !timeslotId) {
       return res.status(400).json({
@@ -65,7 +65,7 @@ export async function cancelAppointment(req, res, next) {
 // List user appointments
 export async function listAppointments(req, res, next) {
   try {
-    const userId = req.user.id;
+    const userId = req.user?.user_id;
     const { status, startDate, endDate, page = 1, limit = 10 } = req.query;
     const offset = (page - 1) * limit;
 

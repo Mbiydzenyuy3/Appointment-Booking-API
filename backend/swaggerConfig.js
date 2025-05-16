@@ -25,6 +25,20 @@ const swaggerOptions = {
         description: "Development Server",
       },
     ],
+    tags: [
+      {
+        name: "Auth",
+        description: "User authentication and registration",
+      },
+      {
+        name: "Slots",
+        description: "Provider time slot creation and lookup",
+      },
+      {
+        name: "Appointments",
+        description: "Appointment booking and cancellation",
+      },
+    ],
     components: {
       securitySchemes: {
         bearerAuth: {
@@ -84,7 +98,7 @@ const swaggerOptions = {
           },
           required: ["id", "name", "email", "service"],
         },
-        Slot: {
+        SlotInput: {
           type: "object",
           properties: {
             id: {
@@ -118,6 +132,31 @@ const swaggerOptions = {
             },
           },
           required: ["id", "day", "startTime", "endTime", "serviceProviderId"],
+        },
+        SlotInput: {
+          type: "object",
+          required: ["day", "startTime", "endTime", "serviceId"],
+          properties: {
+            day: {
+              type: "string",
+              format: "date",
+              example: "2025-05-20",
+            },
+            startTime: {
+              type: "string",
+              format: "time",
+              example: "09:00",
+            },
+            endTime: {
+              type: "string",
+              format: "time",
+              example: "09:30",
+            },
+            serviceId: {
+              type: "string",
+              example: "uuid-of-service",
+            },
+          },
         },
         Appointment: {
           type: "object",
@@ -221,9 +260,8 @@ const swaggerOptions = {
     },
     security: [{ bearerAuth: [] }],
   },
-  apis: ["./src/routes/*.js"], // Path to your API routes
+  apis: ["./src/routes/*.js"], // Adjust path if needed
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
-
 export default swaggerSpec;

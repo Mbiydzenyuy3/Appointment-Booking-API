@@ -1,7 +1,7 @@
 // src/models/service-model.js
 import { query } from "../config/db.js";
 
-export async function createServices({
+export async function createService({
   providerId,
   name,
   description,
@@ -40,7 +40,7 @@ export async function findByProviderId(providerId) {
       `SELECT * FROM services WHERE provider_id = $1`,
       [providerId]
     );
-    return rows[0];
+    return rows;
   } catch (err) {
     logError("DB Error (find by services ID):", err);
     throw new Error("Failed to query services by user ID");
@@ -49,7 +49,7 @@ export async function findByProviderId(providerId) {
 
 export async function deleteById(serviceId) {
   const { rows } = await query(
-    `DELETE FROM services WHERE id = $1 RETURNING *`,
+    `DELETE FROM services WHERE service_id = $1 RETURNING *`,
     [serviceId]
   );
   return rows[0];
@@ -66,7 +66,7 @@ export async function updateById(
       SET provider_id = $1,
           name = $2,
           description = $3,
-          price = $4
+          price = $4,
           durationMinutes = $5
       WHERE service_id = $6
       RETURNING *;
@@ -75,7 +75,7 @@ export async function updateById(
     );
     return rows[0];
   } catch (err) {
-    logError("DB Error (update provider):", err);
-    throw new Error("Failed to update provider profile");
+    logError("DB Error (update service):", err);
+    throw new Error("Failed to update service");
   }
 }

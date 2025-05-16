@@ -49,7 +49,8 @@ const ProviderModel = {
           u.name, 
           u.email 
         FROM providers p
-        JOIN users u ON p.user_id = u.user_id;
+        JOIN users u ON p.user_id = u.user_id
+        LIMIT $1 OFFSET $2;
         ` , [limit, offset]
       );
       return rows;

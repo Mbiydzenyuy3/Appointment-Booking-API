@@ -1,44 +1,48 @@
 import { pool } from "../config/db.js";
 
+// Create and book an appointment
 export const CreateAppointment = async ({ timeslotId, userId }) => {
   const client = await pool.connect();
 
   try {
     await client.query("BEGIN");
 
-    // Lock the slot row for update
+    // Lock the timeslot for safe concurrent access
     const slotRes = await client.query(
-      `SELECT * FROM time_slots WHERE id = $1 FOR UPDATE`,
+      `SELECT * FROM time_slots WHERE timeslot_id = $1 FOR UPDATE`,
       [timeslotId]
     );
 
     const slot = slotRes.rows[0];
     if (!slot) throw new Error("Slot not found");
-    if (slot.is_booked || !slot.is_available)
-      throw new Error("Slot already booked");
+    if (slot.is_booked || !slot.is_available) {
+      throw new Error("Slot is already booked or unavailable");
+    }
 
-    // Create appointment (derive providerId, serviceId, date, time from slot)
-    const { provider_id, service_id, slot_date, slot_time } = slot;
+    const { provider_id, service_id, day, start_time: appointment_time } = slot;
 
+    // Create the appointment
     const appointmentRes = await client.query(
-      `INSERT INTO appointments (
+      `
+      INSERT INTO appointments (
         timeslot_id, user_id, provider_id, service_id, appointment_date, appointment_time, status
       ) VALUES ($1, $2, $3, $4, $5, $6, $7)
-      RETURNING *`,
+      RETURNING *
+      `,
       [
         timeslotId,
         userId,
         provider_id,
         service_id,
-        slot_date,
-        slot_time,
+        day,
+        appointment_time,
         "booked",
       ]
     );
 
-    // Mark slot as booked
+    // Mark the slot as booked
     await client.query(
-      `UPDATE time_slots SET is_booked = true, is_available = false WHERE id = $1`,
+      `UPDATE time_slots SET is_booked = true, is_available = false WHERE timeslot_id = $1`,
       [timeslotId]
     );
 
@@ -47,37 +51,38 @@ export const CreateAppointment = async ({ timeslotId, userId }) => {
   } catch (err) {
     await client.query("ROLLBACK");
     console.error("❌ CreateAppointment transaction failed:", err);
-    throw err; // re-throw the original error for better debugging upstream
+    throw err;
   } finally {
     client.release();
   }
 };
 
+// Cancel appointment and reopen the timeslot
 export const cancelAppointment = async (appointmentId) => {
   const client = await pool.connect();
 
   try {
     await client.query("BEGIN");
 
-    // Lock appointment row to prevent race conditions
     const apptRes = await client.query(
-      `SELECT * FROM appointments WHERE id = $1 FOR UPDATE`,
+      `SELECT * FROM appointments WHERE appointment_id = $1 FOR UPDATE`,
       [appointmentId]
     );
+
     const appointment = apptRes.rows[0];
     if (!appointment) throw new Error("Appointment not found");
 
-    const timeslotId = appointment.timeslot_id;
+    const { timeslot_id } = appointment;
 
-    // Delete appointment
-    await client.query(`DELETE FROM appointments WHERE id = $1`, [
+    // Delete the appointment
+    await client.query(`DELETE FROM appointments WHERE appointment_id = $1`, [
       appointmentId,
     ]);
 
-    // Free the slot
+    // Reopen the time slot
     await client.query(
-      `UPDATE time_slots SET is_booked = false, is_available = true WHERE id = $1`,
-      [timeslotId]
+      `UPDATE time_slots SET is_booked = false, is_available = true WHERE timeslot_id = $1`,
+      [timeslot_id]
     );
 
     await client.query("COMMIT");
@@ -91,6 +96,7 @@ export const cancelAppointment = async (appointmentId) => {
   }
 };
 
+// Find all appointments for a specific user
 export const findAppointmentsByUser = async (
   userId,
   { status, startDate, endDate, limit = 10, offset = 0 }
