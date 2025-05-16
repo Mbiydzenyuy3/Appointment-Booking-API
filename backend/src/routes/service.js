@@ -6,8 +6,38 @@ import authMiddleware from "../middlewares/auth-middleware.js"; // Auth middlewa
 import { serviceSchema } from "../validators/service-validator.js"; // Validation schema
 
 const router = express.Router();
-
-// Create a new service
+/**
+ * @swagger
+ * /services/create:
+ *   post:
+ *     summary: Create a new service
+ *     tags: [Services]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name, description, price, durationMinutes]
+ *             properties:
+ *               name:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               price:
+ *                 type: number
+ *               durationMinutes:
+ *                 type: integer
+ *     responses:
+ *       201:
+ *         description: Service created
+ *       400:
+ *         description: Validation error
+ *       403:
+ *         description: Forbidden — must be provider
+ */
 router.post(
   "/create",
   authMiddleware,

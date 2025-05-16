@@ -8,7 +8,34 @@ import { providerSchema } from "../validators/provider-validator.js"; // Optiona
 
 const router = express.Router();
 
-// Create provider profile (only authenticated users)
+/**
+ * @swagger
+ * /providers/create:
+ *   post:
+ *     summary: Create a provider profile
+ *     tags: [Providers]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               bio:
+ *                 type: string
+ *               rating:
+ *                 type: number
+ *     responses:
+ *       201:
+ *         description: Provider profile created
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ */
+
 router.post(
   "/create",
   authMiddleware,
@@ -16,7 +43,34 @@ router.post(
   ProviderController.createProvider
 );
 
-// Update provider profile (authenticated & provider-only)
+/**
+ * @swagger
+ * /providers/update:
+ *   put:
+ *     summary: Update the current provider's profile
+ *     tags: [Providers]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               bio:
+ *                 type: string
+ *               rating:
+ *                 type: number
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Access denied (only providers)
+ */
+
 router.put(
   "/update",
   authMiddleware,
@@ -25,7 +79,23 @@ router.put(
   ProviderController.updateProvider
 );
 
-// Get current provider profile (authenticated user)
+/**
+ * @swagger
+ * /providers/me:
+ *   get:
+ *     summary: Get current provider profile
+ *     tags: [Providers]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Provider profile
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Only providers allowed
+ */
+
 router.get(
   "/me",
   authMiddleware,
@@ -33,7 +103,19 @@ router.get(
   ProviderController.getCurrentProvider
 );
 
-// Get all providers (optional pagination)
+/**
+ * @swagger
+ * /providers:
+ *   get:
+ *     summary: List all providers
+ *     tags: [Providers]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Array of provider profiles
+ */
+
 router.get("/", authMiddleware, ProviderController.getAllProviders);
 
 export default router;
