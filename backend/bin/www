@@ -35,7 +35,7 @@ function normalizePort(val) {
 });
 
 async function gracefulShutdown(signal) {
-  logInfo(`Received ${signal}. Shutting down...`);
+  logInfo(`Received ${signal}.Shutting down...`);
   try {
     await server.close();
     logInfo("Server closed gracefully. Exiting...");

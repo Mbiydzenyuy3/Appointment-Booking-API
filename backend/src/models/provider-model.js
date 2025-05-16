@@ -40,7 +40,7 @@ const ProviderModel = {
     }
   },
 
-  async listAll() {
+  async listAll({limit = 10, offset = 0}) {
     try {
       const { rows } = await query(
         `
@@ -50,7 +50,7 @@ const ProviderModel = {
           u.email 
         FROM providers p
         JOIN users u ON p.user_id = u.user_id;
-        ` // ✅ Fixed column name
+        ` , [limit, offset]
       );
       return rows;
     } catch (err) {

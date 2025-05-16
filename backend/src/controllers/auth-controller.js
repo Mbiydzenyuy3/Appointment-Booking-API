@@ -148,7 +148,7 @@ export async function login(req, res, next) {
     };
 
     const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, {
-      expiresIn: "3h",
+      expiresIn: process.env.JWT_EXPIRES_IN,
     });
 
     logInfo("User logged in", user.email);

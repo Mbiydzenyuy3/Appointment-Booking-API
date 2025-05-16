@@ -3,7 +3,7 @@ import * as SlotController from "../controllers/slot-controller.js";
 import { requireProvider } from "../middlewares/role-middleware.js"; // Middleware to restrict slot creation to providers
 import authMiddleware from "../middlewares/auth-middleware.js";
 import { validate } from "../middlewares/validate-middleware.js"; // Validation middleware
-import { slotSchema } from "../validators/slot-validator.js"; // Joi schema for slot data validation
+import { slotSchema, slotSearchSchema } from "../validators/slot-validator.js"; // Joi schema for slot data validation
 
 const router = express.Router();
 
@@ -11,7 +11,7 @@ const router = express.Router();
 // Only a provider can create a slot. The request body is validated against 'slotSchema'.
 // This route accepts POST requests to '/slots' and creates a time slot for a provider.
 router.post(
-  "/create-slot",
+  "/",
   authMiddleware,
   validate(slotSchema),
   requireProvider,
@@ -21,5 +21,27 @@ router.post(
 // Route to list all slots for a particular provider
 // The 'providerId' parameter is used to fetch the slots for that specific provider.
 router.get("/:providerId", authMiddleware, SlotController.list);
+
+router.put(
+  "/:slotId",
+  authMiddleware,
+  requireProvider,
+  validate(slotSchema), // Reuse for update validation
+  SlotController.update
+);
+
+router.delete(
+  "/:slotId",
+  authMiddleware,
+  requireProvider,
+  SlotController.remove
+);
+
+// Public search endpoint
+router.get(
+  "/search/available",
+  validate(slotSearchSchema, "query"),
+  SlotController.search
+);
 
 export default router;

@@ -20,9 +20,9 @@ export async function createProvider({ user_id, bio, rating }) {
   }
 }
 
-export async function listProviders() {
+export async function listProviders({limit, offset}) {
   try {
-    return await ProviderModel.listAll();
+    return await ProviderModel.listAll({limit, offset});
   } catch (err) {
     logError("Service error - listing providers", err);
     throw new Error("Unable to fetch providers.");

@@ -9,16 +9,12 @@ import { logError } from "../utils/logger.js";
 export async function CreateAppointment(req, res) {
   try {
     const {
-      timeslotId,
-      appointmentDate,
-      appointmentTime,
-      providerId,
-      serviceId
+      timeslotId
     } = req.body;
 
-    const userId = req.user?.user_id;
+    const userId = req.user.id;
 
-    if (!userId || !providerId || !serviceId || !timeslotId || !appointmentDate || !appointmentTime) {
+    if (!userId || !timeslotId) {
       return res.status(400).json({
         message: "Missing required fields"
       });
@@ -27,10 +23,6 @@ export async function CreateAppointment(req, res) {
     const appointment = await appointmentService.book({
       userId,
       timeslotId,
-      providerId,
-      serviceId,
-      appointmentDate,
-      appointmentTime,
     });
 
     return res.status(201).json({
@@ -74,9 +66,25 @@ export async function cancelAppointment(req, res, next) {
 export async function listAppointments(req, res, next) {
   try {
     const userId = req.user.id;
-    const appointments = await appointmentService.list(userId);
+    const { status, startDate, endDate, page = 1, limit = 10 } = req.query;
+    const offset = (page - 1) * limit;
 
-    return res.json({ appointments });
+    const filters = {
+      status,
+      startDate,
+      endDate,
+      limit: Number(limit),
+      offset
+    }
+
+    const appointments = await appointmentService.list(userId, filters);
+
+    return res.json({ 
+      success: true,
+      page: Number(page),
+      limit: Number(limit),
+      data: appointments,
+    });
   } catch (err) {
     logError("List appointments failed", err);
     next(err);

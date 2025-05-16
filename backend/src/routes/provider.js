@@ -1,32 +1,39 @@
-// src/routes/provider.js
+// src/routes/provider-routes.js
 import express from "express";
 import * as ProviderController from "../controllers/provider-controller.js";
-import { requireRole } from "../middlewares/role-middleware.js";
 import authMiddleware from "../middlewares/auth-middleware.js";
-import { providerValidatorMiddleware } from "../validators/provider-validator.js";
+import { requireProvider } from "../middlewares/role-middleware.js";
+import { validate } from "../middlewares/validate-middleware.js";
+import { providerSchema } from "../validators/provider-validator.js"; // Optional if you want request validation
 
 const router = express.Router();
 
-// Create a new provider profile
+// Create provider profile (only authenticated users)
 router.post(
-  "/create-provider-profile",
+  "/create",
   authMiddleware,
-  requireRole("provider"),
-  providerValidatorMiddleware,
+  validate(providerSchema), // Optional: add this if you want to validate bio/rating
   ProviderController.createProvider
 );
 
-// Update an existing provider profile
+// Update provider profile (authenticated & provider-only)
 router.put(
-  "/:id/update-provider",
+  "/update",
   authMiddleware,
-  requireRole("provider"),
-  providerValidatorMiddleware,
+  requireProvider,
+  validate(providerSchema),
   ProviderController.updateProvider
 );
 
+// Get current provider profile (authenticated user)
+router.get(
+  "/me",
+  authMiddleware,
+  requireProvider,
+  ProviderController.getCurrentProvider
+);
 
-// List all providers
-router.get("/getallproviders", ProviderController.getAllProviders);
+// Get all providers (optional pagination)
+router.get("/", authMiddleware, ProviderController.getAllProviders);
 
 export default router;

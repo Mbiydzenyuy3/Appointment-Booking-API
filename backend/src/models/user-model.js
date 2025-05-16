@@ -14,7 +14,7 @@ export const UserModel = async ({ name, email, password, user_type }) => {
     const { rows } = await query(
       `INSERT INTO users (name, email, password, user_type)
        VALUES ($1, $2, $3, $4)
-       RETURNING id, name, email`,
+       RETURNING user_id, name, email`,
       [name, email, hashedPassword, user_type]
     );
     return rows[0]; // Return only necessary fields (excluding password)

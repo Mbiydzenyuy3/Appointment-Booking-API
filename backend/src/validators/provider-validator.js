@@ -6,6 +6,23 @@ export const providerSchema = Joi.object({
   rating: Joi.number().min(0).max(5),
 });
 
+export const availabilitySchema = Joi.object({
+  dayOfWeek: Joi.number().integer().min(0).max(6).required(),
+  startTime: Joi.string()
+    .pattern(/^([0-1]\d|2[0-3]):([0-5]\d)$/)
+    .required(),
+  endTime: Joi.string()
+    .pattern(/^([0-1]\d|2[0-3]):([0-5]\d)$/)
+    .required(),
+}).custom((value, helpers) => {
+  const [startH, startM] = value.startTime.split(":").map(Number);
+  const [endH, endM] = value.endTime.split(":").map(Number);
+  if (startH * 60 + startM >= endH * 60 + endM) {
+    return helpers.message("End time must be after start time");
+  }
+  return value;
+});
+
 export function providerValidatorMiddleware(req, res, next) {
   const { error } = providerSchema.validate(req.body);
 

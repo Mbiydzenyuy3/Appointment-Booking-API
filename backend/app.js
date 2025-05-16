@@ -7,6 +7,7 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import { fileURLToPath } from "node:url";
 import path, { dirname } from "node:path";
+import { ErrorHandler } from "./src/middlewares/error-handler-middleware.js";
 
 import { initSocket } from "./src/sockets/socket.js";
 import swaggerUi from "swagger-ui-express";
@@ -46,9 +47,7 @@ app.use("/services", serviceRoutes);
 // Swagger Documentation
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-//error message if anything goes wrong
-app.use((req, res) => {
-  res.status(404).json({ message: "Route not found" });
-});
+// Add error handler middleware
+app.use(ErrorHandler);
 
 export { app, initSocket };
