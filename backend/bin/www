@@ -1,0 +1,97 @@
+#!/usr/bin/env node
+
+import dotenv from "dotenv";
+dotenv.config();
+import http from "node:http";
+import debug from "debug";
+import { app, initSocket } from "../app.js";
+import { logInfo, logError, logDebug } from "../src/utils/logger.js";
+import { connectToDb, initializeDbSchema } from "../src/config/db.js";
+
+/**
+ * Get port from environment and store in Express
+ */
+
+const PORT = normalizePort(process.env.PORT || "3000");
+
+/**
+ * Create HTTP server
+ */
+
+const server = http.createServer(app);
+
+// Initialize WebSocket server
+initSocket(server);
+
+const dbg = debug("appointment-booking:server");
+
+function normalizePort(val) {
+  const port = parseInt(val, 10);
+  return isNaN(port) ? val : port >= 0 ? port : false;
+}
+
+["SIGHUP", "SIGINT", "SIGTERM"].forEach((signal) => {
+  process.on(signal, gracefulShutdown);
+});
+
+async function gracefulShutdown(signal) {
+  logInfo(`Received ${signal}.Shutting down...`);
+  try {
+    await server.close();
+    logInfo("Server closed gracefully. Exiting...");
+    process.exit(0);
+  } catch (err) {
+    logError("Error closing server:", err);
+    process.exit(1);
+  }
+}
+
+/**
+ * Event listener for HTTP server "error" event.
+ */
+
+function onError(error) {
+  if (error.syscall !== "listen") throw error;
+
+  const bind = typeof PORT === "string" ? `Pipe ${PORT}` : `Port ${PORT}`;
+
+  // handle specific listen errors with friendly messages
+  switch (error.code) {
+    case "EACCES":
+      logError(`${bind} requires elevated privileges`);
+      process.exit(1);
+    case "EADDRINUSE":
+      logError(`${bind} is already in use`);
+      logInfo("Trying next available port...");
+      // Ideally, pick random available port logic could go here
+      process.exit(1);
+    default:
+      throw error;
+  }
+}
+
+/**
+ * Event listener for HTTP server "listening" event.
+ */
+
+function onListening() {
+  const addr = server.address();
+  const bind = typeof addr === "string" ? `pipe ${addr}` : `port ${addr.port}`;
+  logDebug(`Listening on ${bind}`);
+}
+
+async function startServer() {
+  try {
+    logInfo(`Attempting to start server on port ${PORT}`);
+    await connectToDb();
+    await initializeDbSchema(); // optional, depending on your use case
+    server.listen(PORT);
+    server.on("error", onError);
+    server.on("listening", onListening);
+  } catch (error) {
+    logError("Server startup failed: ", error);
+    process.exit(1);
+  }
+}
+
+startServer();
