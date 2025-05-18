@@ -31,7 +31,7 @@ const baseURL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 //   return response.json();
 // }
 
-const api = axios.create({
+const apiFetch = axios.create({
   baseURL: baseURL,
   headers: {
     'Content-Type': 'application/json',
@@ -40,7 +40,7 @@ const api = axios.create({
 
 // Add a request interceptor to include the token
 
-api.interceptors.request.use(
+apiFetch.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -53,4 +53,4 @@ api.interceptors.request.use(
   }
 );
 
-export default api;
+export default apiFetch;

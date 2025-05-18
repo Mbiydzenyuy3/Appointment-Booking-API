@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
-import api from "../services/api.js";
+import apiFetch from "../services/api.js";
 import { toast } from "react-toastify";
 
 const DashboardPage = () => {
@@ -11,7 +11,7 @@ const DashboardPage = () => {
   useEffect(() => {
     const fetchProviders = async () => {
       try {
-        const response = await api.get("/providers");
+        const response = await apiFetch.get("/providers");
         setProviders(response.data);
       } catch (error) {
         toast.error("Failed to fetch providers");

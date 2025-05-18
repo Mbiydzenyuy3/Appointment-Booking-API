@@ -1,97 +1,87 @@
-import { useState } from "react";
+// src/pages/Login.jsx
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext.jsx";
-import { toast } from "react-toastify";
+import apiFetch from "../services/api.js";
 
-const LoginPage = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+const LoginSchema = Yup.object().shape({
+  email: Yup.string()
+    .email("Please provide a valid email address")
+    .required("Email is required"),
+  password: Yup.string().required("Password is required"),
+});
+
+export default function Login() {
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    const result = await login(email, password);
-    setIsLoading(false);
-
-    if (result.success) {
-      toast.success("Login successful!");
-      navigate("/dashboard");
-    } else {
-      toast.error(result.message);
-    }
-  };
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to your account
-          </h2>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm space-y-4">
-            <div>
-              <label htmlFor="email" className="sr-only">
-                Email address
-              </label>
-              <input
-                id="email"
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="bg-white shadow-md p-6 rounded w-full max-w-md">
+        <h2 className="text-2xl font-semibold mb-4">Login</h2>
+        <Formik
+          initialValues={{ email: "", password: "" }}
+          validationSchema={LoginSchema}
+          onSubmit={async (values, { setSubmitting }) => {
+            try {
+              const res = await apiFetch("/auth/login", {
+                method: "POST",
+                body: JSON.stringify(values),
+              });
+              localStorage.setItem("token", res.token);
+              navigate("/dashboard");
+            } catch (err) {
+              alert(
+                "Login failed: " + (err.response?.data?.message || err.message)
+              );
+            } finally {
+              setSubmitting(false);
+            }
+          }}
+        >
+          {({ isSubmitting }) => (
+            <Form className="space-y-4">
+              <Field
                 name="email"
                 type="email"
-                autoComplete="email"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Email"
+                className="input w-full"
               />
-            </div>
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <input
-                id="password"
+              <ErrorMessage
+                name="email"
+                component="p"
+                className="text-sm text-red-500"
+              />
+
+              <Field
                 name="password"
                 type="password"
-                autoComplete="current-password"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                className="input w-full"
               />
-            </div>
-          </div>
+              <ErrorMessage
+                name="password"
+                component="p"
+                className="text-sm text-red-500"
+              />
 
-          <div>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              {isLoading ? "Signing in..." : "Sign in"}
-            </button>
-          </div>
-        </form>
-        <div className="text-center">
-          <p className="text-sm text-gray-600">
-            Don't have an account?{" "}
-            <a
-              href="/register"
-              className="font-medium text-indigo-600 hover:text-indigo-500"
-            >
-              Register here
-            </a>
-          </p>
-        </div>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
+              >
+                {isSubmitting ? "Logging in..." : "Login"}
+              </button>
+
+              <p className="text-sm text-center">
+                Don’t have an account?{" "}
+                <a href="/register" className="text-blue-600 hover:underline">
+                  Register
+                </a>
+              </p>
+            </Form>
+          )}
+        </Formik>
       </div>
     </div>
   );
-};
-
-export default LoginPage;
+}

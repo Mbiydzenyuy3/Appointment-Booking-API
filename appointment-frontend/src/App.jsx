@@ -8,9 +8,9 @@ import { Provider } from "./context/AuthContext.jsx";
 import { SocketProvider } from "./context/Socketio.jsx";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-// import HomePage from "./pages/LandingPage.jsx";
+import HomePage from "./pages/LandingPage.jsx";
 import LoginPage from "./pages/Login.jsx";
-// import RegisterPage from "./pages/Register.jsx";
+import RegisterPage from "./pages/Register.jsx";
 import DashboardPage from "./pages/Dashboard.jsx";
 // import ProviderDashboard from "./pages/ProviderDashboard.jsx";
 // import TimeSlotsPage from "./pages/TimeSlotsPage";
@@ -29,9 +29,9 @@ function App() {
         <Router>
           <div className="min-h-screen bg-gray-50">
             <Routes>
-              {/* <Route path="/" element={<HomePage />} /> */}
+              <Route path="/" element={<HomePage />} />
               <Route path="/login" element={<LoginPage />} />
-              {/* <Route path="/register" element={<RegisterPage />} /> */}
+              <Route path="/register" element={<RegisterPage />} />
 
               <Route
                 path="/dashboard"
@@ -44,25 +44,19 @@ function App() {
               <Route
                 path="/provider"
                 element={
-                  <ProviderRoute>
-                    {/* <ProviderDashboard /> */}
-                  </ProviderRoute>
+                  <ProviderRoute>{/* <ProviderDashboard /> */}</ProviderRoute>
                 }
               />
               <Route
                 path="/timeslots"
                 element={
-                  <ProviderRoute>
-                    {/* <TimeSlotsPage /> */}
-                  </ProviderRoute>
+                  <ProviderRoute>{/* <TimeSlotsPage /> */}</ProviderRoute>
                 }
               />
               <Route
                 path="/appointments"
                 element={
-                  <PrivateRoute>
-                    {/* <AppointmentsPage /> */}
-                  </PrivateRoute>
+                  <PrivateRoute>{/* <AppointmentsPage /> */}</PrivateRoute>
                 }
               />
               <Route
