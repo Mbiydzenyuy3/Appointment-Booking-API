@@ -1,7 +1,7 @@
 //validator/auth-validator.js
 import Joi from "joi";
 
-// Registration schema
+// Registration schema for register
 export const registerSchema = Joi.object({
   name: Joi.string().min(3).max(30).required().messages({
     "string.min": "Name should have at least 3 characters",
@@ -24,14 +24,10 @@ export const registerSchema = Joi.object({
       "string.max": "Password should have at most 30 characters",
       "any.required": "Password is required",
     }),
-  confirmPassword: Joi.string().valid(Joi.ref("password")).required().messages({
-    "any.only": "Passwords must match",
-    "any.required": "Confirm password is required",
-  }),
   user_type: Joi.string().valid("client", "provider").default("client"),
 });
 
-// Login schema
+// Login schema for login
 export const loginSchema = Joi.object({
   email: Joi.string().email({ minDomainSegments: 2 }).required().messages({
     "string.email": "Please provide a valid email address",
@@ -41,4 +37,3 @@ export const loginSchema = Joi.object({
     "any.required": "Password is required",
   }),
 });
-
