@@ -24,10 +24,6 @@ export const registerSchema = Joi.object({
       "string.max": "Password should have at most 30 characters",
       "any.required": "Password is required",
     }),
-  confirmPassword: Joi.string().valid(Joi.ref("password")).required().messages({
-    "any.only": "Passwords must match",
-    "any.required": "Confirm password is required",
-  }),
   user_type: Joi.string().valid("client", "provider").default("client"),
 });
 
