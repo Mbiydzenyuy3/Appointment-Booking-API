@@ -12,14 +12,13 @@ import HomePage from "./pages/LandingPage.jsx";
 import LoginPage from "./pages/Login.jsx";
 import RegisterPage from "./pages/Register.jsx";
 import DashboardPage from "./pages/Dashboard.jsx";
-// import ProviderDashboard from "./pages/ProviderDashboard.jsx";
+import ProviderDashboard from "./pages/ProviderDashboard.jsx";
 // import TimeSlotsPage from "./pages/TimeSlotsPage";
 // import Header from "./components/Header.jsx"
 // import Footer from "./components/Footer.jsx"
 // import AppointmentsPage from "./pages/Appointments.jsx";
 import BookAppointmentPage from "./pages/BookAppointment.jsx";
 import PrivateRoute from "./routes/PrivateRoute.jsx";
-import ProviderRoute from "./routes/ProviderRoute.jsx";
 // import ProtectedRoute from "./routes/ProtectedRoute.jsx";
 
 function App() {
@@ -36,21 +35,23 @@ function App() {
               <Route
                 path="/dashboard"
                 element={
-                  <PrivateRoute>
+                  <PrivateRoute allowedRoles={["user"]}>
                     <DashboardPage />
                   </PrivateRoute>
                 }
               />
               <Route
-                path="/provider"
+                path="/provider/dashboard"
                 element={
-                  <ProviderRoute>{/* <ProviderDashboard /> */}</ProviderRoute>
+                  <PrivateRoute allowedRoles={["provider"]}>
+                    <ProviderDashboard />
+                  </PrivateRoute>
                 }
               />
               <Route
                 path="/timeslots"
                 element={
-                  <ProviderRoute>{/* <TimeSlotsPage /> */}</ProviderRoute>
+                  <PrivateRoute>{/* <TimeSlotsPage /> */}</PrivateRoute>
                 }
               />
               <Route

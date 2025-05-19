@@ -1,9 +1,4 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-} from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import api from "../services/api.js";
 import { jwtDecode } from "jwt-decode";
 
@@ -15,10 +10,22 @@ export const Provider = ({ children }) => {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (token) {
-      const decoded = jwtDecode(token);
-      setUser(decoded);
+
+    // ✅ Ensure token is valid format before decoding
+    if (token && token.split(".").length === 3) {
+      try {
+        const decoded = jwtDecode(token);
+        setUser(decoded);
+      } catch (err) {
+        console.error("Invalid token:", err);
+        localStorage.removeItem("token");
+        setUser(null);
+      }
+    } else {
+      localStorage.removeItem("token");
+      setUser(null);
     }
+
     setIsLoading(false);
   }, []);
 
@@ -26,10 +33,15 @@ export const Provider = ({ children }) => {
     try {
       const response = await api.post("/auth/login", { email, password });
       const { token } = response.data;
-      localStorage.setItem("token", token);
-      const decoded = jwtDecode(token);
-      setUser(decoded);
-      return { success: true };
+
+      if (token && token.split(".").length === 3) {
+        localStorage.setItem("token", token);
+        const decoded = jwtDecode(token);
+        setUser(decoded);
+        return { success: true, user_type: decoded.user_type };
+      } else {
+        return { success: false, message: "Invalid token received" };
+      }
     } catch (error) {
       return {
         success: false,
@@ -61,4 +73,5 @@ export const Provider = ({ children }) => {
     </Context.Provider>
   );
 };
+
 export const useAuth = () => useContext(Context);

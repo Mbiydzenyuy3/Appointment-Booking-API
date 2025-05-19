@@ -8,7 +8,7 @@ const ProviderRoute = ({ children }) => {
     return <div>loading...</div>;
   }
 
-  if (!user || user.role !== "provider") {
+  if (!user || user.user_type !== "provider") {
     return <Navigate to="/" />;
   }
 

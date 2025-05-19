@@ -1,14 +1,21 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 
-const PrivateRoute = ({ children }) => {
+const PrivateRoute = ({ children, allowedRoles }) => {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
-    return <div>loading...</div>;
+    return <div>Loading...</div>; // Or a spinner
   }
+
+  // If not logged in
   if (!user) {
     return <Navigate to="/login" />;
+  }
+
+  // If role is not allowed
+  if (!allowedRoles?.includes(user?.user_type)) {
+    return <Navigate to="/unauthorized" />;
   }
 
   return children;

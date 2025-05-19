@@ -1,9 +1,11 @@
 // src/pages/Login.jsx
+import { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import apiFetch from "../services/api.js";
 
+// Validation schema
 const LoginSchema = Yup.object().shape({
   email: Yup.string()
     .email("Please provide a valid email address")
@@ -13,25 +15,33 @@ const LoginSchema = Yup.object().shape({
 
 export default function Login() {
   const navigate = useNavigate();
+  const [formError, setFormError] = useState("");
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white shadow-md p-6 rounded w-full max-w-md">
         <h2 className="text-2xl font-semibold mb-4">Login</h2>
+
         <Formik
           initialValues={{ email: "", password: "" }}
           validationSchema={LoginSchema}
           onSubmit={async (values, { setSubmitting }) => {
             try {
+              setFormError(""); // Clear previous error
               const res = await apiFetch("/auth/login", {
                 method: "POST",
-                body: JSON.stringify(values),
+                data: JSON.stringify(values),
               });
               localStorage.setItem("token", res.token);
-              navigate("/dashboard");
+
+              if (res.user?.user_type === "provider") {
+                navigate("/provider/dashboard");
+              } else {
+                navigate("/dashboard");
+              }
             } catch (err) {
-              alert(
-                "Login failed: " + (err.response?.data?.message || err.message)
+              setFormError(
+                err.response?.data?.message || "Login failed. Please try again."
               );
             } finally {
               setSubmitting(false);
@@ -40,11 +50,16 @@ export default function Login() {
         >
           {({ isSubmitting }) => (
             <Form className="space-y-4">
+              {formError && (
+                <p className="text-sm text-red-500 text-center">{formError}</p>
+              )}
+
               <Field
                 name="email"
                 type="email"
                 placeholder="Email"
                 className="input w-full"
+                autoComplete="email"
               />
               <ErrorMessage
                 name="email"
@@ -57,6 +72,7 @@ export default function Login() {
                 type="password"
                 placeholder="Password"
                 className="input w-full"
+                autoComplete="current-password"
               />
               <ErrorMessage
                 name="password"
@@ -74,9 +90,9 @@ export default function Login() {
 
               <p className="text-sm text-center">
                 Don’t have an account?{" "}
-                <a href="/register" className="text-blue-600 hover:underline">
+                <Link to="/register" className="text-blue-600 hover:underline">
                   Register
-                </a>
+                </Link>
               </p>
             </Form>
           )}
