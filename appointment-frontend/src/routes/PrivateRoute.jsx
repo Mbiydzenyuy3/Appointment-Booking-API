@@ -1,3 +1,4 @@
+//src/routes/privateroute.jsx
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 
@@ -5,7 +6,7 @@ const PrivateRoute = ({ children, allowedRoles }) => {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
-    return <div>Loading...</div>; // Or a spinner
+    return <div>Loading...</div>; 
   }
 
   // If not logged in

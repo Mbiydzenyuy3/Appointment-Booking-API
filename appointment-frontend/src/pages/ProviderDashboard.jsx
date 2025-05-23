@@ -1,6 +1,9 @@
 // src/pages/ProviderDashboard.jsx
+import { useAuth } from "../context/AuthContext";
+
 export default function ProviderDashboard() {
-  const user = JSON.parse(localStorage.getItem("user"));
+  // const user = JSON.parse(localStorage.getItem("user"));
+  const { user, logout } = useAuth();
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-green-50 p-6">
@@ -10,6 +13,12 @@ export default function ProviderDashboard() {
       <p className="text-lg text-gray-700">
         Welcome, {user?.email || "Provider"}!
       </p>
+      <button
+        onClick={logout}
+        className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+      >
+        Logout
+      </button>
     </div>
   );
 }

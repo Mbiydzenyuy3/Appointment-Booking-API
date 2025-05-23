@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import apiFetch from "../services/api.js";
+import api from "../services/api.js";
 import { format, parseISO } from "date-fns";
 import { toast } from "react-toastify";
 
@@ -20,8 +20,8 @@ const BookAppointmentPage = () => {
       try {
         setIsLoading(true);
         const [providerRes, slotsRes] = await Promise.all([
-          apiFetch.get(`/providers/${providerId}`),
-          apiFetch.get(
+          api.get(`/providers/${providerId}`),
+          api.get(
             `/timeslots/available?providerId=${providerId}&date=${selectedDate}`
           ),
         ]);
@@ -40,7 +40,7 @@ const BookAppointmentPage = () => {
   const handleBookSlot = async (slotId) => {
     try {
       setIsBooking(true);
-      await apiFetch.post("/appointments", {
+      await api.post("/appointments", {
         providerId,
         timeSlotId: slotId,
       });

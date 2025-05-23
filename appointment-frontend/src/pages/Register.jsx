@@ -1,82 +1,53 @@
-import { useState } from "react";
+// src/pages/Register.jsx
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import apiFetch from "../services/api.js";
+import { useAuth } from "../context/AuthContext.jsx";
 
-// Validation schema
 const RegisterSchema = Yup.object().shape({
-  name: Yup.string()
-    .min(3, "Name should have at least 3 characters")
-    .max(30, "Name should have at most 30 characters")
-    .required("Name is required"),
-  email: Yup.string()
-    .email("Please provide a valid email address")
-    .required("Email is required"),
-  password: Yup.string()
-    .matches(/^[a-zA-Z0-9]{6,30}$/, {
-      message: "Password must be alphanumeric and between 6 and 30 characters",
-    })
-    .required("Password is required"),
+  name: Yup.string().required("Required"),
+  email: Yup.string().email("Invalid email").required("Required"),
+  password: Yup.string().min(6, "Minimum 6 characters").required("Required"),
   user_type: Yup.string()
-    .oneOf(["client", "provider"], "Invalid user type")
-    .required("User type is required"),
+    .oneOf(["client", "provider"], "Invalid role")
+    .required("Required"),
 });
 
-const initialValues = {
-  name: "",
-  email: "",
-  password: "",
-  user_type: "client",
-};
-
-const inputClass = "input w-full";
-
 export default function Register() {
+  const { register } = useAuth();
   const navigate = useNavigate();
   const [formError, setFormError] = useState("");
-
-  const handleSubmit = async (values, { setSubmitting }) => {
-    const payload = { ...values };
-
-    try {
-      setFormError("");
-      await apiFetch.post("/auth/register", payload);
-      navigate("/login");
-    } catch (err) {
-      console.error("Registration error:", err.response?.data || err);
-
-      if (err.response?.data?.errors) {
-        console.log("Server-side validation errors:", err.response.data.errors);
-      }
-
-      setFormError(
-        err.response?.data?.errors?.[0] ||
-          err.response?.data?.message ||
-          "Registration failed. Please try again."
-      );
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white shadow-md p-6 rounded w-full max-w-md">
         <h2 className="text-2xl font-semibold mb-4">Register</h2>
-
         <Formik
-          initialValues={initialValues}
+          initialValues={{
+            name: "",
+            email: "",
+            password: "",
+            user_type: "client",
+          }}
           validationSchema={RegisterSchema}
-          onSubmit={handleSubmit}
+          onSubmit={async (values, { setSubmitting }) => {
+            setFormError("");
+            const res = await register(values);
+            if (res.success) {
+              navigate("/login");
+            } else {
+              setFormError(res.message);
+            }
+            setSubmitting(false);
+          }}
         >
           {({ isSubmitting }) => (
             <Form className="space-y-4">
               {formError && (
                 <p className="text-sm text-red-500 text-center">{formError}</p>
               )}
-
-              <Field name="name" placeholder="Name" className={inputClass} />
+              <Field name="name" placeholder="Name" className="input w-full" />
               <ErrorMessage
                 name="name"
                 component="p"
@@ -87,7 +58,7 @@ export default function Register() {
                 name="email"
                 type="email"
                 placeholder="Email"
-                className={inputClass}
+                className="input w-full"
               />
               <ErrorMessage
                 name="email"
@@ -99,7 +70,7 @@ export default function Register() {
                 name="password"
                 type="password"
                 placeholder="Password"
-                className={inputClass}
+                className="input w-full"
               />
               <ErrorMessage
                 name="password"
@@ -107,33 +78,23 @@ export default function Register() {
                 className="text-sm text-red-500"
               />
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Role
-                </label>
-                <Field
-                  as="select"
-                  name="user_type"
-                  className={`${inputClass} mt-1`}
-                >
-                  <option value="client">Client</option>
-                  <option value="provider">Provider</option>
-                </Field>
-                <ErrorMessage
-                  name="user_type"
-                  component="p"
-                  className="text-sm text-red-500"
-                />
-              </div>
+              <Field as="select" name="user_type" className="input w-full">
+                <option value="user">client</option>
+                <option value="provider">provider</option>
+              </Field>
+              <ErrorMessage
+                name="user_type"
+                component="p"
+                className="text-sm text-red-500"
+              />
 
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
+                className="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700"
               >
                 {isSubmitting ? "Registering..." : "Register"}
               </button>
-
               <p className="text-sm text-center">
                 Already have an account?{" "}
                 <Link to="/login" className="text-blue-600 hover:underline">

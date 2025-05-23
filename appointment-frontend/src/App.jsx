@@ -35,7 +35,7 @@ function App() {
               <Route
                 path="/dashboard"
                 element={
-                  <PrivateRoute allowedRoles={["user"]}>
+                  <PrivateRoute allowedRoles={["client"]}>
                     <DashboardPage />
                   </PrivateRoute>
                 }
@@ -50,9 +50,7 @@ function App() {
               />
               <Route
                 path="/timeslots"
-                element={
-                  <PrivateRoute>{/* <TimeSlotsPage /> */}</PrivateRoute>
-                }
+                element={<PrivateRoute>{/* <TimeSlotsPage /> */}</PrivateRoute>}
               />
               <Route
                 path="/appointments"

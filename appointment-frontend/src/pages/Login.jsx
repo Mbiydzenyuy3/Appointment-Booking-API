@@ -3,49 +3,35 @@ import { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useNavigate, Link } from "react-router-dom";
-import apiFetch from "../services/api.js";
+import { useAuth } from "../context/AuthContext.jsx";
 
-// Validation schema
 const LoginSchema = Yup.object().shape({
-  email: Yup.string()
-    .email("Please provide a valid email address")
-    .required("Email is required"),
-  password: Yup.string().required("Password is required"),
+  email: Yup.string().email("Invalid email").required("Required"),
+  password: Yup.string().required("Required"),
 });
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [formError, setFormError] = useState("");
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white shadow-md p-6 rounded w-full max-w-md">
         <h2 className="text-2xl font-semibold mb-4">Login</h2>
-
         <Formik
           initialValues={{ email: "", password: "" }}
           validationSchema={LoginSchema}
           onSubmit={async (values, { setSubmitting }) => {
-            try {
-              setFormError(""); // Clear previous error
-              const res = await apiFetch("/auth/login", {
-                method: "POST",
-                data: JSON.stringify(values),
-              });
-              localStorage.setItem("token", res.token);
-
-              if (res.user?.user_type === "provider") {
-                navigate("/provider/dashboard");
-              } else {
-                navigate("/dashboard");
-              }
-            } catch (err) {
-              setFormError(
-                err.response?.data?.message || "Login failed. Please try again."
-              );
-            } finally {
-              setSubmitting(false);
+            setFormError("");
+            const res = await login(values.email, values.password);
+            if (res.success) {
+              if (res.user_type === "provider") navigate("/provider/dashboard");
+              else navigate("/dashboard");
+            } else {
+              setFormError(res.message);
             }
+            setSubmitting(false);
           }}
         >
           {({ isSubmitting }) => (
@@ -53,13 +39,11 @@ export default function Login() {
               {formError && (
                 <p className="text-sm text-red-500 text-center">{formError}</p>
               )}
-
               <Field
                 name="email"
                 type="email"
                 placeholder="Email"
                 className="input w-full"
-                autoComplete="email"
               />
               <ErrorMessage
                 name="email"
@@ -72,7 +56,6 @@ export default function Login() {
                 type="password"
                 placeholder="Password"
                 className="input w-full"
-                autoComplete="current-password"
               />
               <ErrorMessage
                 name="password"
@@ -87,7 +70,6 @@ export default function Login() {
               >
                 {isSubmitting ? "Logging in..." : "Login"}
               </button>
-
               <p className="text-sm text-center">
                 Don’t have an account?{" "}
                 <Link to="/register" className="text-blue-600 hover:underline">

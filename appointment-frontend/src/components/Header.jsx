@@ -1,7 +1,10 @@
 //Header component
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function Header() {
+  const { logout } = useAuth();
+
   return (
     <>
       <header className="header">
@@ -12,9 +15,9 @@ export default function Header() {
         </Link>
 
         <div className="space-x-4">
-          <Link to="/" className="hover:underline">
-            <button className="btn login">Logout</button>
-          </Link>
+          <button className="btn login" onClick={logout}>
+            Logout
+          </button>
         </div>
       </header>
     </>
