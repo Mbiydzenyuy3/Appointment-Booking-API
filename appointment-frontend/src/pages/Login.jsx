@@ -25,21 +25,12 @@ export default function Login() {
           validationSchema={LoginSchema}
           onSubmit={async (values, { setSubmitting }) => {
             setFormError("");
-            console.log("Logging in with:", values);
             const res = await login(values.email, values.password);
-            console.log("Login result:", res);
             if (res.success) {
-              if (res.user_type === "provider") {
-                navigate("/provider/dashboard");
-              } else if (res.user_type === "client") {
-                navigate("/client/dashboard"); // or "/dashboard" if that’s your client route
-              } else {
-                console.error("Unknown user type:", res.user_type);
-                setFormError("Login succeeded, but user role is unknown.");
-              }
+              if (res.user_type === "provider") navigate("/provider/dashboard");
+              else navigate("/dashboard");
             } else {
-              console.error("Login failed:", res.message);
-              setFormError(res.message || "Login failed. Please try again.");
+              setFormError(res.message);
             }
             setSubmitting(false);
           }}

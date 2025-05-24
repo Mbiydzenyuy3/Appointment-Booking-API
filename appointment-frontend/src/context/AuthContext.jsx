@@ -31,11 +31,10 @@ export const Provider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    console.log("Calling /auth/login with:", { email, password });
     try {
       const response = await api.post("/auth/login", { email, password });
-      console.log("API response:", response.data);
       const { token } = response.data;
+
       if (token && token.split(".").length === 3) {
         localStorage.setItem("token", token);
         const decoded = jwtDecode(token);
@@ -45,7 +44,6 @@ export const Provider = ({ children }) => {
         return { success: false, message: "Invalid token received" };
       }
     } catch (error) {
-      console.error("Login error:", error.response || error);
       return {
         success: false,
         message: error.response?.data?.message || "Login failed",
@@ -55,18 +53,12 @@ export const Provider = ({ children }) => {
 
   const register = async (userData) => {
     try {
-      const res = await api.post("/auth/register", userData);
-      console.log("Registration success:", res);
+      await api.post("/auth/register", userData);
       return { success: true };
     } catch (error) {
-      console.error("Registration error:", error);
-      const fallbackMessage =
-        error.response?.data?.message ||
-        error.response?.data?.detail ||
-        "Registration failed. Please try again.";
       return {
         success: false,
-        message: fallbackMessage,
+        message: error.response?.data?.message || "Registration failed",
       };
     }
   };
