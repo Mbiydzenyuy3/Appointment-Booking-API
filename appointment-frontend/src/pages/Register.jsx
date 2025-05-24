@@ -34,12 +34,16 @@ export default function Register() {
           validationSchema={RegisterSchema}
           onSubmit={async (values, { setSubmitting }) => {
             setFormError("");
+            console.log("Submitting register form:", values);
             const res = await register(values);
+            console.log("Register response:", res);
+
             if (res.success) {
               navigate("/login");
             } else {
-              setFormError(res.message);
+              setFormError(res.message || "Registration failed");
             }
+
             setSubmitting(false);
           }}
         >
@@ -80,7 +84,7 @@ export default function Register() {
               />
 
               <Field as="select" name="user_type" className="input w-full">
-                <option value="user">client</option>
+                <option value="client">client</option>
                 <option value="provider">provider</option>
               </Field>
               <ErrorMessage
