@@ -6,7 +6,7 @@ import ServiceForm from "../components/Providers/ServiceForm.jsx";
 import ServiceList from "../components/Providers/ServiceList.jsx";
 import TimeslotForm from "../components/Providers/TimeSlotForm.jsx";
 import TimeslotList from "../components/Providers/TimeSlotList.jsx";
-import api from "../services/api.js"; // your configured axios instance
+import api from "../services/api.js";
 import toast from "react-hot-toast";
 
 export default function ProviderDashboard() {
