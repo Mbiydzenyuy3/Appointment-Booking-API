@@ -1,7 +1,7 @@
 // src/pages/UserDashboard.jsx
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
-import BookingScheduler from "../components/Appointments/BookScheduler.jsx";
+import RescheduleModal from "../components/Appointments/RescheduleModal.jsx";
 import api from "../services/api.js";
 import { toast } from "react-toastify";
 
@@ -10,6 +10,29 @@ const UserDashboard = () => {
   const [services, setServices] = useState([]);
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const [rescheduleModal, setRescheduleModal] = useState({
+    open: false,
+    appointment: null,
+  });
+
+  const handleReschedule = async (newDate) => {
+    const appt = rescheduleModal.appointment;
+    try {
+      await api.delete(`/appointments/${appt._id}`);
+      const res = await api.post("/appointments/book", {
+        serviceId: appt.serviceId,
+        providerId: appt.providerId,
+        date: newDate,
+      });
+      toast.success("Appointment rescheduled");
+      setAppointments((prev) =>
+        prev.map((a) => (a._id === appt._id ? res.data : a))
+      );
+    } catch (error) {
+      toast.error("Failed to reschedule");
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -101,18 +124,28 @@ const UserDashboard = () => {
                 </div>
                 <button
                   onClick={() => cancelAppointment(appt._id)}
-                  className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                  className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 mr-2"
                 >
                   Cancel
+                </button>
+                <button
+                  onClick={() =>
+                    setRescheduleModal({ open: true, appointment: appt })
+                  }
+                  className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
+                >
+                  Reschedule
                 </button>
               </li>
             ))}
           </ul>
         )}
       </section>
-      <BookingScheduler
-        appointments={appointments}
-        setAppointments={setAppointments}
+      <RescheduleModal
+        isOpen={rescheduleModal.open}
+        onClose={() => setRescheduleModal({ open: false, appointment: null })}
+        onSubmit={handleReschedule}
+        initialDate={rescheduleModal.appointment?.date}
       />
     </div>
   );

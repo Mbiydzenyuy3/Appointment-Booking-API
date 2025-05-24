@@ -1,4 +1,5 @@
 // src/pages/AppointmentPage.jsx
+import React from "react";
 import { useEffect, useState } from "react";
 import api from "../services/api.js";
 import { toast } from "react-toastify";
@@ -10,7 +11,7 @@ export default function AppointmentPage() {
   useEffect(() => {
     async function fetchAppointments() {
       try {
-        const response = await api.get("/appointments/me");
+        const response = await api.get("/appointments/list");
         setAppointments(response.data);
       } catch (error) {
         toast.error("Failed to fetch appointments");
