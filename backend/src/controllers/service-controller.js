@@ -44,29 +44,20 @@ export async function create(req, res, next) {
   }
 }
 
-// List services (all for clients, own for providers)
 export async function list(req, res, next) {
   try {
-    const userType = req.user?.user_type;
     const userId = req.user?.user_id;
+    const provider = await ProviderModel.findByUserId(userId);
 
-    let services;
-
-    if (userType === "provider") {
-      const provider = await ProviderModel.findByUserId(userId);
-      if (!provider?.provider_id) {
-        return res
-          .status(403)
-          .json({ message: "You must have a provider profile first." });
-      }
-      services = await ServiceService.listServicesForProvider(
-        provider.provider_id
-      );
-    } else {
-      // Clients see all services from all providers
-      services = await ServiceService.listAllServices();
+    if (!provider || !provider.provider_id) {
+      return res
+        .status(403)
+        .json({ message: "You must have a provider profile first." });
     }
 
+    const services = await ServiceService.listServicesForProvider(
+      provider.provider_id
+    );
     return res.status(200).json({ success: true, data: services });
   } catch (err) {
     logError("listServices controller error", err);
@@ -74,29 +65,29 @@ export async function list(req, res, next) {
   }
 }
 
-export async function listByProvider(req, res) {
-  try {
-    const providerId = req.params.providerId;
-    const services = await ServiceService.getServicesByProviderId(providerId);
-    res.status(200).json({ success: true, data: services });
-  } catch (err) {
-    console.error("Failed to list services by provider:", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
-  }
-}
-
-// Update a service by ID
 export async function update(req, res, next) {
   try {
+    const userId = req.user?.user_id;
     const { serviceId } = req.params;
     const updates = req.body;
 
-    const updated = await ServiceService.updateService(serviceId, updates);
+    const provider = await ProviderModel.findByUserId(userId);
+    if (!provider || !provider.provider_id) {
+      return res
+        .status(403)
+        .json({ message: "You must have a provider profile first." });
+    }
 
+    updates.providerId = provider.provider_id;
+
+    const updatedService = await ServiceService.updateService(
+      serviceId,
+      updates
+    );
     return res.status(200).json({
       success: true,
       message: "Service updated successfully",
-      data: updated,
+      data: updatedService,
     });
   } catch (err) {
     logError("updateService controller error", err);
@@ -104,16 +95,15 @@ export async function update(req, res, next) {
   }
 }
 
-// Delete a service by ID
 export async function remove(req, res, next) {
   try {
     const { serviceId } = req.params;
 
-    await ServiceService.deleteService(serviceId);
-
+    const deletedService = await ServiceService.deleteService(serviceId);
     return res.status(200).json({
       success: true,
       message: "Service deleted successfully",
+      data: deletedService,
     });
   } catch (err) {
     logError("deleteService controller error", err);
