@@ -1,7 +1,7 @@
 // src/pages/UserDashboard.jsx
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
-import RescheduleModal from "../components/Appointments/RescheduleModal.jsx";
+import RescheduleModal from "../components/Appointments/ResheduleModal.jsx";
 import api from "../services/api.js";
 import { toast } from "react-toastify";
 
