@@ -1,4 +1,14 @@
 @import "tailwindcss";
-/* @tailwind base;
-@tailwind components;
-@tailwind utilities; */
+
+main {
+  background-image: url("assets/pexels-ionela-mat-268382825-20224385.jpg");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.overlay {
+  width: 100%;
+  height: 65vh;
+  background-color: #0000004f;
+}

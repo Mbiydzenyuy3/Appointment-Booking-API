@@ -7,7 +7,6 @@ import { Link } from "react-router-dom";
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* <Header/> */}
       <header className="bg-white shadow-md">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-blue-600">📅 BOOKEasy</h1>
@@ -24,35 +23,33 @@ export default function HomePage() {
           </nav>
         </div>
       </header>
-
-      {/* Hero Section */}
       <main className="flex-grow flex items-center justify-center">
-        <div className="text-center px-4">
-          <h2 className="text-4xl font-extrabold text-gray-900 mb-4">
-            Seamless Appointment Booking
-          </h2>
-          <p className="text-lg text-gray-600 mb-6">
-            Connect with providers effortlessly. Book, manage, and receive
-            real-time updates.
-          </p>
-          <div className="space-x-4">
-            <Link
-              to="/register"
-              className="bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700"
-            >
-              Get Started
-            </Link>
-            <Link
-              to="/login"
-              className="text-blue-600 border border-blue-600 px-6 py-3 rounded hover:bg-blue-50"
-            >
-              Sign In
-            </Link>
+        <div className="overlay flex items-center justify-center">
+          <div className="text-center px-4 content">
+            <h2 className="text-4xl font-extrabold text-black mb-4">
+              Seamless Appointment Booking
+            </h2>
+            <p className="text-lg text-white mb-6">
+              Connect with providers effortlessly. Book, manage, and receive
+              real-time updates.
+            </p>
+            <div className="space-x-4">
+              <Link
+                to="/register"
+                className="bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700"
+              >
+                Get Started
+              </Link>
+              <Link
+                to="/login"
+                className="text-blue-800 border border-blue-600 px-6 py-3 rounded hover:bg-blue-50"
+              >
+                Sign In
+              </Link>
+            </div>
           </div>
         </div>
       </main>
-
-      {/* Features Section */}
       <section className="bg-white py-12">
         <div className="max-w-7xl mx-auto px-4 grid md:grid-cols-3 gap-8 text-center">
           <div>
