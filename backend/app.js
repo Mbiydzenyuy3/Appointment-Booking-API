@@ -21,7 +21,6 @@ import slotRouter from "./src/routes/slot.js";
 import providerRouter from "./src/routes/provider.js";
 import serviceRoutes from "./src/routes/service.js";
 
-
 const app = express();
 
 // Setup __dirname (since ES modules don't have it by default)
