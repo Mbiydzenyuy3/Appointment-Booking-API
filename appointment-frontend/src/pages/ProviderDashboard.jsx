@@ -20,7 +20,7 @@ export default function ProviderDashboard() {
       try {
         const [servicesRes, slotsRes] = await Promise.all([
           api.get("/services"),
-          api.get("/slots"),
+          api.get(`/slots/${user._id}`),
         ]);
         setServices(servicesRes.data);
         setTimeSlots(slotsRes.data);
@@ -36,9 +36,13 @@ export default function ProviderDashboard() {
   }, [user]);
 
   const handleCreateService = async (newService) => {
+    console.log("Submitted service:", newService);
+
     try {
       const res = await api.post("/services/create", newService);
-      setServices((prev) => [...prev, res.data]);
+      const createdService = res.data.data;
+      console.log("Received from backend:", res.data.data);
+      setServices((prev) => [...prev, createdService]);
       toast.success("Service created");
     } catch (error) {
       toast.error("Failed to create service");

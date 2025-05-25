@@ -3,8 +3,9 @@ import React, { useState } from "react";
 
 export default function ServiceForm({ onCreate }) {
   const [service, setService] = useState({
-    name: "",
+    service_name: "",
     description: "",
+    duration_minutes: "",
     price: "",
   });
 
@@ -14,8 +15,22 @@ export default function ServiceForm({ onCreate }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onCreate(service);
-    setService({ name: "", description: "", price: "" });
+
+    const ServiceValues = {
+      name: service.service_name,
+      description: service.description,
+      price: Number(service.price),
+      durationMinutes: Number(service.duration_minutes),
+    };
+
+    onCreate(ServiceValues);
+
+    setService({
+      service_name: "",
+      description: "",
+      price: "",
+      duration_minutes: "",
+    });
   };
 
   return (
@@ -23,10 +38,10 @@ export default function ServiceForm({ onCreate }) {
       <h2 className="text-xl font-semibold mb-2">Add a Service</h2>
       <input
         type="text"
-        name="name"
-        value={service.name}
+        name="service_name"
+        value={service.service_name}
         onChange={handleChange}
-        placeholder="Service Name"
+        placeholder="Service name"
         className="block w-full mb-2 p-2 border rounded"
         required
       />
@@ -38,6 +53,7 @@ export default function ServiceForm({ onCreate }) {
         className="block w-full mb-2 p-2 border rounded"
         required
       />
+
       <input
         type="number"
         name="price"
@@ -47,6 +63,17 @@ export default function ServiceForm({ onCreate }) {
         className="block w-full mb-2 p-2 border rounded"
         required
       />
+
+      <input
+        type="number"
+        name="duration_minutes"
+        value={service.duration_minutes}
+        onChange={handleChange}
+        placeholder="duration Minutes"
+        className="block w-full mb-2 p-2 border rounded"
+        required
+      />
+
       <button
         type="submit"
         className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
