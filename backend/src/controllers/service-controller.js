@@ -44,24 +44,44 @@ export async function create(req, res, next) {
   }
 }
 
+// List services (all for clients, own for providers)
 export async function list(req, res, next) {
   try {
+    const userType = req.user?.user_type;
     const userId = req.user?.user_id;
-    const provider = await ProviderModel.findByUserId(userId);
 
-    if (!provider || !provider.provider_id) {
-      return res
-        .status(403)
-        .json({ message: "You must have a provider profile first." });
+    let services;
+
+    if (userType === "provider") {
+      const provider = await ProviderModel.findByUserId(userId);
+      if (!provider?.provider_id) {
+        return res
+          .status(403)
+          .json({ message: "You must have a provider profile first." });
+      }
+      services = await ServiceService.listServicesForProvider(
+        provider.provider_id
+      );
+    } else {
+      // Clients see all services from all providers
+      services = await ServiceService.listAllServices();
     }
 
-    const services = await ServiceService.listServicesForProvider(
-      provider.provider_id
-    );
     return res.status(200).json({ success: true, data: services });
   } catch (err) {
     logError("listServices controller error", err);
     next(err);
+  }
+}
+
+export async function listByProvider(req, res) {
+  try {
+    const providerId = req.params.providerId;
+    const services = await ServiceService.getServicesByProviderId(providerId);
+    res.status(200).json({ success: true, data: services });
+  } catch (err) {
+    console.error("Failed to list services by provider:", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 }
 
