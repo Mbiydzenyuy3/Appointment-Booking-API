@@ -108,13 +108,9 @@ export const updateSlot = async (
       [providerId, slot.day, slotId, endTime, startTime]
     );
     if (overlap.rows.length > 0) {
-      //throw a custom conflict code error
-      return res.status(409).json({
-        success: true,
-        message: "Slot overlaps with an existing slot",
-        data: slot,
-      });
+      throw new Error("Slot overlaps with an existing slot");
     }
+
     const result = await client.query(
       `UPDATE time_slots SET start_time = $1, end_time = $2, service_id = $3 WHERE timeslot_id = $4 RETURNING *`,
       [startTime, endTime, serviceId, slotId]
