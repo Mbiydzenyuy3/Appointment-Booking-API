@@ -36,6 +36,13 @@ const UserDashboard = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast.error("Unauthorized. Please log in.");
+        logout(); // optional: log the user out completely
+        return;
+      }
+
       try {
         const servicesRes = await api.get("/services");
         const appointmentsRes = await api.get("/appointments/list");
