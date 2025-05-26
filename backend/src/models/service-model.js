@@ -1,5 +1,6 @@
 // src/models/service-model.js
 import { query } from "../config/db.js";
+import { logError } from "../utils/logger.js";
 
 export async function createService({
   providerId,
