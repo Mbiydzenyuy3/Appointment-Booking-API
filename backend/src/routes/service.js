@@ -36,6 +36,7 @@ router.get("/", authMiddleware, ServiceController.list);
  *     summary: Update a service by ID
  *
  */
+
 router.put(
   "/:serviceId",
   authMiddleware,
@@ -50,6 +51,19 @@ router.put(
  *     summary: Delete a service by ID
  *     ...
  */
+
 router.delete("/:serviceId", authMiddleware, ServiceController.remove);
+
+/**
+ * @swagger
+ * /services/provider/{providerId}:
+ *   get:
+ *     summary: List services by provider ID
+ */
+router.get(
+  "/provider/:providerId",
+  authMiddleware,
+  ServiceController.listByProvider
+);
 
 export default router;

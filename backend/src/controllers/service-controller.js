@@ -76,6 +76,17 @@ export async function list(req, res, next) {
   }
 }
 
+export async function listByProvider(req, res) {
+  try {
+    const providerId = req.params.providerId;
+    const services = await ServiceService.getServicesByProviderId(providerId);
+    res.status(200).json({ success: true, data: services });
+  } catch (err) {
+    console.error("Failed to list services by provider:", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+}
+
 export async function update(req, res, next) {
   try {
     const userId = req.user?.user_id;
