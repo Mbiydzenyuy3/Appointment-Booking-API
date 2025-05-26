@@ -21,6 +21,16 @@ export async function createService({
   }
 }
 
+export async function findAllServices() {
+  try {
+    const { rows } = await query(`SELECT * FROM services`);
+    return rows;
+  } catch (err) {
+    logError("DB Error (find all services):", err);
+    throw new Error("Failed to query all services");
+  }
+}
+
 export async function findById(serviceId) {
   try {
     const { rows } = await query(
