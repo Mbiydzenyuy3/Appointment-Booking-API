@@ -3,14 +3,22 @@ import { logError } from '../utils/logger.js'
 
 export async function CreateAppointment(req, res) {
   try {
-    const { timeslotId } = req.body
+    const { timeslotId, appointment_date, appointment_time } = req.body
     const userId = req.user?.user_id
 
-    if (!userId || !timeslotId) {
-      return res.status(400).json({ message: 'Missing required fields' })
+    // Validate only the required fields
+    if (!userId || !timeslotId || !appointment_date || !appointment_time) {
+      return res.status(400).json({
+        message: 'Missing required fields',
+      })
     }
 
-    const appointment = await appointmentService.book({ userId, timeslotId })
+    const appointment = await appointmentService.book({
+      userId,
+      timeslotId,
+      appointment_date,
+      appointment_time,
+    })
 
     return res.status(201).json({
       success: true,
@@ -19,12 +27,14 @@ export async function CreateAppointment(req, res) {
     })
   } catch (err) {
     logError('Create appointment failed', err)
-    return res
-      .status(500)
-      .json({ message: err.message || 'Internal Server Error' })
+    return res.status(500).json({ message: 'Internal Server Error' })
   }
 }
 
+/**
+ * Controller function for canceling an appointment
+ *
+ */
 export async function cancelAppointment(req, res, next) {
   try {
     const { appointmentId } = req.params

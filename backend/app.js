@@ -27,6 +27,7 @@ import performanceRouter from "./src/routes/performance.js";
 
 const app = express();
 
+// Setup __dirname (since ES modules don't have it by default)
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 

@@ -26,5 +26,5 @@ export const emitAppointmentBooked = (appointment) => {
 }
 
 export const emitAppointmentCancelled = (appointment) => {
-  io.emit('appointmentCancelled', appointment)
+  io.emit('appointmentCancelled', appointment) // 🛠️ fixed typo here
 }

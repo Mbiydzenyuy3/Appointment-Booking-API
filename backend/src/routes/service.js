@@ -1,24 +1,23 @@
-import express from "express";
-import * as ServiceController from "../controllers/service-controller.js";
-import { validate } from "../middlewares/validate-middleware.js";
-import authMiddleware from "../middlewares/auth-middleware.js";
-import { serviceSchema } from "../validators/service-validator.js";
+import express from 'express'
+import * as ServiceController from '../controllers/service-controller.js'
+import { validate } from '../middlewares/validate-middleware.js'
+import authMiddleware from '../middlewares/auth-middleware.js'
+import { serviceSchema } from '../validators/service-validator.js'
 
-const router = express.Router();
+const router = express.Router()
 
 /**
  * @swagger
  * /services/create:
  *   post:
  *     summary: Create a new service
- *
  */
 router.post(
-  "/create",
+  '/create',
   authMiddleware,
   validate(serviceSchema),
   ServiceController.create
-);
+)
 
 /**
  * @swagger
@@ -26,7 +25,7 @@ router.post(
  *   get:
  *     summary: List all services for the authenticated provider
  */
-router.get("/", authMiddleware, ServiceController.list);
+router.get('/', authMiddleware, ServiceController.list)
 
 /**
  * @swagger
@@ -47,19 +46,18 @@ router.get(
  *     summary: Update a service by ID
  */
 router.put(
-  "/:serviceId",
+  '/:serviceId',
   authMiddleware,
   validate(serviceSchema),
   ServiceController.update
-);
+)
 
 /**
  * @swagger
  * /services/{serviceId}:
  *   delete:
  *     summary: Delete a service by ID
- *
  */
-router.delete("/:serviceId", authMiddleware, ServiceController.remove);
+router.delete('/:serviceId', authMiddleware, ServiceController.remove)
 
-export default router;
+export default router
