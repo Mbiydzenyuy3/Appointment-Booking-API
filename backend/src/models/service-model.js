@@ -67,7 +67,7 @@ export async function updateById(
           name = $2,
           description = $3,
           price = $4,
-          durationMinutes = $5
+          duration_minutes = $5
       WHERE service_id = $6
       RETURNING *;
       `,
