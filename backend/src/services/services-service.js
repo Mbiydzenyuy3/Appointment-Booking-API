@@ -15,6 +15,15 @@ export async function createServices(serviceData) {
   }
 }
 
+export async function getServicesByProviderId(providerId) {
+  try {
+    return await ServiceModel.findByProviderId(providerId);
+  } catch (err) {
+    logError("getServicesByProviderId: failed", err);
+    throw err;
+  }
+}
+
 // Get a single service by ID
 export async function getServiceById(serviceId) {
   try {
