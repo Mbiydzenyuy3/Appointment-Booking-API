@@ -31,7 +31,7 @@ export async function getServiceById(serviceId) {
   }
 }
 
-// List all services for a specific provider
+// List all services
 export async function listServicesForProvider(providerId) {
   try {
     return await ServiceModel.findByProviderId(providerId);
