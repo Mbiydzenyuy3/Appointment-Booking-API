@@ -39,15 +39,21 @@ const UserDashboard = () => {
       const token = localStorage.getItem("token");
       if (!token) {
         toast.error("Unauthorized. Please log in.");
-        logout(); // optional: log the user out completely
+        logout();
         return;
       }
 
       try {
         const servicesRes = await api.get("/services");
         const appointmentsRes = await api.get("/appointments/list");
-        setServices(servicesRes.data);
-        setAppointments(appointmentsRes.data);
+
+        const fetchedServices = servicesRes?.data?.data;
+        const fetchedAppointments = appointmentsRes?.data?.data;
+
+        setServices(Array.isArray(fetchedServices) ? fetchedServices : []);
+        setAppointments(
+          Array.isArray(fetchedAppointments) ? fetchedAppointments : []
+        );
       } catch (error) {
         toast.error("Failed to load data");
       } finally {
@@ -56,13 +62,13 @@ const UserDashboard = () => {
     };
 
     fetchData();
-  }, []);
+  }, [logout]);
 
   const cancelAppointment = async (appointmentId) => {
     try {
       await api.delete(`/appointments/${appointmentId}`);
-      setAppointments(
-        appointments.filter((appt) => appt._id !== appointmentId)
+      setAppointments((prev) =>
+        prev.filter((appt) => appt._id !== appointmentId)
       );
       toast.success("Appointment cancelled");
     } catch (error) {
@@ -93,21 +99,23 @@ const UserDashboard = () => {
       <section className="mb-10">
         <h2 className="text-xl font-semibold mb-4">Available Services</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {services.map((service) => (
-            <div
-              key={service._id}
-              className="bg-white p-6 rounded-lg shadow-md"
-            >
-              <h3 className="text-lg font-semibold">{service.name}</h3>
-              <p className="text-gray-600 mb-4">{service.description}</p>
-              <a
-                href={`/book/${service._id}`}
-                className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-              >
-                Book Appointment
-              </a>
-            </div>
-          ))}
+          {Array.isArray(services) &&
+            services.map((service, index) => (
+              <div key={index} className="bg-white p-6 rounded-lg shadow-md">
+                <h3 className="text-lg font-semibold">
+                  {service.service_name}
+                </h3>
+                <p className="text-gray-600 mb-4">{service.description}</p>
+                <p className="text-gray-600 mb-4">{service.price}</p>
+                <p className="text-gray-600 mb-4">{service.duration_minutes}</p>
+                <a
+                  href={`/book/${service._id}`}
+                  className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+                >
+                  Book Appointment
+                </a>
+              </div>
+            ))}
         </div>
       </section>
 
@@ -125,29 +133,38 @@ const UserDashboard = () => {
                 <div>
                   <p className="font-bold">{appt.serviceName}</p>
                   <p className="text-gray-600">
-                    {new Date(appt.date).toLocaleString()}
+                    {new Date(appt.date).toLocaleString("en-US", {
+                      weekday: "short",
+                      month: "short",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </p>
                   <p className="text-gray-500">Status: {appt.status}</p>
                 </div>
-                <button
-                  onClick={() => cancelAppointment(appt._id)}
-                  className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 mr-2"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() =>
-                    setRescheduleModal({ open: true, appointment: appt })
-                  }
-                  className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
-                >
-                  Reschedule
-                </button>
+                <div className="flex">
+                  <button
+                    onClick={() => cancelAppointment(appt._id)}
+                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 mr-2"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() =>
+                      setRescheduleModal({ open: true, appointment: appt })
+                    }
+                    className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
+                  >
+                    Reschedule
+                  </button>
+                </div>
               </li>
             ))}
           </ul>
         )}
       </section>
+
       <RescheduleModal
         isOpen={rescheduleModal.open}
         onClose={() => setRescheduleModal({ open: false, appointment: null })}
