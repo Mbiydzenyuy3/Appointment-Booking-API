@@ -1,5 +1,6 @@
 // src/models/service-model.js
 import { query } from "../config/db.js";
+import { logError } from "../utils/logger.js";
 
 export async function createService({
   providerId,
@@ -18,6 +19,16 @@ export async function createService({
     return rows[0];
   } catch (err) {
     throw new Error("Failed to create service");
+  }
+}
+
+export async function findAllServices() {
+  try {
+    const { rows } = await query(`SELECT * FROM services`);
+    return rows;
+  } catch (err) {
+    logError("DB Error (find all services):", err);
+    throw new Error("Failed to query all services");
   }
 }
 

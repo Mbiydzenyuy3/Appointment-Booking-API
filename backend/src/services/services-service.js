@@ -32,11 +32,11 @@ export async function getServiceById(serviceId) {
 }
 
 // List all services
-export async function listServicesForProvider(providerId) {
+export async function listAllServices() {
   try {
-    return await ServiceModel.findByProviderId(providerId);
+    return await ServiceModel.findAllServices();
   } catch (err) {
-    logError("listServicesForProvider: failed", err);
+    logError("listAllServices: failed", err);
     throw err;
   }
 }
