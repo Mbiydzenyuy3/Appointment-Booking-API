@@ -1,8 +1,6 @@
-// models/appointment-model.js
-
 import { pool } from '../config/db.js'
 
-//  Create appointment with timeslot-based resolution of provider/service
+// Create and book an appointment
 export const CreateAppointment = async ({
   timeslotId,
   userId,
@@ -10,59 +8,28 @@ export const CreateAppointment = async ({
   appointment_time,
 }) => {
   const client = await pool.connect()
-
   try {
     await client.query('BEGIN')
 
-    // Lock the slot and fetch details
     const slotRes = await client.query(
       'SELECT * FROM time_slots WHERE timeslot_id = $1 FOR UPDATE',
       [timeslotId]
     )
-
     const slot = slotRes.rows[0]
     if (!slot) throw new Error('Slot not found')
     if (slot.is_booked || !slot.is_available) {
       throw new Error('Slot is already booked or unavailable')
     }
 
-    const { provider_id, service_id, day: slotDate, time: slotTime } = slot
-
-    // Ensure appointment date/time matches the timeslot and also the database time format to avoid the 500 internal server error
-    const formatTime = (time) => {
-      if (typeof time === 'string') {
-        return time.slice(0, 5) // safely extracts "HH:MM" from "HH:MM:SS"
-      } else if (time instanceof Date) {
-        return time.toTimeString().slice(0, 5)
-      } else {
-        return String(time).slice(0, 5)
-      }
-    }
-
-    const formattedSlotDate =
-      slotDate instanceof Date
-        ? slotDate.toISOString().split('T')[0]
-        : String(slotDate).split('T')[0]
-
-    const formattedSlotTime = formatTime(slotTime)
-    const formattedAppointmentTime = formatTime(appointment_time)
-
+    // Check if the passed date/time match slot
     if (
-      appointment_date !== formattedSlotDate ||
-      formattedAppointmentTime !== formattedSlotTime
+      appointment_date !== slot.day.toISOString().split('T')[0] ||
+      appointment_time !== slot.time
     ) {
-      const mismatchError = new Error(
-        'Provided appointment date/time does not match the selected time slot'
-      )
-      mismatchError.details = {
-        expected_date: formattedSlotDate,
-        actual_date: appointment_date,
-        expected_time: formattedSlotTime,
-        actual_time: formattedAppointmentTime,
-      }
-      console.error('Appointment mismatch details:', mismatchError.details)
-      throw mismatchError
+      throw new Error('Provided appointment date/time does not match time slot')
     }
+
+    const { provider_id, service_id } = slot
 
     const appointmentRes = await client.query(
       `
@@ -92,7 +59,7 @@ export const CreateAppointment = async ({
     return appointmentRes.rows[0]
   } catch (err) {
     await client.query('ROLLBACK')
-    console.error('CreateAppointment transaction failed:', err)
+    console.error(' CreateAppointment transaction failed:', err)
     throw err
   } finally {
     client.release()
@@ -131,7 +98,7 @@ export const cancelAppointment = async (appointmentId) => {
     return appointment
   } catch (err) {
     await client.query('ROLLBACK')
-    console.error('❌ cancelAppointment transaction failed:', err)
+    console.error(' cancelAppointment transaction failed:', err)
     throw err
   } finally {
     client.release()
@@ -143,7 +110,7 @@ export const findAppointmentsByUser = async (
   userId,
   { status, startDate, endDate, limit = 10, offset = 0 }
 ) => {
-  let query = 'SELECT * FROM appointments WHERE user_id = $1'
+  let query = `SELECT * FROM appointments WHERE user_id = $1`
   const params = [userId]
   let paramIndex = 2
 
