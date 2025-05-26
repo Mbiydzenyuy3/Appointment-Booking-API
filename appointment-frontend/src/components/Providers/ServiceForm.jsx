@@ -3,7 +3,7 @@ import React, { useState } from "react";
 
 export default function ServiceForm({ onCreate }) {
   const [service, setService] = useState({
-    service_name: "",
+    name: "",
     description: "",
     duration_minutes: "",
     price: "",
@@ -17,6 +17,7 @@ export default function ServiceForm({ onCreate }) {
     e.preventDefault();
 
     const ServiceValues = {
+      // provider_id: service.provider_id,
       name: service.service_name,
       description: service.description,
       price: Number(service.price),

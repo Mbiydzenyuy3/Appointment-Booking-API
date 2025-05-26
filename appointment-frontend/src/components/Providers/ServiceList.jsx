@@ -19,7 +19,7 @@ export default function ServiceList({ services = [], onDelete }) {
               <p>{service.duration_minutes}</p>
             </div>
             <button
-              onClick={() => onDelete(service._id)}
+              onClick={() => onDelete(service.service_id)}
               className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
             >
               Delete
