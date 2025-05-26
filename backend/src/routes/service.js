@@ -31,6 +31,18 @@ router.get("/", authMiddleware, ServiceController.list);
 
 /**
  * @swagger
+ * /services/provider/{providerId}:
+ *   get:
+ *     summary: List services by provider ID
+ */
+router.get(
+  "/provider/:providerId",
+  authMiddleware,
+  ServiceController.listByProvider
+);
+
+/**
+ * @swagger
  * /services/{serviceId}:
  *   put:
  *     summary: Update a service by ID
