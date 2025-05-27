@@ -21,7 +21,7 @@ export default function ProviderDashboard() {
     const fetchData = async (providerId) => {
       try {
         const [servicesRes, slotsRes] = await Promise.all([
-          api.get("/services/:providerId"),
+          api.get(`/services/provider/${providerId}`),
           api.get(`/slots/${providerId}`),
         ]);
 
