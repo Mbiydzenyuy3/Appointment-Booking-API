@@ -1,32 +1,31 @@
 // src/components/Providers/TimeslotForm.jsx
-import React, { useState } from "react";
+import React, { useState } from 'react'
 
-export default function TimeslotForm({ onCreate, services = [], providerId }) {
+export default function TimeslotForm({ onCreate, services = [] }) {
   const [timeslot, setTimeslot] = useState({
-    day: "",
-    startTime: "",
-    endTime: "",
-    serviceId: "",
-  });
+    day: '',
+    startTime: '',
+    endTime: '',
+    serviceId: '',
+  })
 
   const handleChange = (e) => {
-    setTimeslot({ ...timeslot, [e.target.name]: e.target.value });
-  };
+    setTimeslot({ ...timeslot, [e.target.name]: e.target.value })
+  }
 
   const handleSubmit = (e) => {
-    e.preventDefault();
+    e.preventDefault()
 
     onCreate({
       day: timeslot.day,
       startTime: timeslot.startTime,
       endTime: timeslot.endTime,
       serviceId: timeslot.serviceId,
-      providerId,
-    });
+    })
 
     // Reset form
-    setTimeslot({ day: "", startTime: "", endTime: "", serviceId: "" });
-  };
+    setTimeslot({ day: '', startTime: '', endTime: '', serviceId: '' })
+  }
 
   return (
     <form
@@ -97,5 +96,5 @@ export default function TimeslotForm({ onCreate, services = [], providerId }) {
         Create Timeslot
       </button>
     </form>
-  );
+  )
 }

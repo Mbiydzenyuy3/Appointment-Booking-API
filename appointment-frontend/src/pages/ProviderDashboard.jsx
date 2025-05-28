@@ -1,87 +1,87 @@
 // src/pages/ProviderDashboard.jsx
-import React, { useEffect, useState } from "react";
-import { useAuth } from "../context/AuthContext.jsx";
-import Header from "../components/Header.jsx";
-import ServiceForm from "../components/Providers/ServiceForm.jsx";
-import ServiceList from "../components/Providers/ServiceList.jsx";
-import TimeslotForm from "../components/Providers/TimeSlotForm.jsx";
-import TimeslotList from "../components/Providers/TimeSlotList.jsx";
-import api from "../services/api.js";
-import toast from "react-hot-toast";
+import React, { useEffect, useState } from 'react'
+import { useAuth } from '../context/AuthContext.jsx'
+import Header from '../components/Header.jsx'
+import ServiceForm from '../components/Providers/ServiceForm.jsx'
+import ServiceList from '../components/Providers/ServiceList.jsx'
+import TimeslotForm from '../components/Providers/TimeSlotForm.jsx'
+import TimeslotList from '../components/Providers/TimeSlotList.jsx'
+import api from '../services/api.js'
+import toast from 'react-hot-toast'
 
 export default function ProviderDashboard() {
-  const { user } = useAuth();
-  const [services, setServices] = useState([]);
-  const [timeSlots, setTimeSlots] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuth()
+  const [services, setServices] = useState([])
+  const [timeSlots, setTimeSlots] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!user?.provider_id) return;
+    if (!user?.provider_id) return
 
     const fetchData = async (providerId) => {
       try {
         const [servicesRes, slotsRes] = await Promise.all([
           api.get(`/services/provider/${providerId}`),
           api.get(`/slots/${providerId}`),
-        ]);
+        ])
 
-        setServices(servicesRes.data.data);
-        setTimeSlots(slotsRes.data.data);
+        setServices(servicesRes.data.data)
+        setTimeSlots(slotsRes.data.data)
       } catch (error) {
-        console.error("Error loading dashboard data:", error);
-        toast.error("Failed to load dashboard data");
+        console.error('Error loading dashboard data:', error)
+        toast.error('Failed to load dashboard data')
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchData(user.provider_id);
-  }, [user]);
+    fetchData(user.provider_id)
+  }, [user])
 
   const handleCreateService = async (newService) => {
-    console.log("Creating service with data:", newService);
+    console.log('Creating service with data:', newService)
     try {
-      const res = await api.post("/services/create", newService);
-      setServices((prev) => [...prev, res.data.data]);
-      toast.success("Service created");
+      const res = await api.post('/services/create', newService)
+      setServices((prev) => [...prev, res.data.data])
+      toast.success('Service created')
     } catch (error) {
-      console.error("Create service error:", error);
-      toast.error("Failed to create service");
+      console.error('Create service error:', error)
+      toast.error('Failed to create service')
     }
-  };
+  }
 
   const handleDeleteService = async (serviceId) => {
     try {
-      await api.delete(`/services/${serviceId}`);
-      setServices((prev) => prev.filter((s) => s.service_id !== serviceId));
-      toast.success("Service deleted");
+      await api.delete(`/services/${serviceId}`)
+      setServices((prev) => prev.filter((s) => s.service_id !== serviceId))
+      toast.success('Service deleted')
     } catch (error) {
-      console.error("Delete service error:", error);
-      toast.error("Failed to delete service");
+      console.error('Delete service error:', error)
+      toast.error('Failed to delete service')
     }
-  };
+  }
 
   const handleCreateTimeSlot = async (slot) => {
     try {
-      const res = await api.post("/slots/create", slot);
-      setTimeSlots((prev) => [...prev, res.data.data]);
-      toast.success("Timeslot created");
+      const res = await api.post('/slots/create', slot)
+      setTimeSlots((prev) => [...prev, res.data.data])
+      toast.success('Timeslot created')
     } catch (error) {
-      console.error("Create timeslot error:", error);
-      toast.error("Failed to create timeslot");
+      console.error('Create timeslot error:', error)
+      toast.error('Failed to create timeslot')
     }
-  };
+  }
 
   const handleDeleteTimeSlot = async (slotId) => {
     try {
-      await api.delete(`/slots/${slotId}`);
-      setTimeSlots((prev) => prev.filter((s) => s.timeslot_id !== slotId));
-      toast.success("Timeslot deleted");
+      await api.delete(`/slots/${slotId}`)
+      setTimeSlots((prev) => prev.filter((s) => s.timeslot_id !== slotId))
+      toast.success('Timeslot deleted')
     } catch (error) {
-      console.error("Delete timeslot error:", error);
-      toast.error("Failed to delete timeslot");
+      console.error('Delete timeslot error:', error)
+      toast.error('Failed to delete timeslot')
     }
-  };
+  }
 
   if (!user) {
     return (
@@ -91,7 +91,7 @@ export default function ProviderDashboard() {
           You must be logged in to view this page.
         </p>
       </div>
-    );
+    )
   }
 
   return (
@@ -104,7 +104,7 @@ export default function ProviderDashboard() {
       </div>
 
       <p className="text-lg text-gray-700 mb-6">
-        Welcome, {user?.email || "Provider"}!
+        Welcome, {user?.email || 'Provider'}!
       </p>
 
       {loading ? (
@@ -142,5 +142,5 @@ export default function ProviderDashboard() {
         </div>
       )}
     </div>
-  );
+  )
 }

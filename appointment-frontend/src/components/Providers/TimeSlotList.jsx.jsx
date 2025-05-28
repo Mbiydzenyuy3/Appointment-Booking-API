@@ -1,12 +1,12 @@
 // src/components/Providers/TimeslotList.jsx
-import React, { useState } from "react";
+import React, { useState } from 'react'
 
 export default function TimeslotList({ timeslots = [], onDelete }) {
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('')
 
   const filteredTimeslots = timeslots.filter((slot) =>
-    (slot.day || "").includes(search)
-  );
+    (slot.day || '').includes(search)
+  )
 
   return (
     <div className="mt-6">
@@ -30,6 +30,7 @@ export default function TimeslotList({ timeslots = [], onDelete }) {
               className="p-4 bg-white shadow rounded flex justify-between items-center"
             >
               <div>
+                <p className="font-bold">{slot.service_name}</p>
                 <p className="font-bold">{slot.day}</p>
                 <p>
                   {slot.start_time} - {slot.end_time}
@@ -46,5 +47,5 @@ export default function TimeslotList({ timeslots = [], onDelete }) {
         </ul>
       )}
     </div>
-  );
+  )
 }
