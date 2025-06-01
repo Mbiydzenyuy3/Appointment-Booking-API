@@ -1,27 +1,36 @@
 import { pool } from '../config/db.js'
 
 // Create and book an appointment
-export const CreateAppointment = async ({ timeslotId, userId }) => {
+export const CreateAppointment = async ({
+  timeslotId,
+  userId,
+  appointment_date,
+  appointment_time,
+}) => {
   const client = await pool.connect()
-
   try {
     await client.query('BEGIN')
 
-    // Lock the timeslot for safe concurrent access
     const slotRes = await client.query(
       `SELECT * FROM time_slots WHERE timeslot_id = $1 FOR UPDATE`,
       [timeslotId]
     )
-
     const slot = slotRes.rows[0]
     if (!slot) throw new Error('Slot not found')
     if (slot.is_booked || !slot.is_available) {
       throw new Error('Slot is already booked or unavailable')
     }
 
-    const { provider_id, service_id, day, start_time: appointment_time } = slot
+    // Check if the passed date/time match slot
+    if (
+      appointment_date !== slot.day.toISOString().split('T')[0] ||
+      appointment_time !== slot.time
+    ) {
+      throw new Error('Provided appointment date/time does not match time slot')
+    }
 
-    // Create the appointment
+    const { provider_id, service_id } = slot
+
     const appointmentRes = await client.query(
       `
       INSERT INTO appointments (
@@ -34,13 +43,12 @@ export const CreateAppointment = async ({ timeslotId, userId }) => {
         userId,
         provider_id,
         service_id,
-        day,
+        appointment_date,
         appointment_time,
         'booked',
       ]
     )
 
-    // Mark the slot as booked
     await client.query(
       `UPDATE time_slots SET is_booked = true, is_available = false WHERE timeslot_id = $1`,
       [timeslotId]
@@ -50,7 +58,7 @@ export const CreateAppointment = async ({ timeslotId, userId }) => {
     return appointmentRes.rows[0]
   } catch (err) {
     await client.query('ROLLBACK')
-    console.error('❌ CreateAppointment transaction failed:', err)
+    console.error(' CreateAppointment transaction failed:', err)
     throw err
   } finally {
     client.release()
@@ -89,7 +97,7 @@ export const cancelAppointment = async (appointmentId) => {
     return appointment
   } catch (err) {
     await client.query('ROLLBACK')
-    console.error('❌ cancelAppointment transaction failed:', err)
+    console.error(' cancelAppointment transaction failed:', err)
     throw err
   } finally {
     client.release()
