@@ -5,11 +5,15 @@ import Joi from 'joi'
  * Used when booking a new appointment
  */
 export const appointmentSchema = Joi.object({
-  appointmentDate: Joi.date().required().messages({
+  timeslotId: Joi.string().uuid().required().messages({
+    'string.uuid': 'Time slot ID must be a valid UUID',
+    'any.required': 'Time slot ID is required',
+  }),
+  appointment_date: Joi.date().required().messages({
     'date.base': 'Appointment date must be valid',
     'any.required': 'Appointment date is required',
   }),
-  appointmentTime: Joi.string()
+  appointment_time: Joi.string()
     .pattern(/^([0-1]\d|2[0-3]):([0-5]\d)$/)
     .required()
     .messages({
@@ -17,6 +21,7 @@ export const appointmentSchema = Joi.object({
       'any.required': 'Appointment time is required',
     }),
 })
+
 /**
  * Used when canceling an existing appointment
  */
