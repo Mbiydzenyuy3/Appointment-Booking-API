@@ -2,9 +2,7 @@
 import * as appointmentService from '../services/appointment-service.js'
 import { logError } from '../utils/logger.js'
 
-/**
- * Controller function for booking an appointment
- */
+// Controller function for booking an appointment
 export async function CreateAppointment(req, res) {
   try {
     const { timeslotId, appointment_date, appointment_time } = req.body
