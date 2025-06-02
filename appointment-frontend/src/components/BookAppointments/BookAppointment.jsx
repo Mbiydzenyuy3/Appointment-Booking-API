@@ -9,19 +9,34 @@ export default function BookAppointmentForm({ providerId }) {
 
   useEffect(() => {
     const fetchTimeslots = async () => {
+      if (!providerId) return
+
       try {
-        const res = await api.get(`/slots/${providerId}`)
-        const data = res.data.data
-        console.log('Fetched timeslots:', data)
+        const response = await api.get(`/slots/${providerId}`)
+        const data = response.data.data
         setTimeslots(Array.isArray(data) ? data : [])
+        console.log('Fetched timeslots:', data)
       } catch (error) {
-        console.error('Failed to fetch timeslots', error)
+        console.error('Failed to fetch timeslots:', error)
         setTimeslots([])
       }
     }
 
-    if (providerId) fetchTimeslots()
+    fetchTimeslots()
   }, [providerId])
+
+  const formatDate = (dateStr) => {
+    try {
+      return new Date(dateStr).toISOString().split('T')[0]
+    } catch {
+      return dateStr
+    }
+  }
+
+  const formatTime = (timeStr) => {
+    const [hours, minutes] = timeStr.split(':')
+    return `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -38,21 +53,20 @@ export default function BookAppointmentForm({ providerId }) {
       return
     }
 
-    const dateFormat = selectedSlot.day.split('T')[0] // 'YYYY-MM-DD'
-    const timeFormat = selectedSlot.start_time.slice(0, 5) // 'HH:MM'
-
     const payload = {
       timeslotId: selectedSlot.timeslot_id,
-      appointment_date: dateFormat,
-      appointment_time: timeFormat,
+      appointment_date: formatDate(selectedSlot.day),
+      appointment_time: formatTime(selectedSlot.start_time),
     }
 
     try {
-      console.log('Booking payload:', payload)
-      const res = await api.post('/appointments/book', payload)
-      setMessage(res.data.message || 'Appointment booked successfully')
+      console.log('Sending booking payload:', payload)
+      const response = await api.post('/appointments/book', payload)
+      setMessage(response.data.message || 'Appointment booked successfully!')
     } catch (err) {
-      const errorMsg = err.response?.data?.message || 'Booking failed'
+      console.error('Booking failed:', err)
+      const errorMsg =
+        err.response?.data?.message || 'Internal server error. Try again.'
       setMessage(errorMsg)
     } finally {
       setLoading(false)
@@ -64,8 +78,9 @@ export default function BookAppointmentForm({ providerId }) {
       <h2>Book an Appointment</h2>
 
       <div>
-        <label>Select Time Slot:</label>
+        <label htmlFor="timeslot">Select Time Slot:</label>
         <select
+          id="timeslot"
           value={selectedTimeslotId}
           onChange={(e) => setSelectedTimeslotId(e.target.value)}
           required
@@ -73,7 +88,7 @@ export default function BookAppointmentForm({ providerId }) {
           <option value="">-- Choose a time slot --</option>
           {timeslots.map((slot) => (
             <option key={slot.timeslot_id} value={slot.timeslot_id}>
-              {slot.day.split('T')[0]} at {slot.start_time} (
+              {formatDate(slot.day)} at {formatTime(slot.start_time)} (
               {slot.provider_name})
             </option>
           ))}
