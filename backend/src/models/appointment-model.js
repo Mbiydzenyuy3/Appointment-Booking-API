@@ -30,14 +30,14 @@ export const CreateAppointment = async ({
 
     // Ensure appointment date/time matches the timeslot and also the database time format to avoid the 500 internal server error
     const formatTime = (time) => {
-      const [h, m] = time.toString().split(':')
-      return `${h.padStart(2, '0')}:${m.padStart(2, '0')}`
+      const dateObj =
+        typeof time === 'string' ? new Date(`1970-01-01T${time}Z`) : time
+      return dateObj.toTimeString().slice(0, 5) // "HH:MM"
     }
 
+    const formattedSlotDate = slotDate.toISOString().split('T')[0]
     const formattedSlotTime = formatTime(slotTime)
     const formattedAppointmentTime = formatTime(appointment_time)
-
-    const formattedSlotDate = slotDate.toISOString().split('T')[0]
 
     if (
       appointment_date !== formattedSlotDate ||
