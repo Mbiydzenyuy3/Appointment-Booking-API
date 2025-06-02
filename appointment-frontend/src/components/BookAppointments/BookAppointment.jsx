@@ -1,35 +1,26 @@
 import React, { useEffect, useState } from 'react'
 import api from '../../services/api.js'
-import axios from 'axios'
 
 export default function BookAppointmentForm({ providerId }) {
   const [timeslots, setTimeslots] = useState([])
   const [selectedTimeslotId, setSelectedTimeslotId] = useState('')
-  const [appointmentDate, setAppointmentDate] = useState('')
-  const [appointmentTime, setAppointmentTime] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState(null)
 
-  // Fetch available time slots from provider dashboard
   useEffect(() => {
     const fetchTimeslots = async () => {
       try {
         const res = await api.get(`/slots/${providerId}`)
         const data = res.data.data
-
-        if (Array.isArray(data)) {
-          setTimeslots(data)
-        } else {
-          console.error('Expected timeslots array, got:', data)
-          setTimeslots([])
-        }
+        console.log('Fetched timeslots:', data)
+        setTimeslots(Array.isArray(data) ? data : [])
       } catch (error) {
         console.error('Failed to fetch timeslots', error)
         setTimeslots([])
       }
     }
 
-    fetchTimeslots()
+    if (providerId) fetchTimeslots()
   }, [providerId])
 
   const handleSubmit = async (e) => {
@@ -37,19 +28,28 @@ export default function BookAppointmentForm({ providerId }) {
     setLoading(true)
     setMessage(null)
 
+    const selectedSlot = timeslots.find(
+      (slot) => slot.timeslot_id === selectedTimeslotId
+    )
+
+    if (!selectedSlot) {
+      setMessage('Invalid timeslot selected.')
+      setLoading(false)
+      return
+    }
+
+    const dateFormat = selectedSlot.day.split('T')[0] // 'YYYY-MM-DD'
+    const timeFormat = selectedSlot.start_time.slice(0, 5) // 'HH:MM'
+
+    const payload = {
+      timeslotId: selectedSlot.timeslot_id,
+      appointment_date: dateFormat,
+      appointment_time: timeFormat,
+    }
+
     try {
-      const payload = {
-        timeslotId: selectedTimeslotId,
-        appointment_date: appointmentDate,
-        appointment_time: appointmentTime,
-      }
-
-      const res = await axios.post('/appointments/book', payload, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`, // adjust auth strategy
-        },
-      })
-
+      console.log('Booking payload:', payload)
+      const res = await api.post('/appointments/book', payload)
       setMessage(res.data.message || 'Appointment booked successfully')
     } catch (err) {
       const errorMsg = err.response?.data?.message || 'Booking failed'
@@ -59,33 +59,9 @@ export default function BookAppointmentForm({ providerId }) {
     }
   }
 
-  if (!providerId) {
-    return <p>Loading provider details...</p>
-  }
-
   return (
     <form onSubmit={handleSubmit}>
       <h2>Book an Appointment</h2>
-
-      <div>
-        <label>Date:</label>
-        <input
-          type="date"
-          value={appointmentDate}
-          onChange={(e) => setAppointmentDate(e.target.value)}
-          required
-        />
-      </div>
-
-      <div>
-        <label>Time (HH:MM):</label>
-        <input
-          type="time"
-          value={appointmentTime}
-          onChange={(e) => setAppointmentTime(e.target.value)}
-          required
-        />
-      </div>
 
       <div>
         <label>Select Time Slot:</label>
@@ -95,12 +71,12 @@ export default function BookAppointmentForm({ providerId }) {
           required
         >
           <option value="">-- Choose a time slot --</option>
-          {Array.isArray(timeslots) &&
-            timeslots.map((slot, index) => (
-              <option key={index} value={slot.timeslot_id}>
-                {slot.day} at {slot.time} ({slot.provider_name})
-              </option>
-            ))}
+          {timeslots.map((slot) => (
+            <option key={slot.timeslot_id} value={slot.timeslot_id}>
+              {slot.day.split('T')[0]} at {slot.start_time} (
+              {slot.provider_name})
+            </option>
+          ))}
         </select>
       </div>
 
