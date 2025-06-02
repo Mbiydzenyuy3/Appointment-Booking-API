@@ -23,8 +23,8 @@ export const CreateAppointment = async ({
 
     // Check if the passed date/time match slot
     if (
-      appointment_date !== slot.day.toISOString().split('T')[0] ||
-      appointment_time !== slot.time
+      appointment_date !== slotDate.toISOString().split('T')[0] ||
+      appointment_time !== slotTime.slice(0, 5)
     ) {
       throw new Error('Provided appointment date/time does not match time slot')
     }
