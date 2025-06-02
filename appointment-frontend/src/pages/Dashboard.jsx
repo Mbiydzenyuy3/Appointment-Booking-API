@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
 import RescheduleModal from '../components/Appointments/ResheduleModal.jsx'
+import BookAppointmentForm from '../components/BookAppointments/BookAppointment.jsx'
 import api from '../services/api.js'
 import { toast } from 'react-toastify'
 
@@ -39,42 +40,42 @@ const UserDashboard = () => {
     }
   }
 
-  const handleBook = async (e) => {
-    e.preventDefault()
-    const form = e.target
-    const date = form.date.value
-    console.log('Selected date:', date)
-    const { service } = bookingModal
-    console.log('Selected service:', service)
+  // const handleBook = async (e) => {
+  //   e.preventDefault()
+  //   const form = e.target
+  //   const date = form.date.value
+  //   console.log('Selected date:', date)
+  //   const { service } = bookingModal
+  //   console.log('Selected service:', service)
 
-    const serviceId = service?.service_id
-    const providerId = service?.provider_id
+  //   const serviceId = service?.service_id
+  //   const providerId = service?.provider_id
 
-    if (!service?._id || !service?.providerId || !date) {
-      toast.error('Incomplete booking information.')
-      console.log('Failed due to:', { service, date })
-      return
-    }
+  //   if (!service?._id || !service?.providerId || !date) {
+  //     toast.error('Incomplete booking information.')
+  //     console.log('Failed due to:', { service, date })
+  //     return
+  //   }
 
-    try {
-      const payload = {
-        serviceId,
-        providerId,
-        date,
-        timeslotId: service?.timeslot_id,
-      }
+  //   try {
+  //     const payload = {
+  //       serviceId,
+  //       providerId,
+  //       date,
+  //       timeslotId: service?.timeslot_id,
+  //     }
 
-      console.log('Booking payload:', payload)
+  //     console.log('Booking payload:', payload)
 
-      const res = await api.post('/appointments/book', payload)
+  //     const res = await api.post('/appointments/book', payload)
 
-      toast.success('Appointment booked')
-      setAppointments((prev) => [...prev, res.data])
-      setBookingModal({ open: false, service: null })
-    } catch (error) {
-      toast.error('Failed to book appointment')
-    }
-  }
+  //     toast.success('Appointment booked')
+  //     setAppointments((prev) => [...prev, res.data])
+  //     setBookingModal({ open: false, service: null })
+  //   } catch (error) {
+  //     toast.error('Failed to book appointment')
+  //   }
+  // }
 
   const cancelAppointment = async (appointmentId) => {
     try {
@@ -219,7 +220,7 @@ const UserDashboard = () => {
               Book: {bookingModal.service?.service_name}
             </h3>
 
-            <form onSubmit={handleBook}>
+            {/* <form onSubmit={handleBook}>
               <label className="block mb-2 text-sm font-medium">
                 Choose a date & time
               </label>
@@ -246,7 +247,10 @@ const UserDashboard = () => {
                   Book
                 </button>
               </div>
-            </form>
+            </form> */}
+            <BookAppointmentForm
+              providerId={bookingModal.service?.provider_id}
+            />
           </div>
         </div>
       )}

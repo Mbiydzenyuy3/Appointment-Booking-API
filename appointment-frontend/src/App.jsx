@@ -1,26 +1,26 @@
-import React from "react";
+import React from 'react'
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
-} from "react-router-dom";
-import { Provider } from "./context/AuthContext.jsx";
-import { SocketProvider } from "./context/Socketio.jsx";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import HomePage from "./pages/LandingPage.jsx";
-import LoginPage from "./pages/Login.jsx";
-import RegisterPage from "./pages/Register.jsx";
-import DashboardPage from "./pages/Dashboard.jsx";
-import ProviderDashboard from "./pages/ProviderDashboard.jsx";
-import TimeSlotsPage from "./pages/TimeSlotPage.jsx";
+} from 'react-router-dom'
+import { Provider } from './context/AuthContext.jsx'
+import { SocketProvider } from './context/Socketio.jsx'
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
+import HomePage from './pages/LandingPage.jsx'
+import LoginPage from './pages/Login.jsx'
+import RegisterPage from './pages/Register.jsx'
+import DashboardPage from './pages/Dashboard.jsx'
+import ProviderDashboard from './pages/ProviderDashboard.jsx'
+import TimeSlotsPage from './pages/TimeSlotPage.jsx'
 // import Header from "./components/Header.jsx"
 // import Footer from "./components/Footer.jsx"
-import AppointmentsPage from "./pages/Appointments.jsx";
-import SlotPage from "./pages/Slots.jsx";
-import BookAppointmentPage from "./pages/BookAppointment.jsx";
-import PrivateRoute from "./routes/PrivateRoute.jsx";
+import AppointmentsPage from './pages/Appointments.jsx'
+import SlotPage from './pages/Slots.jsx'
+// import BookAppointmentPage from "./pages/BookAppointment.jsx";
+import PrivateRoute from './routes/PrivateRoute.jsx'
 
 function App() {
   return (
@@ -36,7 +36,7 @@ function App() {
               <Route
                 path="/dashboard"
                 element={
-                  <PrivateRoute allowedRoles={["client"]}>
+                  <PrivateRoute allowedRoles={['client']}>
                     <DashboardPage />
                   </PrivateRoute>
                 }
@@ -44,7 +44,7 @@ function App() {
               <Route
                 path="/provider/dashboard"
                 element={
-                  <PrivateRoute allowedRoles={["provider"]}>
+                  <PrivateRoute allowedRoles={['provider']}>
                     <ProviderDashboard />
                   </PrivateRoute>
                 }
@@ -61,14 +61,14 @@ function App() {
                 path="/appointments"
                 element={<PrivateRoute>{<AppointmentsPage />}</PrivateRoute>}
               />
-              <Route
+              {/* <Route
                 path="/book/:providerId"
                 element={
                   <PrivateRoute>
                     <BookAppointmentPage />
                   </PrivateRoute>
                 }
-              />
+              /> */}
 
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
@@ -77,7 +77,7 @@ function App() {
         </Router>
       </SocketProvider>
     </Provider>
-  );
+  )
 }
 
-export default App;
+export default App

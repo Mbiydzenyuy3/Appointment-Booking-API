@@ -1,10 +1,10 @@
 // src/components/Appointments/RescheduleModal.jsx
-import React, { useState } from "react";
-import Modal from "react-modal";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
+import React, { useState } from 'react'
+import Modal from 'react-modal'
+import DatePicker from 'react-datepicker'
+import 'react-datepicker/dist/react-datepicker.css'
 
-Modal.setAppElement("#root");
+Modal.setAppElement('#root')
 
 export default function RescheduleModal({
   isOpen,
@@ -12,12 +12,12 @@ export default function RescheduleModal({
   onSubmit,
   initialDate,
 }) {
-  const [selectedDate, setSelectedDate] = useState(new Date(initialDate));
+  const [selectedDate, setSelectedDate] = useState(new Date(initialDate))
 
   const handleSubmit = () => {
-    onSubmit(selectedDate);
-    onClose();
-  };
+    onSubmit(selectedDate)
+    onClose()
+  }
 
   return (
     <Modal
@@ -51,5 +51,5 @@ export default function RescheduleModal({
         </button>
       </div>
     </Modal>
-  );
+  )
 }
