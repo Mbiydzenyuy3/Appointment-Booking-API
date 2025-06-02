@@ -21,6 +21,7 @@ export const CreateAppointment = async ({
       throw new Error("Slot is already booked or unavailable");
     }
 
+    // Ensure appointment date/time matches the timeslot and also the database time format to avoid the 500 internal server error
     const formatTime = (time) => {
       const [h, m] = time.toString().split(":");
       return `${h.padStart(2, "0")}:${m.padStart(2, "0")}`;
