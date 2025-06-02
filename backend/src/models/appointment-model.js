@@ -28,7 +28,7 @@ export const CreateAppointment = async ({
       } else if (time instanceof Date) {
         return time.toTimeString().slice(0, 5)
       } else {
-        return String(time).slice(0, 5) // fallback
+        return String(time).slice(0, 5)
       }
     }
 
