@@ -1,6 +1,7 @@
+// models/appointment-model.js
+
 import { pool } from '../config/db.js'
 
-// Create and book an appointment
 export const CreateAppointment = async ({
   timeslotId,
   userId,
@@ -8,49 +9,68 @@ export const CreateAppointment = async ({
   appointment_time,
 }) => {
   const client = await pool.connect()
+
   try {
     await client.query('BEGIN')
 
+    // Lock and fetch the timeslot row to prevent race conditions
     const slotRes = await client.query(
       `SELECT * FROM time_slots WHERE timeslot_id = $1 FOR UPDATE`,
       [timeslotId]
     )
+
     const slot = slotRes.rows[0]
-    if (!slot) throw new Error('Slot not found')
+    if (!slot) throw Object.assign(new Error('Slot not found'), { status: 404 })
     if (slot.is_booked || !slot.is_available) {
-      throw new Error('Slot is already booked or unavailable')
+      throw Object.assign(new Error('Slot is already booked or unavailable'), {
+        status: 400,
+      })
     }
 
-    // Ensure appointment date/time matches the timeslot and also the database time format to avoid the 500 internal server error
+    const {
+      provider_id,
+      service_id,
+      day: slotDate,
+      start_time: slotTime,
+    } = slot
+
+    // Helper to safely extract "HH:MM" from various formats
     const formatTime = (time) => {
-      if (typeof time === 'string') {
-        return time.slice(0, 5) // safely extracts "HH:MM" from "HH:MM:SS"
-      } else if (time instanceof Date) {
-        return time.toTimeString().slice(0, 5)
-      } else {
-        return String(time).slice(0, 5)
-      }
+      if (!time) return ''
+      if (typeof time === 'string') return time.slice(0, 5)
+      if (time instanceof Date) return time.toTimeString().slice(0, 5)
+      return String(time).slice(0, 5)
     }
 
-    const formattedSlotDate = new Date(slot.date).toISOString().split('T')[0]
-    const formattedSlotTime = formatTime(slot.time)
+    const formattedSlotDate = new Date(slotDate).toISOString().split('T')[0]
+    const formattedSlotTime = formatTime(slotTime)
     const formattedAppointmentTime = formatTime(appointment_time)
 
+    // Ensure the submitted time/date match the slot
     if (
       appointment_date !== formattedSlotDate ||
       formattedAppointmentTime !== formattedSlotTime
     ) {
-      throw new Error(
-        'Provided appointment date/time does not match the selected time slot'
+      console.warn('Appointment date/time mismatch:', {
+        expected_date: formattedSlotDate,
+        actual_date: appointment_date,
+        expected_time: formattedSlotTime,
+        actual_time: formattedAppointmentTime,
+      })
+      throw Object.assign(
+        new Error(
+          'Provided appointment date/time does not match the selected time slot'
+        ),
+        { status: 400 }
       )
     }
 
-    const { provider_id, service_id } = slot
-
+    // Insert appointment into the DB
     const appointmentRes = await client.query(
       `
       INSERT INTO appointments (
-        timeslot_id, user_id, provider_id, service_id, appointment_date, appointment_time, status
+        timeslot_id, user_id, provider_id, service_id,
+        appointment_date, appointment_time, status
       ) VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *
       `,
@@ -65,6 +85,7 @@ export const CreateAppointment = async ({
       ]
     )
 
+    // Mark the timeslot as booked
     await client.query(
       `UPDATE time_slots SET is_booked = true, is_available = false WHERE timeslot_id = $1`,
       [timeslotId]
@@ -74,8 +95,8 @@ export const CreateAppointment = async ({
     return appointmentRes.rows[0]
   } catch (err) {
     await client.query('ROLLBACK')
-    console.error(' CreateAppointment transaction failed:', err)
-    throw err
+    console.error('CreateAppointment transaction failed:', err)
+    throw err // Let the caller handle the response formatting
   } finally {
     client.release()
   }
@@ -113,7 +134,7 @@ export const cancelAppointment = async (appointmentId) => {
     return appointment
   } catch (err) {
     await client.query('ROLLBACK')
-    console.error(' cancelAppointment transaction failed:', err)
+    console.error('❌ cancelAppointment transaction failed:', err)
     throw err
   } finally {
     client.release()
