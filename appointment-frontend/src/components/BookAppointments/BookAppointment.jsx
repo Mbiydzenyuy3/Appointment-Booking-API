@@ -25,16 +25,16 @@ export default function BookAppointmentForm({ providerId }) {
     fetchTimeslots()
   }, [providerId])
 
-  const formatDate = (dateStr) => {
+  const formatDate = (date) => {
     try {
-      return new Date(dateStr).toISOString().split('T')[0]
+      return new Date(date).toISOString().split('T')[0]
     } catch {
-      return dateStr
+      return date
     }
   }
 
-  const formatTime = (timeStr) => {
-    const [hours, minutes] = timeStr.split(':')
+  const formatTime = (time) => {
+    const [hours, minutes] = time.split(':')
     return `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`
   }
 
