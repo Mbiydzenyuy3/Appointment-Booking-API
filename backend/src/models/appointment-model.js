@@ -35,12 +35,12 @@ export const CreateAppointment = async ({
       } else if (time instanceof Date) {
         return time.toTimeString().slice(0, 5)
       } else {
-        return String(time).slice(0, 5) // fallback
+        return String(time).slice(0, 5)
       }
     }
 
-    const formattedSlotDate = new Date(slot.date).toISOString().split('T')[0]
-    const formattedSlotTime = formatTime(slot.time) // assuming `slot.time` exists
+    const formattedSlotDate = new Date(slotDate).toISOString().split('T')[0]
+    const formattedSlotTime = formatTime(slotTime) // assuming `slot.time` exists
     const formattedAppointmentTime = formatTime(appointment_time)
 
     if (
@@ -48,7 +48,13 @@ export const CreateAppointment = async ({
       formattedAppointmentTime !== formattedSlotTime
     ) {
       throw new Error(
-        'Provided appointment date/time does not match the selected time slot'
+        'Provided appointment date/time does not match the selected time slot',
+        {
+          expected_date: formattedSlotDate,
+          actual_date: appointment_date,
+          expected_time: formattedSlotTime,
+          actual_time: formattedAppointmentTime,
+        }
       )
     }
 
