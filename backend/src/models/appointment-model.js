@@ -16,7 +16,7 @@ export const CreateAppointment = async ({
 
     // Lock the slot and fetch details
     const slotRes = await client.query(
-      `SELECT * FROM time_slots WHERE timeslot_id = $1 FOR UPDATE`,
+      'SELECT * FROM time_slots WHERE timeslot_id = $1 FOR UPDATE',
       [timeslotId]
     )
 
@@ -78,7 +78,7 @@ export const CreateAppointment = async ({
 
     //  Mark timeslot as booked
     await client.query(
-      `UPDATE time_slots SET is_booked = true, is_available = false WHERE timeslot_id = $1`,
+      'UPDATE time_slots SET is_booked = true, is_available = false WHERE timeslot_id = $1',
       [timeslotId]
     )
 
@@ -101,7 +101,7 @@ export const cancelAppointment = async (appointmentId) => {
     await client.query('BEGIN')
 
     const apptRes = await client.query(
-      `SELECT * FROM appointments WHERE appointment_id = $1 FOR UPDATE`,
+      'SELECT * FROM appointments WHERE appointment_id = $1 FOR UPDATE',
       [appointmentId]
     )
 
@@ -117,7 +117,7 @@ export const cancelAppointment = async (appointmentId) => {
 
     // Reopen the time slot
     await client.query(
-      `UPDATE time_slots SET is_booked = false, is_available = true WHERE timeslot_id = $1`,
+      'UPDATE time_slots SET is_booked = false, is_available = true WHERE timeslot_id = $1',
       [timeslot_id]
     )
 
@@ -137,7 +137,7 @@ export const findAppointmentsByUser = async (
   userId,
   { status, startDate, endDate, limit = 10, offset = 0 }
 ) => {
-  let query = `SELECT * FROM appointments WHERE user_id = $1`
+  let query = 'SELECT * FROM appointments WHERE user_id = $1'
   const params = [userId]
   let paramIndex = 2
 
