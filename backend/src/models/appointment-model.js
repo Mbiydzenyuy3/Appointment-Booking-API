@@ -47,15 +47,17 @@ export const CreateAppointment = async ({
       appointment_date !== formattedSlotDate ||
       formattedAppointmentTime !== formattedSlotTime
     ) {
-      throw new Error(
-        'Provided appointment date/time does not match the selected time slot',
-        {
-          expected_date: formattedSlotDate,
-          actual_date: appointment_date,
-          expected_time: formattedSlotTime,
-          actual_time: formattedAppointmentTime,
-        }
+      const mismatchError = new Error(
+        'Provided appointment date/time does not match the selected time slot'
       )
+      mismatchError.details = {
+        expected_date: formattedSlotDate,
+        actual_date: appointment_date,
+        expected_time: formattedSlotTime,
+        actual_time: formattedAppointmentTime,
+      }
+      console.error('Appointment mismatch details:', mismatchError.details)
+      throw mismatchError
     }
 
     const appointmentRes = await client.query(
