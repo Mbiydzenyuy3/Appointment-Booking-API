@@ -26,6 +26,10 @@ export default function BookAppointmentForm({ providerId }) {
   }, [providerId])
 
   const formatDate = (date) => {
+    if (!date) return ''
+    if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return date
+    }
     try {
       return new Date(date).toISOString().split('T')[0]
     } catch {
