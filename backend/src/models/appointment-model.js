@@ -44,7 +44,7 @@ export const CreateAppointment = async ({
         ? slotDate.toISOString().split('T')[0]
         : String(slotDate).split('T')[0]
 
-    const formattedSlotTime = formatTime(slotTime) // assuming `slot.time` exists
+    const formattedSlotTime = formatTime(slotTime)
     const formattedAppointmentTime = formatTime(appointment_time)
 
     if (
