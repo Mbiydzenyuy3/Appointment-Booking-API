@@ -51,18 +51,17 @@ export const CreateAppointment = async ({
       appointment_date !== formattedSlotDate ||
       formattedAppointmentTime !== formattedSlotTime
     ) {
-      console.warn('Appointment date/time mismatch:', {
+      const mismatchError = new Error(
+        'Provided appointment date/time does not match the selected time slot'
+      )
+      mismatchError.details = {
         expected_date: formattedSlotDate,
         actual_date: appointment_date,
         expected_time: formattedSlotTime,
         actual_time: formattedAppointmentTime,
-      })
-      throw Object.assign(
-        new Error(
-          'Provided appointment date/time does not match the selected time slot'
-        ),
-        { status: 400 }
-      )
+      }
+      console.error('Appointment mismatch details:', mismatchError.details)
+      throw mismatchError
     }
 
     // Insert appointment into the DB
