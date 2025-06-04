@@ -81,7 +81,7 @@ const UserDashboard = () => {
     try {
       await api.delete(`/appointments/${appointmentId}`)
       setAppointments((prev) =>
-        prev.filter((appt) => appt._id !== appointmentId)
+        prev.filter((appt) => appt.appointment_id !== appointmentId)
       )
       toast.success('Appointment cancelled')
     } catch (error) {
@@ -175,7 +175,7 @@ const UserDashboard = () => {
           <ul className="space-y-4">
             {appointments.map((appt) => (
               <li
-                key={appt._id}
+                key={appt.appointment_id}
                 className="bg-white p-4 shadow rounded flex justify-between items-center"
               >
                 <div>
@@ -193,7 +193,7 @@ const UserDashboard = () => {
                 </div>
                 <div className="flex">
                   <button
-                    onClick={() => cancelAppointment(appt._id)}
+                    onClick={() => cancelAppointment(appt.appointment_id)}
                     className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 mr-2"
                   >
                     Cancel

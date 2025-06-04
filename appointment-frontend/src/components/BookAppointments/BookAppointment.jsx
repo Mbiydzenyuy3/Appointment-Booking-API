@@ -95,7 +95,11 @@ export default function BookAppointmentForm({ providerId }) {
         </select>
       </div>
 
-      <button type="submit" disabled={loading}>
+      <button
+        type="submit"
+        disabled={loading}
+        className="px-4 py-2 mt-4 bg-green-600 text-white rounded hover:bg-green-700"
+      >
         {loading ? 'Booking...' : 'Book Appointment'}
       </button>
 
