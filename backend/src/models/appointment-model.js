@@ -15,7 +15,7 @@ export const CreateAppointment = async ({
 
     // Lock and fetch the timeslot row to prevent race conditions
     const slotRes = await client.query(
-      `SELECT * FROM time_slots WHERE timeslot_id = $1 FOR UPDATE`,
+      'SELECT * FROM time_slots WHERE timeslot_id = $1 FOR UPDATE',
       [timeslotId]
     )
 
@@ -87,7 +87,7 @@ export const CreateAppointment = async ({
 
     // Mark the timeslot as booked
     await client.query(
-      `UPDATE time_slots SET is_booked = true, is_available = false WHERE timeslot_id = $1`,
+      'UPDATE time_slots SET is_booked = true, is_available = false WHERE timeslot_id = $1',
       [timeslotId]
     )
 
@@ -110,7 +110,7 @@ export const cancelAppointment = async (appointmentId) => {
     await client.query('BEGIN')
 
     const apptRes = await client.query(
-      `SELECT * FROM appointments WHERE appointment_id = $1 FOR UPDATE`,
+      'SELECT * FROM appointments WHERE appointment_id = $1 FOR UPDATE',
       [appointmentId]
     )
 
@@ -120,13 +120,13 @@ export const cancelAppointment = async (appointmentId) => {
     const { timeslot_id } = appointment
 
     // Delete the appointment
-    await client.query(`DELETE FROM appointments WHERE appointment_id = $1`, [
+    await client.query('DELETE FROM appointments WHERE appointment_id = $1', [
       appointmentId,
     ])
 
     // Reopen the time slot
     await client.query(
-      `UPDATE time_slots SET is_booked = false, is_available = true WHERE timeslot_id = $1`,
+      'UPDATE time_slots SET is_booked = false, is_available = true WHERE timeslot_id = $1',
       [timeslot_id]
     )
 
