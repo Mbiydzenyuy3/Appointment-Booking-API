@@ -148,8 +148,11 @@ const UserDashboard = () => {
       <section className="mb-10">
         <h2 className="text-xl font-semibold mb-4">Available Services</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {services.map((service, index) => (
-            <div key={index} className="bg-white p-6 rounded-lg shadow-md">
+          {services.map((service) => (
+            <div
+              key={service.service_id}
+              className="bg-white p-6 rounded-lg shadow-md"
+            >
               <h3 className="text-lg font-semibold">{service.service_name}</h3>
               <p className="text-gray-600 mb-2">{service.description}</p>
               <p className="text-gray-600 mb-1">Price: ${service.price}</p>
