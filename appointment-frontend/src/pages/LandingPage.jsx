@@ -42,7 +42,7 @@ export default function HomePage() {
               </Link>
               <Link
                 to="/login"
-                className="text-blue-800 border border-blue-600 px-6 py-3 rounded hover:bg-blue-50"
+                className="text-white border border-blue-600 px-6 py-3 rounded hover:bg-blue-50 hover:text-blue-800"
               >
                 Sign In
               </Link>
