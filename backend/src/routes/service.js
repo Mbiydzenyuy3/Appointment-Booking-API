@@ -61,7 +61,7 @@ router.put(
  *     summary: Delete a service by ID
  */
 
-router.delete("/:serviceId", authMiddleware, ServiceController.remove);
+router.delete('/:serviceId', authMiddleware, ServiceController.remove)
 
 /**
  * @swagger
@@ -70,9 +70,9 @@ router.delete("/:serviceId", authMiddleware, ServiceController.remove);
  *     summary: List services by provider ID
  */
 router.get(
-  "/provider/:providerId",
+  '/provider/:providerId',
   authMiddleware,
   ServiceController.listByProvider
-);
+)
 
 export default router
