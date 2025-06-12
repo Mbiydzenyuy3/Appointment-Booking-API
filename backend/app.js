@@ -28,8 +28,8 @@ import performanceRouter from "./src/routes/performance.js";
 const app = express();
 
 // Setup __dirname (since ES modules don't have it by default)
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 // Middleware
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
@@ -56,9 +56,9 @@ app.use("/api/ai-scheduler", aiSchedulerRouter);
 app.use("/api/performance", performanceRouter);
 
 // Swagger Documentation
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
 // Add error handler middleware
-app.use(ErrorHandler);
+app.use(ErrorHandler)
 
-export { app, initSocket };
+export { app, initSocket }
