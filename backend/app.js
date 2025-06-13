@@ -31,7 +31,7 @@ const __dirname = dirname(__filename)
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'))
 app.use(
   cors({
-    origin: 'http://localhost:5173', // allow your frontend origin
+    origin: 'http://localhost:5173',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
   })
