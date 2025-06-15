@@ -12,7 +12,7 @@ export const CreateAppointment = async ({
     await client.query("BEGIN");
 
     const slotRes = await client.query(
-      'SELECT * FROM time_slots WHERE timeslot_id = $1 FOR UPDATE',
+      "SELECT * FROM time_slots WHERE timeslot_id = $1 FOR UPDATE",
       [timeslotId]
     );
     const slot = slotRes.rows[0];
@@ -23,33 +23,33 @@ export const CreateAppointment = async ({
 
     // Ensure appointment date/time matches the timeslot and also the database time format to avoid the 500 internal server error
     const formatTime = (time) => {
-      if (!time) return ''
-      if (typeof time === 'string') return time.slice(0, 5)
-      if (time instanceof Date) return time.toTimeString().slice(0, 5)
-      return String(time).slice(0, 5)
-    }
+      if (!time) return "";
+      if (typeof time === "string") return time.slice(0, 5);
+      if (time instanceof Date) return time.toTimeString().slice(0, 5);
+      return String(time).slice(0, 5);
+    };
 
-    const formattedSlotDate = new Date(slotDate).toISOString().split('T')[0]
-    const formattedSlotTime = formatTime(slotTime)
-    const formattedAppointmentTime = formatTime(appointment_time)
+    const formattedSlotDate = new Date(slotDate).toISOString().split("T")[0];
+    const formattedSlotTime = formatTime(slotTime);
+    const formattedAppointmentTime = formatTime(appointment_time);
 
     // Ensure the submitted time/date match the slot
     if (
       appointment_date !== formattedSlotDate ||
       formattedAppointmentTime !== formattedSlotTime
     ) {
-      console.warn('Appointment date/time mismatch:', {
+      console.warn("Appointment date/time mismatch:", {
         expected_date: formattedSlotDate,
         actual_date: appointment_date,
         expected_time: formattedSlotTime,
-        actual_time: formattedAppointmentTime,
-      })
+        actual_time: formattedAppointmentTime
+      });
       throw Object.assign(
         new Error(
-          'Provided appointment date/time does not match the selected time slot'
+          "Provided appointment date/time does not match the selected time slot"
         ),
         { status: 400 }
-      )
+      );
     }
 
     // Insert appointment into the DB
@@ -73,7 +73,7 @@ export const CreateAppointment = async ({
 
     //  Mark timeslot as booked
     await client.query(
-      'UPDATE time_slots SET is_booked = true, is_available = false WHERE timeslot_id = $1',
+      "UPDATE time_slots SET is_booked = true, is_available = false WHERE timeslot_id = $1",
       [timeslotId]
     );
 
@@ -96,7 +96,7 @@ export const cancelAppointment = async (appointmentId) => {
     await client.query("BEGIN");
 
     const apptRes = await client.query(
-      'SELECT * FROM appointments WHERE appointment_id = $1 FOR UPDATE',
+      "SELECT * FROM appointments WHERE appointment_id = $1 FOR UPDATE",
       [appointmentId]
     );
 
@@ -106,13 +106,13 @@ export const cancelAppointment = async (appointmentId) => {
     const { timeslot_id } = appointment;
 
     // Delete the appointment
-    await client.query('DELETE FROM appointments WHERE appointment_id = $1', [
-      appointmentId,
-    ])
+    await client.query("DELETE FROM appointments WHERE appointment_id = $1", [
+      appointmentId
+    ]);
 
     // Reopen the time slot
     await client.query(
-      'UPDATE time_slots SET is_booked = false, is_available = true WHERE timeslot_id = $1',
+      "UPDATE time_slots SET is_booked = false, is_available = true WHERE timeslot_id = $1",
       [timeslot_id]
     );
 
@@ -120,7 +120,7 @@ export const cancelAppointment = async (appointmentId) => {
     return appointment;
   } catch (err) {
     await client.query("ROLLBACK");
-    console.error(" cancelAppointment transaction failed:", err);
+    console.error("❌ cancelAppointment transaction failed:", err);
     throw err;
   } finally {
     client.release();
@@ -134,22 +134,22 @@ export const findAppointmentsByUser = async (
 ) => {
   let query = `SELECT * FROM appointments WHERE user_id = $1`;
   const params = [userId];
-  let paramIndex = 2;
+  let i = 2;
 
   if (status) {
-    query += ` AND status = $${paramIndex++}`;
+    query += ` AND status = $${i++}`;
     params.push(status);
   }
   if (startDate) {
-    query += ` AND appointment_date >= $${paramIndex++}`;
+    query += ` AND appointment_date >= $${i++}`;
     params.push(startDate);
   }
   if (endDate) {
-    query += ` AND appointment_date <= $${paramIndex++}`;
+    query += ` AND appointment_date <= $${i++}`;
     params.push(endDate);
   }
 
-  query += ` ORDER BY appointment_date DESC, appointment_time DESC LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
+  query += ` ORDER BY appointment_date DESC, appointment_time DESC LIMIT $${i++} OFFSET $${i++}`;
   params.push(limit, offset);
 
   const result = await pool.query(query, params);
