@@ -8,7 +8,7 @@ import { useAuth } from "../context/AuthContext.jsx";
 
 const LoginSchema = Yup.object().shape({
   email: Yup.string().email("Invalid email").required("Required"),
-  password: Yup.string().required("Required"),
+  password: Yup.string().required("Required")
 });
 
 export default function Login() {
@@ -17,9 +17,9 @@ export default function Login() {
   const [formError, setFormError] = useState("");
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white shadow-md p-6 rounded w-full max-w-md">
-        <h2 className="text-2xl font-semibold mb-4">Login</h2>
+    <div className='min-h-screen flex items-center justify-center bg-gray-100'>
+      <div className='bg-white shadow-md p-6 rounded w-full max-w-md'>
+        <h2 className='text-2xl font-semibold mb-4'>Login</h2>
         <Formik
           initialValues={{ email: "", password: "" }}
           validationSchema={LoginSchema}
@@ -36,44 +36,47 @@ export default function Login() {
           }}
         >
           {({ isSubmitting }) => (
-            <Form className="space-y-4">
+            <Form className='space-y-4'>
               {formError && (
-                <p className="text-sm text-red-500 text-center">{formError}</p>
+                <p className='text-sm text-red-500 text-center'>{formError}</p>
               )}
               <Field
-                name="email"
-                type="email"
-                placeholder="Email"
-                className="input w-full"
+                name='email'
+                type='email'
+                placeholder='Email'
+                className='input w-full'
               />
               <ErrorMessage
-                name="email"
-                component="p"
-                className="text-sm text-red-500"
+                name='email'
+                component='p'
+                className='text-sm text-red-500'
               />
 
               <Field
-                name="password"
-                type="password"
-                placeholder="Password"
-                className="input w-full"
+                name='password'
+                type='password'
+                placeholder='Password'
+                className='input w-full'
               />
               <ErrorMessage
-                name="password"
-                component="p"
-                className="text-sm text-red-500"
+                name='password'
+                component='p'
+                className='text-sm text-red-500'
               />
 
               <button
-                type="submit"
+                type='submit'
                 disabled={isSubmitting}
-                className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
+                className='w-full btn-primary'
               >
                 {isSubmitting ? "Logging in..." : "Login"}
               </button>
-              <p className="text-sm text-center">
+              <p className='text-sm text-center'>
                 Don’t have an account?{" "}
-                <Link to="/register" className="text-blue-600 hover:underline">
+                <Link
+                  to='/register'
+                  className='text-primary-600 hover:underline font-medium'
+                >
                   Register
                 </Link>
               </p>
