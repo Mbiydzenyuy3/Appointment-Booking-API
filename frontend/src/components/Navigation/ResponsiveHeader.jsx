@@ -5,7 +5,7 @@ import MobileNav from "./MobileNav.jsx";
 
 export default function ResponsiveHeader() {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const location = useLocation();
 
   const toggleMobileNav = () => {
@@ -20,58 +20,61 @@ export default function ResponsiveHeader() {
     return location.pathname === path;
   };
 
+  const handleLogout = () => {
+    logout();
+    closeMobileNav();
+  };
+
   return (
     <>
-      <header className='bg-green-800 shadow-sm border-b border-gray-200 sticky top-0 z-30 safe-area-top'>
+      <header className='bg-green-800 shadow-sm border-b border-green-700 sticky top-0 z-30 safe-area-top'>
         <div className='container-mobile'>
           <div className='flex items-center justify-between h-16'>
             {/* Logo */}
             <Link
               to='/'
-              className='flex items-center space-x-2 text-xl font-bold text-primary-700 touch-target'
+              className='flex items-center space-x-2 text-xl font-bold text-white touch-target'
               onClick={closeMobileNav}
             >
               <span className='text-2xl'>📅</span>
-              <span className='hidden xs:inline text-white'>BOOKEasy</span>
-              <span className='xs:hidden'>BOOKEasy</span>
+              <span className='hidden sm:inline'>BOOKEasy</span>
+              <span className='sm:hidden text-lg'>BE</span>
             </Link>
 
             {/* Desktop Navigation */}
             <nav
-              className='hidden md:flex items-center space-x-8 text-white'
+              className='hidden md:flex items-center space-x-6'
               role='navigation'
               aria-label='Main navigation'
             >
               <Link
                 to='/'
-                className={`text-sm font-medium transition-colors duration-200 touch-target ${
+                className={`text-sm font-medium px-3 py-2 rounded-lg transition-all duration-200 touch-target ${
                   isActivePath("/")
-                    ? "text-primary-700 border-b-2 border-primary-700 pb-1"
-                    : "text-gray-white hover:text-primary-700"
+                    ? "text-green-800 bg-green-100 border-b-2 border-green-800"
+                    : "text-green-100 hover:text-white hover:bg-green-700"
                 }`}
               >
                 Home
               </Link>
 
               {!user && (
-                <>
-                  <Link
-                    to='/book-appointment'
-                    className='text-sm font-medium text-white hover:text-primary-700 transition-colors duration-200 touch-target'
-                  >
-                    Book Now
-                  </Link>
-                </>
+                <Link
+                  to='/book-appointment'
+                  className='text-sm font-medium text-green-100 hover:text-white hover:bg-green-700 px-3 py-2 rounded-lg transition-all duration-200 touch-target'
+                >
+                  Book Now
+                </Link>
               )}
 
               {user && (
                 <>
                   <Link
                     to='/appointments'
-                    className={`text-sm font-medium transition-colors duration-200 touch-target ${
+                    className={`text-sm font-medium px-3 py-2 rounded-lg transition-all duration-200 touch-target ${
                       isActivePath("/appointments")
-                        ? "text-primary-700"
-                        : "text-white hover:text-primary-700"
+                        ? "text-green-800 bg-green-100"
+                        : "text-green-100 hover:text-white hover:bg-green-700"
                     }`}
                   >
                     My Appointments
@@ -83,11 +86,11 @@ export default function ResponsiveHeader() {
                         ? "/provider/dashboard"
                         : "/dashboard"
                     }
-                    className={`text-sm font-medium transition-colors duration-200 touch-target ${
+                    className={`text-sm font-medium px-3 py-2 rounded-lg transition-all duration-200 touch-target ${
                       isActivePath("/dashboard") ||
                       isActivePath("/provider/dashboard")
-                        ? "text-primary-700"
-                        : "text-white hover:text-primary-700"
+                        ? "text-green-800 bg-green-100"
+                        : "text-green-100 hover:text-white hover:bg-green-700"
                     }`}
                   >
                     Dashboard
@@ -97,30 +100,30 @@ export default function ResponsiveHeader() {
             </nav>
 
             {/* Desktop Auth Buttons */}
-            <div className='hidden md:flex items-center space-x-4'>
+            <div className='hidden md:flex items-center space-x-3'>
               {!user ? (
                 <>
                   <Link
                     to='/login'
-                    className='text-sm font-medium text-white hover:text-primary-700 transition-colors duration-200 touch-target'
+                    className='text-sm font-medium text-green-100 hover:text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-all duration-200 touch-target'
                   >
                     Login
                   </Link>
                   <Link
                     to='/register'
-                    className='btn btn-primary text-sm px-4 py-2 touch-target'
+                    className='btn btn-primary text-sm px-4 py-2 touch-target shadow-sm'
                   >
                     Register
                   </Link>
                 </>
               ) : (
-                <div className='flex items-center space-x-4'>
-                  <span className='text-sm text-white hidden lg:inline'>
+                <div className='flex items-center space-x-3'>
+                  <span className='text-sm text-green-100 hidden lg:inline truncate max-w-32'>
                     {user.email}
                   </span>
                   <button
-                    onClick={() => (window.location.href = "/api/logout")} // Using direct href to trigger logout
-                    className='btn btn-secondary text-sm px-4 py-2 touch-target hover:bg-green-600 hover: text-white transition-colors duration-200'
+                    onClick={handleLogout}
+                    className='text-sm font-medium text-green-100 hover:text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-all duration-200 touch-target'
                   >
                     Logout
                   </button>
@@ -131,13 +134,13 @@ export default function ResponsiveHeader() {
             {/* Mobile Menu Button */}
             <button
               onClick={toggleMobileNav}
-              className='md:hidden p-2 rounded-lg hover:bg-gray-100 focus-ring-mobile touch-target'
+              className='md:hidden p-2 rounded-lg hover:bg-green-700 focus-ring-mobile touch-target transition-all duration-200'
               aria-label='Open navigation menu'
               aria-expanded={isMobileNavOpen}
               aria-controls='mobile-navigation'
             >
               <svg
-                className='w-6 h-6'
+                className='w-6 h-6 text-white'
                 fill='none'
                 stroke='currentColor'
                 viewBox='0 0 24 24'

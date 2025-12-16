@@ -1,4 +1,4 @@
-// src/pages/Register.jsx
+// src/pages/Register.jsx - Mobile-First Responsive Design
 import React from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
@@ -21,17 +21,33 @@ export default function Register() {
   const [formError, setFormError] = useState("");
 
   return (
-    <div className='min-h-screen flex items-center justify-center bg-gray-100'>
+    <div className='min-h-screen flex items-center justify-center bg-gray-50 py-6 px-4 safe-area-bottom'>
       <main
         id='main-content'
-        className='bg-white shadow-md p-6 rounded w-full max-w-md'
+        className='bg-white shadow-xl rounded-2xl w-full max-w-md p-6 sm:p-8'
         role='main'
         aria-labelledby='register-title'
       >
-        <h1 className='text-2xl font-semibold mb-4' id='register-title'>
-          Create Your Account
-        </h1>
-        <h2 className='text-xl font-medium mb-4 text-gray-700'>Sign Up</h2>
+        {/* Header */}
+        <div className='text-center mb-8'>
+          <Link
+            to='/'
+            className='inline-flex items-center space-x-2 text-2xl font-bold text-green-800 mb-4'
+          >
+            <span className='text-3xl'>📅</span>
+            <span>BOOKEasy</span>
+          </Link>
+          <h1
+            className='text-2xl sm:text-3xl font-bold text-gray-900 mb-2'
+            id='register-title'
+          >
+            Create Account
+          </h1>
+          <p className='text-gray-600'>
+            Join BOOKEasy to manage your appointments
+          </p>
+        </div>
+
         <Formik
           initialValues={{
             name: "",
@@ -56,70 +72,151 @@ export default function Register() {
           }}
         >
           {({ isSubmitting }) => (
-            <Form className='space-y-4'>
+            <Form className='space-y-6'>
               {formError && (
-                <p className='text-sm text-red-500 text-center'>{formError}</p>
+                <div className='bg-red-50 border border-red-200 rounded-lg p-4'>
+                  <p className='text-sm text-red-700 text-center flex items-center justify-center'>
+                    <svg
+                      className='w-4 h-4 mr-2'
+                      fill='currentColor'
+                      viewBox='0 0 20 20'
+                    >
+                      <path
+                        fillRule='evenodd'
+                        d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z'
+                        clipRule='evenodd'
+                      />
+                    </svg>
+                    {formError}
+                  </p>
+                </div>
               )}
-              <Field name='name' placeholder='Name' className='input w-full' />
-              <ErrorMessage
-                name='name'
-                component='p'
-                className='text-sm text-red-500'
-              />
 
-              <Field
-                name='email'
-                type='email'
-                placeholder='Email'
-                className='input w-full'
-              />
-              <ErrorMessage
-                name='email'
-                component='p'
-                className='text-sm text-red-500'
-              />
+              <div>
+                <label
+                  htmlFor='name'
+                  className='block text-sm font-medium text-gray-700 mb-2'
+                >
+                  Full Name
+                </label>
+                <Field
+                  name='name'
+                  type='text'
+                  placeholder='Enter your full name'
+                  className='input-field w-full touch-target'
+                  autoComplete='name'
+                />
+                <ErrorMessage
+                  name='name'
+                  component='p'
+                  className='text-sm text-red-600 mt-1'
+                />
+              </div>
 
-              <Field
-                name='password'
-                type='password'
-                placeholder='Password'
-                className='input w-full'
-              />
-              <ErrorMessage
-                name='password'
-                component='p'
-                className='text-sm text-red-500'
-              />
+              <div>
+                <label
+                  htmlFor='email'
+                  className='block text-sm font-medium text-gray-700 mb-2'
+                >
+                  Email Address
+                </label>
+                <Field
+                  name='email'
+                  type='email'
+                  placeholder='Enter your email'
+                  className='input-field w-full touch-target'
+                  autoComplete='email'
+                />
+                <ErrorMessage
+                  name='email'
+                  component='p'
+                  className='text-sm text-red-600 mt-1'
+                />
+              </div>
 
-              <Field as='select' name='user_type' className='input w-full'>
-                <option value='client'>client</option>
-                <option value='provider'>provider</option>
-              </Field>
-              <ErrorMessage
-                name='user_type'
-                component='p'
-                className='text-sm text-red-500'
-              />
+              <div>
+                <label
+                  htmlFor='password'
+                  className='block text-sm font-medium text-gray-700 mb-2'
+                >
+                  Password
+                </label>
+                <Field
+                  name='password'
+                  type='password'
+                  placeholder='Create a password'
+                  className='input-field w-full touch-target'
+                  autoComplete='new-password'
+                />
+                <ErrorMessage
+                  name='password'
+                  component='p'
+                  className='text-sm text-red-600 mt-1'
+                />
+                <p className='text-xs text-gray-500 mt-1'>
+                  Password must be at least 6 characters long
+                </p>
+              </div>
+
+              <div>
+                <label
+                  htmlFor='user_type'
+                  className='block text-sm font-medium text-gray-700 mb-2'
+                >
+                  Account Type
+                </label>
+                <Field
+                  as='select'
+                  name='user_type'
+                  className='input-field w-full touch-target'
+                >
+                  <option value='client'>Client - Book appointments</option>
+                  <option value='provider'>Provider - Manage services</option>
+                </Field>
+                <ErrorMessage
+                  name='user_type'
+                  component='p'
+                  className='text-sm text-red-600 mt-1'
+                />
+              </div>
 
               <button
                 type='submit'
                 disabled={isSubmitting}
-                className='w-full btn-primary'
+                className='btn btn-primary w-full py-4 text-base font-semibold touch-target disabled:opacity-50 disabled:cursor-not-allowed'
               >
-                {isSubmitting ? "Registering..." : "Register"}
+                {isSubmitting ? (
+                  <div className='flex items-center justify-center'>
+                    <div className='loading-spinner mr-2'></div>
+                    Creating account...
+                  </div>
+                ) : (
+                  "Create Account"
+                )}
               </button>
-              <p className='text-sm text-center'>
-                Already have an account?{" "}
-                <Link
-                  to='/login'
-                  className='text-primary-600 hover:underline font-medium'
-                >
-                  Login
-                </Link>
-              </p>
+
+              <div className='text-center'>
+                <p className='text-sm text-gray-600'>
+                  Already have an account?{" "}
+                  <Link
+                    to='/login'
+                    className='text-green-600 hover:text-green-700 font-medium hover:underline touch-target inline-block'
+                  >
+                    Sign In
+                  </Link>
+                </p>
+              </div>
             </Form>
           )}
         </Formik>
+
+        {/* Additional info */}
+        <div className='mt-8 pt-6 border-t border-gray-200'>
+          <p className='text-xs text-gray-500 text-center'>
+            By creating an account, you agree to our Terms of Service and
+            Privacy Policy
+          </p>
+        </div>
       </main>
     </div>
   );

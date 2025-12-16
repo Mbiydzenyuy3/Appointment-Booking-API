@@ -1,146 +1,368 @@
-// src/pages/ProviderDashboard.jsx
-import React, { useEffect, useState } from 'react'
-import { useAuth } from '../context/AuthContext.jsx'
-import Header from '../components/Header.jsx'
-import ServiceForm from '../components/Providers/ServiceForm.jsx'
-import ServiceList from '../components/Providers/ServiceList.jsx'
-import TimeslotForm from '../components/Providers/TimeSlotForm.jsx'
-import TimeslotList from '../components/Providers/TimeSlotList.jsx'
-import api from '../services/api.js'
-import toast from 'react-hot-toast'
+// src/pages/ProviderDashboard.jsx - Mobile-First Responsive Design
+import React, { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext.jsx";
+import ServiceForm from "../components/Providers/ServiceForm.jsx";
+import ServiceList from "../components/Providers/ServiceList.jsx";
+import TimeslotForm from "../components/Providers/TimeSlotForm.jsx";
+import TimeslotList from "../components/Providers/TimeSlotList.jsx";
+import api from "../services/api.js";
+import toast from "react-hot-toast";
 
 export default function ProviderDashboard() {
-  const { user } = useAuth()
-  const [services, setServices] = useState([])
-  const [timeSlots, setTimeSlots] = useState([])
-  const [loading, setLoading] = useState(true)
+  const { user } = useAuth();
+  const [services, setServices] = useState([]);
+  const [timeSlots, setTimeSlots] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("services");
 
   useEffect(() => {
-    if (!user?.provider_id) return
+    if (!user?.provider_id) return;
 
     const fetchData = async (providerId) => {
       try {
         const [servicesRes, slotsRes] = await Promise.all([
           api.get(`/services/provider/${providerId}`),
-          api.get(`/slots/${providerId}`),
-        ])
+          api.get(`/slots/${providerId}`)
+        ]);
 
-        setServices(servicesRes.data.data)
-        setTimeSlots(slotsRes.data.data)
+        setServices(servicesRes.data.data);
+        setTimeSlots(slotsRes.data.data);
       } catch (error) {
-        console.error('Error loading dashboard data:', error)
-        toast.error('Failed to load dashboard data')
+        console.error("Error loading dashboard data:", error);
+        toast.error("Failed to load dashboard data");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchData(user.provider_id)
-  }, [user])
+    fetchData(user.provider_id);
+  }, [user]);
 
   const handleCreateService = async (newService) => {
-    console.log('Creating service with data:', newService)
+    console.log("Creating service with data:", newService);
     try {
-      const res = await api.post('/services/create', newService)
-      setServices((prev) => [...prev, res.data.data])
-      toast.success('Service created')
+      const res = await api.post("/services/create", newService);
+      setServices((prev) => [...prev, res.data.data]);
+      toast.success("Service created");
     } catch (error) {
-      console.error('Create service error:', error)
-      toast.error('Failed to create service')
+      console.error("Create service error:", error);
+      toast.error("Failed to create service");
     }
-  }
+  };
 
   const handleDeleteService = async (serviceId) => {
     try {
-      await api.delete(`/services/${serviceId}`)
-      setServices((prev) => prev.filter((s) => s.service_id !== serviceId))
-      toast.success('Service deleted')
+      await api.delete(`/services/${serviceId}`);
+      setServices((prev) => prev.filter((s) => s.service_id !== serviceId));
+      toast.success("Service deleted");
     } catch (error) {
-      console.error('Delete service error:', error)
-      toast.error('Failed to delete service')
+      console.error("Delete service error:", error);
+      toast.error("Failed to delete service");
     }
-  }
+  };
 
   const handleCreateTimeSlot = async (slot) => {
     try {
-      const res = await api.post('/slots/create', slot)
-      setTimeSlots((prev) => [...prev, res.data.data])
-      toast.success('Timeslot created')
+      const res = await api.post("/slots/create", slot);
+      setTimeSlots((prev) => [...prev, res.data.data]);
+      toast.success("Timeslot created");
     } catch (error) {
-      console.error('Create timeslot error:', error)
-      toast.error('Failed to create timeslot')
+      console.error("Create timeslot error:", error);
+      toast.error("Failed to create timeslot");
     }
-  }
+  };
 
   const handleDeleteTimeSlot = async (slotId) => {
     try {
-      await api.delete(`/slots/${slotId}`)
-      setTimeSlots((prev) => prev.filter((s) => s.timeslot_id !== slotId))
-      toast.success('Timeslot deleted')
+      await api.delete(`/slots/${slotId}`);
+      setTimeSlots((prev) => prev.filter((s) => s.timeslot_id !== slotId));
+      toast.success("Timeslot deleted");
     } catch (error) {
-      console.error('Delete timeslot error:', error)
-      toast.error('Failed to delete timeslot')
+      console.error("Delete timeslot error:", error);
+      toast.error("Failed to delete timeslot");
     }
-  }
+  };
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-green-50 p-6">
-        <Header />
-        <p className="text-center text-lg text-gray-600 mt-10">
-          You must be logged in to view this page.
-        </p>
+      <div className='min-h-screen bg-gray-50 flex items-center justify-center p-4'>
+        <div className='text-center'>
+          <div className='text-4xl mb-4'>🔒</div>
+          <p className='text-lg text-gray-600 mb-4'>
+            You must be logged in to view this page.
+          </p>
+          <button
+            onClick={() => (window.location.href = "/login")}
+            className='btn btn-primary touch-target'
+          >
+            Go to Login
+          </button>
+        </div>
       </div>
-    )
+    );
   }
 
   return (
-    <div className="min-h-screen bg-green-50 p-6">
-      <Header />
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-green-700">
-          Provider Dashboard
-        </h1>
-      </div>
-
-      <p className="text-lg text-gray-700 mb-6">
-        Welcome, {user?.email || 'Provider'}!
-      </p>
-
-      {loading ? (
-        <p className="text-center text-gray-500">Loading...</p>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Services Section */}
-          <div className="bg-white p-4 shadow rounded">
-            <h2 className="text-xl font-semibold mb-2">Your Services</h2>
-            <ServiceForm onCreate={handleCreateService} />
-            {services.length === 0 ? (
-              <p className="text-gray-500 mt-4">No services yet.</p>
-            ) : (
-              <ServiceList services={services} onDelete={handleDeleteService} />
-            )}
-          </div>
-
-          {/* Timeslots Section */}
-          <div className="bg-white p-4 shadow rounded">
-            <h2 className="text-xl font-semibold mb-2">Your Timeslots</h2>
-            <TimeslotForm
-              onCreate={handleCreateTimeSlot}
-              services={services}
-              providerId={user.provider_id}
-            />
-            {timeSlots.length === 0 ? (
-              <p className="text-gray-500 mt-4">No timeslots yet.</p>
-            ) : (
-              <TimeslotList
-                timeslots={timeSlots}
-                onDelete={handleDeleteTimeSlot}
-              />
-            )}
+    <div className='max-w-7xl mx-auto'>
+      {/* Mobile-first header */}
+      <div className='mb-6 sm:mb-8'>
+        <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6'>
+          <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
+            <div>
+              <h1 className='text-2xl sm:text-3xl font-bold text-gray-900'>
+                Provider Dashboard
+              </h1>
+              <p className='text-gray-600 mt-1'>
+                Welcome, {user?.email || "Provider"}! Manage your services and
+                schedule.
+              </p>
+            </div>
+            <div className='flex items-center gap-2 text-sm text-gray-500 bg-gray-50 px-3 py-2 rounded-lg'>
+              <svg className='w-4 h-4' fill='currentColor' viewBox='0 0 20 20'>
+                <path
+                  fillRule='evenodd'
+                  d='M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z'
+                  clipRule='evenodd'
+                />
+              </svg>
+              <span className='capitalize'>{user.user_type}</span>
+            </div>
           </div>
         </div>
+      </div>
+
+      {loading ? (
+        <div className='flex justify-center items-center py-12'>
+          <div className='text-center'>
+            <div className='loading-spinner mx-auto mb-4 w-8 h-8'></div>
+            <p className='text-gray-600'>Loading your dashboard...</p>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Mobile Tab Navigation */}
+          <div className='mb-6 sm:hidden'>
+            <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-2'>
+              <div className='flex space-x-2'>
+                <button
+                  onClick={() => setActiveTab("services")}
+                  className={`flex-1 py-3 px-4 rounded-lg font-medium text-sm touch-target transition-all duration-200 ${
+                    activeTab === "services"
+                      ? "bg-green-600 text-white"
+                      : "text-gray-600 hover:text-green-600 hover:bg-green-50"
+                  }`}
+                >
+                  <div className='flex items-center justify-center'>
+                    <svg
+                      className='w-4 h-4 mr-2'
+                      fill='currentColor'
+                      viewBox='0 0 20 20'
+                    >
+                      <path d='M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' />
+                    </svg>
+                    Services ({services.length})
+                  </div>
+                </button>
+                <button
+                  onClick={() => setActiveTab("timeslots")}
+                  className={`flex-1 py-3 px-4 rounded-lg font-medium text-sm touch-target transition-all duration-200 ${
+                    activeTab === "timeslots"
+                      ? "bg-green-600 text-white"
+                      : "text-gray-600 hover:text-green-600 hover:bg-green-50"
+                  }`}
+                >
+                  <div className='flex items-center justify-center'>
+                    <svg
+                      className='w-4 h-4 mr-2'
+                      fill='currentColor'
+                      viewBox='0 0 20 20'
+                    >
+                      <path
+                        fillRule='evenodd'
+                        d='M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z'
+                        clipRule='evenodd'
+                      />
+                    </svg>
+                    Timeslots ({timeSlots.length})
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop Layout */}
+          <div className='hidden sm:block'>
+            <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+              {/* Services Section */}
+              <div className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden'>
+                <div className='p-4 sm:p-6 border-b border-gray-100'>
+                  <div className='flex items-center justify-between'>
+                    <h2 className='text-xl font-semibold text-gray-900 flex items-center'>
+                      <svg
+                        className='w-5 h-5 mr-2 text-green-600'
+                        fill='currentColor'
+                        viewBox='0 0 20 20'
+                      >
+                        <path d='M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' />
+                      </svg>
+                      Your Services
+                    </h2>
+                    <span className='text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full'>
+                      {services.length}
+                    </span>
+                  </div>
+                </div>
+                <div className='p-4 sm:p-6'>
+                  <ServiceForm onCreate={handleCreateService} />
+                  {services.length === 0 ? (
+                    <div className='text-center py-8'>
+                      <div className='text-3xl mb-2'>📋</div>
+                      <p className='text-gray-500 mb-4'>No services yet.</p>
+                      <p className='text-sm text-gray-400'>
+                        Create your first service to get started.
+                      </p>
+                    </div>
+                  ) : (
+                    <ServiceList
+                      services={services}
+                      onDelete={handleDeleteService}
+                    />
+                  )}
+                </div>
+              </div>
+
+              {/* Timeslots Section */}
+              <div className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden'>
+                <div className='p-4 sm:p-6 border-b border-gray-100'>
+                  <div className='flex items-center justify-between'>
+                    <h2 className='text-xl font-semibold text-gray-900 flex items-center'>
+                      <svg
+                        className='w-5 h-5 mr-2 text-green-600'
+                        fill='currentColor'
+                        viewBox='0 0 20 20'
+                      >
+                        <path
+                          fillRule='evenodd'
+                          d='M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z'
+                          clipRule='evenodd'
+                        />
+                      </svg>
+                      Your Timeslots
+                    </h2>
+                    <span className='text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full'>
+                      {timeSlots.length}
+                    </span>
+                  </div>
+                </div>
+                <div className='p-4 sm:p-6'>
+                  <TimeslotForm
+                    onCreate={handleCreateTimeSlot}
+                    services={services}
+                    providerId={user.provider_id}
+                  />
+                  {timeSlots.length === 0 ? (
+                    <div className='text-center py-8'>
+                      <div className='text-3xl mb-2'>⏰</div>
+                      <p className='text-gray-500 mb-4'>No timeslots yet.</p>
+                      <p className='text-sm text-gray-400'>
+                        Create timeslots for your services.
+                      </p>
+                    </div>
+                  ) : (
+                    <TimeslotList
+                      timeslots={timeSlots}
+                      onDelete={handleDeleteTimeSlot}
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile Content */}
+          <div className='sm:hidden'>
+            {activeTab === "services" && (
+              <div className='space-y-6'>
+                <div className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden'>
+                  <div className='p-4 border-b border-gray-100'>
+                    <h2 className='text-lg font-semibold text-gray-900'>
+                      Create Service
+                    </h2>
+                  </div>
+                  <div className='p-4'>
+                    <ServiceForm onCreate={handleCreateService} />
+                  </div>
+                </div>
+                <div className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden'>
+                  <div className='p-4 border-b border-gray-100'>
+                    <h2 className='text-lg font-semibold text-gray-900'>
+                      Your Services ({services.length})
+                    </h2>
+                  </div>
+                  <div className='p-4'>
+                    {services.length === 0 ? (
+                      <div className='text-center py-8'>
+                        <div className='text-3xl mb-2'>📋</div>
+                        <p className='text-gray-500 mb-4'>No services yet.</p>
+                        <p className='text-sm text-gray-400'>
+                          Create your first service to get started.
+                        </p>
+                      </div>
+                    ) : (
+                      <ServiceList
+                        services={services}
+                        onDelete={handleDeleteService}
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === "timeslots" && (
+              <div className='space-y-6'>
+                <div className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden'>
+                  <div className='p-4 border-b border-gray-100'>
+                    <h2 className='text-lg font-semibold text-gray-900'>
+                      Create Timeslot
+                    </h2>
+                  </div>
+                  <div className='p-4'>
+                    <TimeslotForm
+                      onCreate={handleCreateTimeSlot}
+                      services={services}
+                      providerId={user.provider_id}
+                    />
+                  </div>
+                </div>
+                <div className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden'>
+                  <div className='p-4 border-b border-gray-100'>
+                    <h2 className='text-lg font-semibold text-gray-900'>
+                      Your Timeslots ({timeSlots.length})
+                    </h2>
+                  </div>
+                  <div className='p-4'>
+                    {timeSlots.length === 0 ? (
+                      <div className='text-center py-8'>
+                        <div className='text-3xl mb-2'>⏰</div>
+                        <p className='text-gray-500 mb-4'>No timeslots yet.</p>
+                        <p className='text-sm text-gray-400'>
+                          Create timeslots for your services.
+                        </p>
+                      </div>
+                    ) : (
+                      <TimeslotList
+                        timeslots={timeSlots}
+                        onDelete={handleDeleteTimeSlot}
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </>
       )}
     </div>
-  )
+  );
 }

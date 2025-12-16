@@ -1,263 +1,342 @@
-// src/pages/UserDashboard.jsx
-import React, { useEffect, useState } from 'react'
-import { useAuth } from '../context/AuthContext.jsx'
-import RescheduleModal from '../components/Appointments/ResheduleModal.jsx'
-import BookAppointmentForm from '../components/BookAppointments/BookAppointment.jsx'
-import api from '../services/api.js'
-import { toast } from 'react-toastify'
+// src/pages/UserDashboard.jsx - Mobile-First Responsive Design
+import React, { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext.jsx";
+import RescheduleModal from "../components/Appointments/ResheduleModal.jsx";
+import BookAppointmentForm from "../components/BookAppointments/BookAppointment.jsx";
+import api from "../services/api.js";
+import { toast } from "react-toastify";
 
 const UserDashboard = () => {
-  const { logout } = useAuth()
-  const [services, setServices] = useState([])
-  const [appointments, setAppointments] = useState([])
-  const [loading, setLoading] = useState(true)
+  const { logout } = useAuth();
+  const [services, setServices] = useState([]);
+  const [appointments, setAppointments] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const [rescheduleModal, setRescheduleModal] = useState({
     open: false,
-    appointment: null,
-  })
+    appointment: null
+  });
 
   const [bookingModal, setBookingModal] = useState({
     open: false,
-    service: null,
-  })
+    service: null
+  });
 
   const handleReschedule = async (newDate) => {
-    const appt = rescheduleModal.appointment
+    const appt = rescheduleModal.appointment;
     try {
-      await api.delete(`/appointments/${appt._id}`)
-      const res = await api.post('/appointments/book', {
+      await api.delete(`/appointments/${appt._id}`);
+      const res = await api.post("/appointments/book", {
         serviceId: appt.serviceId,
         providerId: appt.providerId,
-        date: newDate,
-      })
-      toast.success('Appointment rescheduled')
+        date: newDate
+      });
+      toast.success("Appointment rescheduled");
       setAppointments((prev) =>
         prev.map((a) => (a._id === appt._id ? res.data : a))
-      )
-    } catch (error) {
-      toast.error('Failed to reschedule')
+      );
+    } catch {
+      toast.error("Failed to reschedule");
     }
-  }
-
-  // const handleBook = async (e) => {
-  //   e.preventDefault()
-  //   const form = e.target
-  //   const date = form.date.value
-  //   console.log('Selected date:', date)
-  //   const { service } = bookingModal
-  //   console.log('Selected service:', service)
-
-  //   const serviceId = service?.service_id
-  //   const providerId = service?.provider_id
-
-  //   if (!service?._id || !service?.providerId || !date) {
-  //     toast.error('Incomplete booking information.')
-  //     console.log('Failed due to:', { service, date })
-  //     return
-  //   }
-
-  //   try {
-  //     const payload = {
-  //       serviceId,
-  //       providerId,
-  //       date,
-  //       timeslotId: service?.timeslot_id,
-  //     }
-
-  //     console.log('Booking payload:', payload)
-
-  //     const res = await api.post('/appointments/book', payload)
-
-  //     toast.success('Appointment booked')
-  //     setAppointments((prev) => [...prev, res.data])
-  //     setBookingModal({ open: false, service: null })
-  //   } catch (error) {
-  //     toast.error('Failed to book appointment')
-  //   }
-  // }
+  };
 
   const cancelAppointment = async (appointmentId) => {
     try {
-      await api.delete(`/appointments/${appointmentId}`)
+      await api.delete(`/appointments/${appointmentId}`);
       setAppointments((prev) =>
         prev.filter((appt) => appt.appointment_id !== appointmentId)
-      )
-      toast.success('Appointment cancelled')
-    } catch (error) {
-      toast.error('Failed to cancel appointment')
+      );
+      toast.success("Appointment cancelled");
+    } catch {
+      toast.error("Failed to cancel appointment");
     }
-  }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem("token");
       if (!token) {
-        toast.error('Unauthorized. Please log in.')
-        logout()
-        return
+        toast.error("Unauthorized. Please log in.");
+        logout();
+        return;
       }
 
       try {
-        const servicesRes = await api.get('/services')
-        const appointmentsRes = await api.get('/appointments/list')
+        const servicesRes = await api.get("/services");
+        const appointmentsRes = await api.get("/appointments/list");
 
         const servicesWithProvider = (
           Array.isArray(servicesRes.data.data) ? servicesRes.data.data : []
         ).map((s) => ({
           ...s,
-          providerId: s.providerId || 'default-provider-id',
-        }))
+          providerId: s.providerId || "default-provider-id"
+        }));
 
-        setServices(servicesWithProvider)
+        setServices(servicesWithProvider);
         setAppointments(
           Array.isArray(appointmentsRes.data.data)
             ? appointmentsRes.data.data
             : []
-        )
-      } catch (error) {
-        toast.error('Failed to load data')
+        );
+      } catch {
+        toast.error("Failed to load data");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchData()
-  }, [logout])
+    fetchData();
+  }, [logout]);
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        Loading...
+      <div className='flex justify-center items-center min-h-screen bg-gray-50'>
+        <div className='text-center'>
+          <div className='loading-spinner mx-auto mb-4 w-8 h-8'></div>
+          <p className='text-gray-600'>Loading your dashboard...</p>
+        </div>
       </div>
-    )
+    );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold">Client Dashboard</h1>
+    <div className='max-w-7xl mx-auto'>
+      {/* Mobile-first header */}
+      <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8'>
+        <div>
+          <h1 className='text-2xl sm:text-3xl font-bold text-gray-900'>
+            Client Dashboard
+          </h1>
+          <p className='text-gray-600 mt-1'>
+            Manage your appointments and services
+          </p>
+        </div>
         <button
           onClick={logout}
-          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+          className='btn btn-secondary w-full sm:w-auto px-6 py-3 text-sm font-medium touch-target order-2 sm:order-1'
         >
           Logout
         </button>
       </div>
 
-      <section className="mb-10">
-        <h2 className="text-xl font-semibold mb-4">Available Services</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {services.map((service) => (
-            <div
-              key={service.service_id}
-              className="bg-white p-6 rounded-lg shadow-md"
-            >
-              <h3 className="text-lg font-semibold">{service.service_name}</h3>
-              <p className="text-gray-600 mb-2">{service.description}</p>
-              <p className="text-gray-600 mb-1">Price: ${service.price}</p>
-              <p className="text-gray-600 mb-4">
-                Duration: {service.duration_minutes} min
-              </p>
-              <button
-                onClick={() => setBookingModal({ open: true, service })}
-                className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-              >
-                Book Appointment
-              </button>
-            </div>
-          ))}
+      {/* Available Services Section */}
+      <section className='mb-8 sm:mb-12'>
+        <div className='flex items-center justify-between mb-4 sm:mb-6'>
+          <h2 className='text-xl sm:text-2xl font-semibold text-gray-900'>
+            Available Services
+          </h2>
+          <span className='text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full'>
+            {services.length} services
+          </span>
         </div>
-      </section>
 
-      <section>
-        <h2 className="text-xl font-semibold mb-4">My Appointments</h2>
-        {appointments.length === 0 ? (
-          <p className="text-gray-600">You have no appointments.</p>
+        {services.length === 0 ? (
+          <div className='text-center py-12 bg-white rounded-xl shadow-sm border border-gray-100'>
+            <div className='text-4xl mb-4'>🔍</div>
+            <h3 className='text-lg font-medium text-gray-900 mb-2'>
+              No services available
+            </h3>
+            <p className='text-gray-600'>Check back later for new services.</p>
+          </div>
         ) : (
-          <ul className="space-y-4">
-            {appointments.map((appt) => (
-              <li
-                key={appt.appointment_id}
-                className="bg-white p-4 shadow rounded flex justify-between items-center"
+          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6'>
+            {services.map((service) => (
+              <div
+                key={service.service_id}
+                className='booking-card group hover-lift'
               >
-                <div>
-                  <p className="font-bold">{appt.serviceName}</p>
-                  <p className="text-gray-600">
-                    {new Date(appt.date).toLocaleString('en-US', {
-                      weekday: 'short',
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
+                <div className='p-4 sm:p-6'>
+                  <div className='flex items-start justify-between mb-3'>
+                    <h3 className='text-lg font-semibold text-gray-900 group-hover:text-green-700 transition-colors'>
+                      {service.service_name}
+                    </h3>
+                    <div className='bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium'>
+                      ${service.price}
+                    </div>
+                  </div>
+
+                  <p
+                    className='text-gray-600 mb-4 overflow-hidden'
+                    style={{
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical"
+                    }}
+                  >
+                    {service.description}
                   </p>
-                  <p className="text-gray-500">Status: {appt.status}</p>
-                </div>
-                <div className="flex">
+
+                  <div className='flex items-center justify-between mb-4 text-sm text-gray-500'>
+                    <span className='flex items-center'>
+                      <svg
+                        className='w-4 h-4 mr-1'
+                        fill='currentColor'
+                        viewBox='0 0 20 20'
+                      >
+                        <path
+                          fillRule='evenodd'
+                          d='M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z'
+                          clipRule='evenodd'
+                        />
+                      </svg>
+                      {service.duration_minutes} min
+                    </span>
+                  </div>
+
                   <button
-                    onClick={() => cancelAppointment(appt.appointment_id)}
-                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 mr-2"
+                    onClick={() => setBookingModal({ open: true, service })}
+                    className='btn btn-primary w-full touch-target text-sm sm:text-base'
                   >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() =>
-                      setRescheduleModal({ open: true, appointment: appt })
-                    }
-                    className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
-                  >
-                    Reschedule
+                    Book Appointment
                   </button>
                 </div>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         )}
       </section>
 
-      {bookingModal.open && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded shadow w-96">
-            <h3 className="text-lg font-bold mb-4">
-              Book: {bookingModal.service?.service_name}
-            </h3>
+      {/* My Appointments Section */}
+      <section>
+        <div className='flex items-center justify-between mb-4 sm:mb-6'>
+          <h2 className='text-xl sm:text-2xl font-semibold text-gray-900'>
+            My Appointments
+          </h2>
+          <span className='text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full'>
+            {appointments.length} appointments
+          </span>
+        </div>
 
-            {/* <form onSubmit={handleBook}>
-              <label className="block mb-2 text-sm font-medium">
-                Choose a date & time
-              </label>
-              <input
-                type="datetime-local"
-                name="date"
-                className="w-full mb-4 p-2 border rounded"
-                required
-              />
-              <div className="flex justify-end gap-2">
+        {appointments.length === 0 ? (
+          <div className='text-center py-12 bg-white rounded-xl shadow-sm border border-gray-100'>
+            <div className='text-4xl mb-4'>📅</div>
+            <h3 className='text-lg font-medium text-gray-900 mb-2'>
+              No appointments yet
+            </h3>
+            <p className='text-gray-600'>
+              Book your first appointment to get started.
+            </p>
+          </div>
+        ) : (
+          <div className='space-y-4'>
+            {appointments.map((appt) => (
+              <div
+                key={appt.appointment_id}
+                className='bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 hover-lift'
+              >
+                <div className='flex flex-col sm:flex-row sm:items-center gap-4'>
+                  <div className='flex-1 min-w-0'>
+                    <h3 className='text-lg font-semibold text-gray-900 truncate'>
+                      {appt.serviceName}
+                    </h3>
+                    <div className='mt-2 space-y-1 text-sm text-gray-600'>
+                      <p className='flex items-center'>
+                        <svg
+                          className='w-4 h-4 mr-2 text-gray-400'
+                          fill='currentColor'
+                          viewBox='0 0 20 20'
+                        >
+                          <path
+                            fillRule='evenodd'
+                            d='M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z'
+                            clipRule='evenodd'
+                          />
+                        </svg>
+                        {new Date(appt.date).toLocaleString("en-US", {
+                          weekday: "short",
+                          month: "short",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit"
+                        })}
+                      </p>
+                      <div className='flex items-center justify-between'>
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            appt.status === "confirmed"
+                              ? "bg-green-100 text-green-800"
+                              : appt.status === "pending"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-gray-100 text-gray-800"
+                          }`}
+                        >
+                          {appt.status}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className='flex flex-row sm:flex-col gap-2 sm:w-auto w-full'>
+                    <button
+                      onClick={() => cancelAppointment(appt.appointment_id)}
+                      className='flex-1 sm:flex-none btn btn-secondary text-sm px-4 py-2 touch-target'
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() =>
+                        setRescheduleModal({ open: true, appointment: appt })
+                      }
+                      className='flex-1 sm:flex-none btn btn-outline text-sm px-4 py-2 touch-target'
+                    >
+                      Reschedule
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Booking Modal - Mobile Optimized */}
+      {bookingModal.open && (
+        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 safe-area-bottom'>
+          <div className='bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto'>
+            <div className='p-4 sm:p-6 border-b border-gray-100'>
+              <div className='flex items-center justify-between'>
+                <h3 className='text-xl font-bold text-gray-900'>
+                  Book Appointment
+                </h3>
                 <button
-                  type="button"
                   onClick={() =>
                     setBookingModal({ open: false, service: null })
                   }
-                  className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                  className='p-2 hover:bg-gray-100 rounded-lg touch-target'
+                  aria-label='Close modal'
                 >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-                >
-                  Book
+                  <svg
+                    className='w-5 h-5'
+                    fill='none'
+                    stroke='currentColor'
+                    viewBox='0 0 24 24'
+                  >
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth={2}
+                      d='M6 18L18 6M6 6l12 12'
+                    />
+                  </svg>
                 </button>
               </div>
-            </form> */}
-            <BookAppointmentForm
-              providerId={bookingModal.service?.provider_id}
-            />
+              {bookingModal.service && (
+                <p className='text-gray-600 mt-1'>
+                  {bookingModal.service.service_name}
+                </p>
+              )}
+            </div>
+
+            <div className='p-4 sm:p-6'>
+              <BookAppointmentForm
+                providerId={bookingModal.service?.provider_id}
+              />
+            </div>
           </div>
         </div>
       )}
 
+      {/* Reschedule Modal */}
       <RescheduleModal
         isOpen={rescheduleModal.open}
         onClose={() => setRescheduleModal({ open: false, appointment: null })}
@@ -265,7 +344,7 @@ const UserDashboard = () => {
         initialDate={rescheduleModal.appointment?.date}
       />
     </div>
-  )
-}
+  );
+};
 
-export default UserDashboard
+export default UserDashboard;

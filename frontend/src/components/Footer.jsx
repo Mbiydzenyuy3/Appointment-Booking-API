@@ -3,7 +3,7 @@ import React from "react";
 export default function Footer() {
   return (
     <>
-      <footer className='bg-green-900 border-t border-gray-200 py-12 text-center'>
+      <footer className='bg-black border-t border-gray-200 py-12 text-center'>
         <div className='max-w-7xl mx-auto px-4'>
           <div className='grid md:grid-cols-4 gap-8 mb-8 text-left'>
             <div>
@@ -20,11 +20,11 @@ export default function Footer() {
                     Features
                   </a>
                 </li>
-                <li>
+                {/* <li>
                   <a href='#' className='hover:text-green-700'>
                     Pricing
                   </a>
-                </li>
+                </li> */}
                 <li>
                   <a href='#' className='hover:text-green-700'>
                     Demo

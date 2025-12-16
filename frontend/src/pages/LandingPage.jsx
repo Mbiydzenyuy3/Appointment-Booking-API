@@ -358,9 +358,6 @@ export default function HomePage() {
               Book Us Now
             </Link>
           </div>
-          <p className='mt-4 sm:mt-6 text-xs sm:text-sm text-gray-400'>
-            No credit card required at all.
-          </p>
         </div>
       </section>
 
