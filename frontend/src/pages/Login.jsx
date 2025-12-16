@@ -18,8 +18,16 @@ export default function Login() {
 
   return (
     <div className='min-h-screen flex items-center justify-center bg-gray-100'>
-      <div className='bg-white shadow-md p-6 rounded w-full max-w-md'>
-        <h2 className='text-2xl font-semibold mb-4'>Login</h2>
+      <main
+        id='main-content'
+        className='bg-white shadow-md p-6 rounded w-full max-w-md'
+        role='main'
+        aria-labelledby='login-title'
+      >
+        <h1 className='text-2xl font-semibold mb-4' id='login-title'>
+          Login to Your Account
+        </h1>
+        <h2 className='text-xl font-medium mb-4 text-gray-700'>Sign In</h2>
         <Formik
           initialValues={{ email: "", password: "" }}
           validationSchema={LoginSchema}
@@ -83,7 +91,7 @@ export default function Login() {
             </Form>
           )}
         </Formik>
-      </div>
+      </main>
     </div>
   );
 }

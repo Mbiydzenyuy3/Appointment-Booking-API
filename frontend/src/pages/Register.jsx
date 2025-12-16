@@ -22,8 +22,16 @@ export default function Register() {
 
   return (
     <div className='min-h-screen flex items-center justify-center bg-gray-100'>
-      <div className='bg-white shadow-md p-6 rounded w-full max-w-md'>
-        <h2 className='text-2xl font-semibold mb-4'>Register</h2>
+      <main
+        id='main-content'
+        className='bg-white shadow-md p-6 rounded w-full max-w-md'
+        role='main'
+        aria-labelledby='register-title'
+      >
+        <h1 className='text-2xl font-semibold mb-4' id='register-title'>
+          Create Your Account
+        </h1>
+        <h2 className='text-xl font-medium mb-4 text-gray-700'>Sign Up</h2>
         <Formik
           initialValues={{
             name: "",
@@ -112,7 +120,7 @@ export default function Register() {
             </Form>
           )}
         </Formik>
-      </div>
+      </main>
     </div>
   );
 }
