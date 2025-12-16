@@ -3,6 +3,19 @@ export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
+      // Mobile-first responsive breakpoints
+      screens: {
+        xs: "475px",
+        sm: "640px",
+        md: "768px",
+        lg: "1024px",
+        xl: "1280px",
+        "2xl": "1536px",
+        // Custom breakpoints for better mobile experience
+        mobile: { max: "767px" },
+        tablet: { min: "768px", max: "1023px" },
+        desktop: { min: "1024px" }
+      },
       colors: {
         // Primary Dark Green Brand Palette
         primary: {
@@ -109,7 +122,12 @@ export default {
       spacing: {
         18: "4.5rem",
         88: "22rem",
-        128: "32rem"
+        128: "32rem",
+        // Mobile-optimized spacing
+        "safe-top": "env(safe-area-inset-top)",
+        "safe-bottom": "env(safe-area-inset-bottom)",
+        "safe-left": "env(safe-area-inset-left)",
+        "safe-right": "env(safe-area-inset-right)"
       },
       borderRadius: {
         xl: "0.75rem",
@@ -121,12 +139,15 @@ export default {
         medium:
           "0 4px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 30px -5px rgba(0, 0, 0, 0.04)",
         strong:
-          "0 10px 40px -10px rgba(0, 0, 0, 0.15), 0 20px 25px -5px rgba(0, 0, 0, 0.1)"
+          "0 10px 40px -10px rgba(0, 0, 0, 0.15), 0 20px 25px -5px rgba(0, 0, 0, 0.1)",
+        // Mobile-optimized shadows
+        touch: "0 2px 8px rgba(0, 0, 0, 0.12)"
       },
       animation: {
         "fade-in": "fadeIn 0.5s ease-in-out",
         "slide-up": "slideUp 0.3s ease-out",
-        "bounce-soft": "bounceSoft 0.6s ease-in-out"
+        "bounce-soft": "bounceSoft 0.6s ease-in-out",
+        "pulse-soft": "pulseSoft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite"
       },
       keyframes: {
         fadeIn: {
@@ -142,19 +163,61 @@ export default {
           "40%, 43%": { transform: "translate3d(0, -8px, 0)" },
           "70%": { transform: "translate3d(0, -4px, 0)" },
           "90%": { transform: "translate3d(0, -2px, 0)" }
+        },
+        pulseSoft: {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: ".8" }
         }
+      },
+      // Mobile-specific utilities
+      minHeight: {
+        touch: "44px", // Minimum touch target size (iOS guidelines)
+        "screen-safe": "100vh"
+      },
+      minWidth: {
+        touch: "44px" // Minimum touch target size
+      },
+      // Safe area support for notched devices
+      padding: {
+        safe: "env(safe-area-inset-bottom)",
+        "safe-top": "env(safe-area-inset-top)",
+        "safe-bottom": "env(safe-area-inset-bottom)",
+        "safe-left": "env(safe-area-inset-left)",
+        "safe-right": "env(safe-area-inset-right)"
+      },
+      margin: {
+        "safe-top": "env(safe-area-inset-top)",
+        "safe-bottom": "env(safe-area-inset-bottom)"
       }
     }
   },
   plugins: [
-    // Add accessibility utilities
-    function ({ addUtilities }) {
+    // Add accessibility and mobile utilities
+    function ({ addUtilities, addComponents }) {
       const newUtilities = {
         ".focus-ring": {
           "&:focus": {
             outline: "2px solid #369936",
             outlineOffset: "2px"
           }
+        },
+        ".focus-ring-mobile": {
+          "&:focus": {
+            outline: "2px solid #369936",
+            outlineOffset: "2px",
+            // Larger touch target for mobile
+            transform: "scale(1.02)"
+          }
+        },
+        ".touch-target": {
+          "min-height": "44px",
+          "min-width": "44px"
+        },
+        ".safe-area-top": {
+          "padding-top": "env(safe-area-inset-top)"
+        },
+        ".safe-area-bottom": {
+          "padding-bottom": "env(safe-area-inset-bottom)"
         },
         ".sr-only": {
           position: "absolute",
@@ -166,9 +229,62 @@ export default {
           clip: "rect(0, 0, 0, 0)",
           whiteSpace: "nowrap",
           border: "0"
+        },
+        // Touch-friendly button styles
+        ".btn-touch": {
+          "min-height": "44px",
+          "min-width": "44px",
+          padding: "12px 16px",
+          "touch-action": "manipulation"
+        },
+        // Mobile-optimized input styles
+        ".input-mobile": {
+          "font-size": "16px", // Prevents zoom on iOS
+          padding: "12px 16px",
+          "min-height": "44px"
         }
       };
+
+      const newComponents = {
+        ".btn": {
+          display: "inline-flex",
+          "align-items": "center",
+          "justify-content": "center",
+          "border-radius": "0.5rem",
+          "font-weight": "500",
+          transition: "all 0.2s",
+          "touch-action": "manipulation",
+          "&:disabled": {
+            opacity: "0.6",
+            cursor: "not-allowed"
+          }
+        },
+        ".btn-primary": {
+          "background-color": "#369936",
+          color: "white",
+          "&:hover:not(:disabled)": {
+            "background-color": "#2a7d2a"
+          },
+          "&:focus": {
+            outline: "2px solid #369936",
+            "outline-offset": "2px"
+          }
+        },
+        ".btn-secondary": {
+          "background-color": "#f1f5f9",
+          color: "#475569",
+          "&:hover:not(:disabled)": {
+            "background-color": "#e2e8f0"
+          },
+          "&:focus": {
+            outline: "2px solid #369936",
+            "outline-offset": "2px"
+          }
+        }
+      };
+
       addUtilities(newUtilities);
+      addComponents(newComponents);
     }
   ]
 };
