@@ -1,4 +1,3 @@
-// src/pages/HomePage.jsx - Mobile-First Optimized
 import React from "react";
 import { Link } from "react-router-dom";
 import LandingHeader from "../components/LandingHeader.jsx";
@@ -46,7 +45,6 @@ export default function HomePage() {
             Trusted by 2,000+ Businesses
           </p>
           <div className='grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-5 gap-4 sm:gap-8 md:gap-16 opacity-50 grayscale hover:grayscale-0 transition-all duration-500'>
-            {/* Placeholders for Logos - Replace with <img> tags */}
             <span className='text-sm sm:text-base font-bold text-gray-600 text-center'>
               SalonLuxe
             </span>
@@ -66,7 +64,6 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* --- PLATFORM ESSENTIALS --- */}
       <section className='bg-white py-12 sm:py-16'>
         <div className='container-mobile'>
           <div className='text-center mb-8 sm:mb-12'>
@@ -112,7 +109,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* --- COMPREHENSIVE FEATURES --- */}
       <section className='py-12 sm:py-20 bg-gray-50'>
         <div className='container-mobile'>
           <div className='text-center max-w-3xl mx-auto mb-12 sm:mb-16'>
@@ -126,7 +122,6 @@ export default function HomePage() {
           </div>
 
           <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8'>
-            {/* Feature 1 */}
             <div className='card-mobile bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100'>
               <h4 className='text-base sm:text-lg font-bold text-green-800 mb-3 border-b border-green-100 pb-2'>
                 Taking Care of Clients
@@ -137,7 +132,6 @@ export default function HomePage() {
                 <li className='flex items-center'>✓ Consultation Forms</li>
               </ul>
             </div>
-            {/* Feature 2 */}
             <div className='card-mobile bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100'>
               <h4 className='text-base sm:text-lg font-bold text-green-800 mb-3 border-b border-green-100 pb-2'>
                 Manage Operations
@@ -176,10 +170,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* --- ALTERNATING HIGHLIGHTS --- */}
       <section className='py-12 sm:py-20 bg-white overflow-hidden'>
         <div className='container-mobile space-y-12 sm:space-y-24'>
-          {/* Highlight 1: Image Right, Text Left */}
           <div className='flex flex-col md:flex-row items-center gap-8 md:gap-12'>
             <div className='md:w-1/2 order-2 md:order-1'>
               <span className='text-green-600 font-bold uppercase tracking-wider text-xs sm:text-sm'>
@@ -201,7 +193,6 @@ export default function HomePage() {
               </Link>
             </div>
             <div className='md:w-1/2 order-1 md:order-2 bg-gray-100 rounded-2xl h-48 sm:h-64 md:h-80 lg:h-96 w-full flex items-center justify-center text-gray-300'>
-              {/* Placeholder for Image */}
               <div className='text-center'>
                 <span className='text-4xl sm:text-6xl'>📅</span>
                 <p className='mt-2 sm:mt-4 font-medium text-sm sm:text-base'>
@@ -211,7 +202,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Highlight 2: Image Left, Text Right */}
           <div className='flex flex-col md:flex-row-reverse items-center gap-8 md:gap-12'>
             <div className='md:w-1/2'>
               <span className='text-green-600 font-bold uppercase tracking-wider text-xs sm:text-sm'>
@@ -243,7 +233,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Highlight 3: Image Right, Text Left */}
           <div className='flex flex-col md:flex-row items-center gap-8 md:gap-12'>
             <div className='md:w-1/2 order-2 md:order-1'>
               <span className='text-green-600 font-bold uppercase tracking-wider text-xs sm:text-sm'>
@@ -265,7 +254,6 @@ export default function HomePage() {
               </Link>
             </div>
             <div className='md:w-1/2 order-1 md:order-2 bg-gray-100 rounded-2xl h-48 sm:h-64 md:h-80 lg:h-96 w-full flex items-center justify-center text-gray-300'>
-              {/* Placeholder for Image */}
               <div className='text-center'>
                 <span className='text-4xl sm:text-6xl'>⭐</span>
                 <p className='mt-2 sm:mt-4 font-medium text-sm sm:text-base'>
@@ -335,7 +323,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* --- FINAL CTA STRIP --- */}
+      {/* ---  CTA SECTION --- */}
       <section className='py-16 sm:py-24 bg-gray-50 text-center'>
         <div className='container-mobile'>
           <h2 className='text-3xl sm:text-4xl lg:text-5xl font-extrabold text-green-900 mb-4 sm:mb-6'>
