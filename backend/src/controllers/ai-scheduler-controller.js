@@ -45,19 +45,9 @@ class AISchedulerController {
       const { userId } = req.params;
       const accessibilityPreferences = req.body;
 
-      const updatedUser = await User.findByIdAndUpdate(
+      const updatedUser = await User.updateAccessibilityPreferences(
         userId,
-        {
-          accessibilityPreferences,
-          $push: {
-            accessibilityHistory: {
-              preferences: accessibilityPreferences,
-              timestamp: new Date(),
-              source: "user_update"
-            }
-          }
-        },
-        { new: true }
+        accessibilityPreferences
       );
 
       if (!updatedUser) {
@@ -69,7 +59,7 @@ class AISchedulerController {
 
       res.json({
         success: true,
-        data: updatedUser.accessibilityPreferences,
+        data: updatedUser.accessibility_preferences,
         message: "Accessibility preferences updated successfully"
       });
     } catch (error) {
@@ -88,18 +78,24 @@ class AISchedulerController {
     try {
       const { userId } = req.params;
 
-      const user = await User.findById(userId);
-      if (!user) {
+      const profile = await User.getAccessibilityProfile(userId);
+      if (!profile) {
         return res.status(404).json({
           success: false,
           message: "User not found"
         });
       }
 
-      const profile = {
-        preferences: user.accessibilityPreferences || {},
-        learningData: user.aiLearningData || [],
-        accessibilityHistory: user.accessibilityHistory || [],
+      const user = {
+        accessibilityPreferences: profile.accessibility_preferences || {},
+        aiLearningData: profile.ai_learning_data || [],
+        accessibilityHistory: profile.accessibility_history || []
+      };
+
+      const extendedProfile = {
+        preferences: user.accessibilityPreferences,
+        learningData: user.aiLearningData,
+        accessibilityHistory: user.accessibilityHistory,
         cognitiveLoadProfile: this.calculateCognitiveLoadProfile(user),
         focusTimeProfile: this.calculateFocusTimeProfile(user),
         personalizedRecommendations: await this.getPersonalizedRecommendations(
@@ -109,7 +105,7 @@ class AISchedulerController {
 
       res.json({
         success: true,
-        data: profile
+        data: extendedProfile
       });
     } catch (error) {
       console.error("Get Profile Error:", error);
@@ -155,13 +151,20 @@ class AISchedulerController {
       const { userId } = req.params;
       const { appointmentType, duration, complexity, sessionData } = req.body;
 
-      const user = await User.findById(userId);
-      if (!user) {
+      const profile = await User.getAccessibilityProfile(userId);
+      if (!profile) {
         return res.status(404).json({
           success: false,
           message: "User not found"
         });
       }
+
+      const user = {
+        accessibilityPreferences: profile.accessibility_preferences || {},
+        aiLearningData: profile.ai_learning_data || [],
+        focusTimePreferences: profile.focus_time_preferences || {},
+        cognitiveLoadProfile: profile.cognitive_load_profile || {}
+      };
 
       // Get real-time cognitive load assessment
       const realTimeLoad = await this.assessRealTimeCognitiveLoad(
@@ -502,13 +505,20 @@ class AISchedulerController {
     try {
       const { userId } = req.params;
 
-      const user = await User.findById(userId);
-      if (!user) {
+      const profile = await User.getAccessibilityProfile(userId);
+      if (!profile) {
         return res.status(404).json({
           success: false,
           message: "User not found"
         });
       }
+
+      const user = {
+        accessibilityPreferences: profile.accessibility_preferences || {},
+        aiLearningData: profile.ai_learning_data || [],
+        focusTimePreferences: profile.focus_time_preferences || {},
+        cognitiveLoadProfile: profile.cognitive_load_profile || {}
+      };
 
       const protection = await this.generateFocusTimeProtection(user);
 
@@ -532,13 +542,18 @@ class AISchedulerController {
     try {
       const { userId } = req.params;
 
-      const user = await User.findById(userId);
-      if (!user) {
+      const profile = await User.getAccessibilityProfile(userId);
+      if (!profile) {
         return res.status(404).json({
           success: false,
           message: "User not found"
         });
       }
+
+      const user = {
+        age: profile.age,
+        accessibilityPreferences: profile.accessibility_preferences || {}
+      };
 
       const suggestions = await this.generateAgeAppropriateSuggestions(user);
 
@@ -1015,4 +1030,4 @@ class AISchedulerController {
   }
 }
 
-module.exports = new AISchedulerController();
+export default new AISchedulerController();

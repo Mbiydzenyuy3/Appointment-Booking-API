@@ -27,25 +27,16 @@ export default function MobileNav({ isOpen, onClose }) {
 
   return (
     <>
-      {/* Mobile Navigation Overlay */}
-      <div
-        className={`fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300 ${
-          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
-        onClick={onClose}
-        aria-hidden='true'
-      />
-
       {/* Mobile Navigation Panel */}
       <nav
-        className={`fixed top-0 left-0 h-full w-80 max-w-[85vw] bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out safe-area-top safe-area-bottom ${
+        className={`fixed top-0 left-0 h-full w-80 max-w-[85vw] bg-white text-gray-900 shadow-xl z-50 transform transition-transform duration-300 ease-in-out safe-area-top safe-area-bottom ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
         role='navigation'
         aria-label='Main navigation'
       >
         {/* Navigation Header */}
-        <div className='flex items-center justify-between p-4 border-b border-gray-200 safe-area-top'>
+        <div className='flex items-center justify-between p-4 border-b text-gray-800 border-gray-200 safe-area-top'>
           <Link
             to='/'
             className='flex items-center space-x-2 text-xl font-bold text-primary-700 touch-target'
@@ -54,25 +45,6 @@ export default function MobileNav({ isOpen, onClose }) {
             <span className='text-2xl'>📅</span>
             <span>BOOKEasy</span>
           </Link>
-          <button
-            onClick={onClose}
-            className='p-2 rounded-lg hover:bg-gray-100 focus-ring-mobile touch-target'
-            aria-label='Close navigation'
-          >
-            <svg
-              className='w-6 h-6'
-              fill='none'
-              stroke='currentColor'
-              viewBox='0 0 24 24'
-            >
-              <path
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                strokeWidth={2}
-                d='M6 18L18 6M6 6l12 12'
-              />
-            </svg>
-          </button>
         </div>
 
         {/* Navigation Content */}

@@ -7,12 +7,16 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 
 const RegisterSchema = Yup.object().shape({
-  name: Yup.string().required("Required"),
-  email: Yup.string().email("Invalid email").required("Required"),
-  password: Yup.string().min(6, "Minimum 6 characters").required("Required"),
+  name: Yup.string().required("name input field is required"),
+  email: Yup.string()
+    .email("Invalid email")
+    .required("email input field is required"),
+  password: Yup.string()
+    .min(6, "Minimum 6 characters")
+    .required("password input field is required"),
   user_type: Yup.string()
     .oneOf(["client", "provider"], "Invalid role")
-    .required("Required")
+    .required("user type input field is equired")
 });
 
 export default function Register() {
@@ -21,10 +25,10 @@ export default function Register() {
   const [formError, setFormError] = useState("");
 
   return (
-    <div className='min-h-screen flex items-center justify-center bg-gray-50 py-6 px-4 safe-area-bottom'>
+    <div className='min-h-screen flex items-center justify-center bg-green-200 py-6 px-4 safe-area-bottom'>
       <main
         id='main-content'
-        className='bg-white shadow-xl rounded-2xl w-full max-w-md p-6 sm:p-8'
+        className='bg-white shadow-xl rounded-2xl w-full max-w-md p-6 sm:p-8 items-center justify-center'
         role='main'
         aria-labelledby='register-title'
       >
@@ -43,9 +47,9 @@ export default function Register() {
           >
             Create Account
           </h1>
-          <p className='text-gray-600'>
+          {/* <p className='text-gray-600'>
             Join BOOKEasy to manage your appointments
-          </p>
+          </p> */}
         </div>
 
         <Formik
@@ -103,7 +107,7 @@ export default function Register() {
                   name='name'
                   type='text'
                   placeholder='Enter your full name'
-                  className='input-field w-full touch-target'
+                  className='input-field w-full touch-target text-gray-700'
                   autoComplete='name'
                 />
                 <ErrorMessage
@@ -124,7 +128,7 @@ export default function Register() {
                   name='email'
                   type='email'
                   placeholder='Enter your email'
-                  className='input-field w-full touch-target'
+                  className='input-field w-full touch-target text-gray-700'
                   autoComplete='email'
                 />
                 <ErrorMessage
@@ -145,7 +149,7 @@ export default function Register() {
                   name='password'
                   type='password'
                   placeholder='Create a password'
-                  className='input-field w-full touch-target'
+                  className='input-field w-full touch-target text-gray-700'
                   autoComplete='new-password'
                 />
                 <ErrorMessage
@@ -168,7 +172,7 @@ export default function Register() {
                 <Field
                   as='select'
                   name='user_type'
-                  className='input-field w-full touch-target'
+                  className='input-field w-full touch-target text-gray-700'
                 >
                   <option value='client'>Client - Book appointments</option>
                   <option value='provider'>Provider - Manage services</option>

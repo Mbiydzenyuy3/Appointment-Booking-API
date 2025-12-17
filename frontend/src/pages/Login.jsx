@@ -7,8 +7,10 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 
 const LoginSchema = Yup.object().shape({
-  email: Yup.string().email("Invalid email").required("Required"),
-  password: Yup.string().required("Required")
+  email: Yup.string()
+    .email("Invalid email")
+    .required("email input field is required"),
+  password: Yup.string().required("password input field is required")
 });
 
 export default function Login() {
@@ -17,10 +19,10 @@ export default function Login() {
   const [formError, setFormError] = useState("");
 
   return (
-    <div className='min-h-screen flex items-center justify-center bg-gray-50 py-6 px-4 safe-area-bottom'>
+    <div className='min-h-screen flex items-center justify-center bg-green-200 py-6 px-4 safe-area-bottom'>
       <main
         id='main-content'
-        className='bg-white shadow-xl rounded-2xl w-full max-w-md p-6 sm:p-8'
+        className='bg-white shadow-xl rounded-2xl w-full max-w-md p-6 sm:p-8 justify-center items-center'
         role='main'
         aria-labelledby='login-title'
       >
@@ -89,7 +91,7 @@ export default function Login() {
                   name='email'
                   type='email'
                   placeholder='Enter your email'
-                  className='input-field w-full touch-target'
+                  className='input-field w-full touch-target text-gray-700'
                   autoComplete='email'
                 />
                 <ErrorMessage
@@ -110,7 +112,7 @@ export default function Login() {
                   name='password'
                   type='password'
                   placeholder='Enter your password'
-                  className='input-field w-full touch-target'
+                  className='input-field w-full touch-target text-gray-800'
                   autoComplete='current-password'
                 />
                 <ErrorMessage

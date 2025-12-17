@@ -1,4 +1,5 @@
 // AI-Powered Accessibility-First Scheduling Context
+
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "./AuthContext.jsx";
 import api from "../services/api.js";
@@ -17,6 +18,11 @@ export const AISchedulerProvider = ({ children }) => {
   // Load user's accessibility profile on mount
   const loadAccessibilityProfile = useCallback(async () => {
     try {
+      if (!user?.id) {
+        console.warn("User not available for loading accessibility profile");
+        return;
+      }
+
       setLoading(true);
       const response = await api.get(`/ai-scheduler/profile/${user.id}`);
 
@@ -34,7 +40,7 @@ export const AISchedulerProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [user.id]);
+  }, [user?.id]);
 
   useEffect(() => {
     if (user) {
@@ -44,6 +50,13 @@ export const AISchedulerProvider = ({ children }) => {
 
   const updateAccessibilityPreferences = async (preferences) => {
     try {
+      if (!user?.id) {
+        console.warn(
+          "User not available for updating accessibility preferences"
+        );
+        return false;
+      }
+
       setLoading(true);
       const response = await api.put(
         `/ai-scheduler/preferences/${user.id}`,
@@ -67,6 +80,11 @@ export const AISchedulerProvider = ({ children }) => {
 
   const getAISuggestions = async (serviceId, customPreferences = {}) => {
     try {
+      if (!user?.id) {
+        console.warn("User not available for getting AI suggestions");
+        return null;
+      }
+
       setLoading(true);
       const response = await api.post("/ai-scheduler/suggestions", {
         userId: user.id,
@@ -93,6 +111,11 @@ export const AISchedulerProvider = ({ children }) => {
     complexity
   ) => {
     try {
+      if (!user?.id) {
+        console.warn("User not available for cognitive load optimization");
+        return null;
+      }
+
       const response = await api.post(
         `/ai-scheduler/cognitive-optimization/${user.id}`,
         {
@@ -114,6 +137,11 @@ export const AISchedulerProvider = ({ children }) => {
 
   const getFocusTimeProtection = async () => {
     try {
+      if (!user?.id) {
+        console.warn("User not available for focus time protection");
+        return null;
+      }
+
       const response = await api.get(
         `/ai-scheduler/focus-protection/${user.id}`
       );
@@ -130,6 +158,11 @@ export const AISchedulerProvider = ({ children }) => {
 
   const getAgeAppropriateSuggestions = async () => {
     try {
+      if (!user?.id) {
+        console.warn("User not available for age-appropriate suggestions");
+        return null;
+      }
+
       const response = await api.get(
         `/ai-scheduler/age-appropriate/${user.id}`
       );
@@ -146,6 +179,11 @@ export const AISchedulerProvider = ({ children }) => {
 
   const learnFromBehavior = async (appointmentData) => {
     try {
+      if (!user?.id) {
+        console.warn("User not available for learning from behavior");
+        return null;
+      }
+
       const response = await api.post(
         `/ai-scheduler/learn/${user.id}`,
         appointmentData

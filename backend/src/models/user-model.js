@@ -408,7 +408,7 @@ export const getAISchedulingAnalytics = async (userId) => {
   }
 };
 
-module.exports = {
+export default {
   UserModel,
   findByEmail,
   findById,

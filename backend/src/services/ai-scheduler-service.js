@@ -1,7 +1,11 @@
 // AI-Powered Accessibility-First Scheduling Service - Enhanced with Machine Learning
-import User from "../models/user-model.js";
-import Appointment from "../models/appointment-model.js";
-import Slot from "../models/slot-model.js";
+import {
+  findById as findUserById,
+  addAILearningData
+} from "../models/user-model.js";
+import { findAppointmentsByUser } from "../models/appointment-model.js";
+import { searchAvailableSlots } from "../models/slot-model.js";
+import { getServiceById } from "../services/services-service.js";
 
 class AISchedulerService {
   constructor() {
@@ -119,11 +123,8 @@ class AISchedulerService {
    */
   async getAccessibilityOptimizedSlots(userId, serviceId, preferences = {}) {
     try {
-      const user = await User.findById(userId);
-      const service =
-        await require("../services/services-service.js").getServiceById(
-          serviceId
-        );
+      const user = await findUserById(userId);
+      const service = await getServiceById(serviceId);
 
       if (!user || !service) {
         throw new Error("User or service not found");
@@ -131,16 +132,16 @@ class AISchedulerService {
 
       // Merge user preferences with provided preferences
       const accessibilityProfile = {
-        ...user.accessibilityPreferences,
+        ...user.accessibility_preferences,
         ...preferences
       };
 
       // Get available slots
-      const availableSlots = await Slot.find({
-        provider_id: service.provider_id,
-        is_available: true,
-        day: { $gte: new Date() }
-      }).sort({ day: 1, start_time: 1 });
+      const availableSlots = await searchAvailableSlots({
+        providerId: service.provider_id,
+        serviceId: serviceId,
+        day: new Date().toISOString().split("T")[0] // Today's date or later
+      });
 
       // Apply enhanced ML algorithm to rank slots
       const rankedSlots = await this.rankSlotsWithML(
@@ -184,7 +185,7 @@ class AISchedulerService {
    */
   async rankSlotsWithML(slots, accessibilityProfile, user, service) {
     // Get historical user behavior patterns
-    const userHistory = await this.analyzeUserBehaviorPatterns(user._id);
+    const userHistory = await this.analyzeUserBehaviorPatterns(user.id);
 
     return slots
       .map((slot) => {
@@ -209,7 +210,7 @@ class AISchedulerService {
         const contextualScore = this.calculateContextualScore(slot, user);
 
         return {
-          ...slot.toObject(),
+          ...slot,
           mlScore,
           cognitiveLoad,
           focusProtection,
@@ -279,12 +280,10 @@ class AISchedulerService {
    */
   async analyzeUserBehaviorPatterns(userId) {
     try {
-      const appointments = await Appointment.find({
-        user_id: userId,
-        status: { $in: ["completed", "cancelled"] }
-      })
-        .sort({ created_at: -1 })
-        .limit(50);
+      const appointments = await findAppointmentsByUser(userId, {
+        status: { $in: ["completed", "cancelled"] },
+        limit: 50
+      });
 
       const patterns = {
         preferredTimes: [],
@@ -297,20 +296,24 @@ class AISchedulerService {
       };
 
       appointments.forEach((apt) => {
-        const aptDate = new Date(apt.date);
+        const aptDate = new Date(apt.appointment_date);
         const hour = aptDate.getHours();
         const day = aptDate.getDay();
 
         if (apt.status === "completed") {
           patterns.preferredTimes.push(hour);
           patterns.preferredDays.push(day);
-          patterns.completionPatterns.push({ hour, day, timeSlot: apt.time });
+          patterns.completionPatterns.push({
+            hour,
+            day,
+            timeSlot: apt.appointment_time
+          });
         } else if (apt.status === "cancelled") {
           patterns.avoidedTimes.push(hour);
           patterns.cancellationPatterns.push({
             hour,
             day,
-            timeSlot: apt.time,
+            timeSlot: apt.appointment_time,
             reason: apt.cancellation_reason
           });
         }
@@ -476,7 +479,7 @@ class AISchedulerService {
     load *= this.cognitiveLoadFactors.seasonalFactors[season] || 1.0;
 
     // User accessibility factors
-    if (user.accessibilityPreferences?.cognitive?.simpleInterface) {
+    if (user.accessibility_preferences?.cognitive?.simpleInterface) {
       load *= 0.7; // Reduce cognitive load for users who need simpler interfaces
     }
 
@@ -769,7 +772,7 @@ class AISchedulerService {
       }
 
       reasons.push({
-        slotId: slot._id,
+        slotId: slot.timeslot_id,
         rank: index + 1,
         reasoning:
           reasoning.length > 0 ? reasoning : ["Good general accessibility fit"],
@@ -954,7 +957,7 @@ class AISchedulerService {
     load *= complexityMap[service.type] || 1.0;
 
     // User accessibility factors
-    if (user.accessibilityPreferences?.cognitive?.simpleInterface) {
+    if (user.accessibility_preferences?.cognitive?.simpleInterface) {
       load *= 0.7; // Reduce cognitive load for users who need simpler interfaces
     }
 
@@ -1132,7 +1135,7 @@ class AISchedulerService {
       }
 
       reasons.push({
-        slotId: slot._id,
+        slotId: slot.timeslot_id,
         rank: index + 1,
         reasoning:
           reasoning.length > 0 ? reasoning : ["Good general accessibility fit"]
@@ -1209,7 +1212,7 @@ class AISchedulerService {
    */
   async learnFromUserBehavior(userId, appointmentData) {
     try {
-      const user = await User.findById(userId);
+      const user = await findUserById(userId);
       if (!user) return;
 
       // Update user preferences based on appointment choices
@@ -1222,14 +1225,10 @@ class AISchedulerService {
       };
 
       // Update user profile with learned preferences
-      await User.findByIdAndUpdate(userId, {
-        $push: {
-          aiLearningData: {
-            ...learningData,
-            timestamp: new Date(),
-            source: "behavioral_analysis"
-          }
-        }
+      await addAILearningData(userId, {
+        ...learningData,
+        timestamp: new Date(),
+        source: "behavioral_analysis"
       });
 
       return learningData;
@@ -1313,7 +1312,7 @@ class AISchedulerService {
         );
 
         return {
-          ...slot.toObject(),
+          ...slot,
           aiScore: score,
           cognitiveLoad,
           focusProtection,
@@ -1327,4 +1326,4 @@ class AISchedulerService {
   }
 }
 
-module.exports = new AISchedulerService();
+export default new AISchedulerService();

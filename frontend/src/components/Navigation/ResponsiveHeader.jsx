@@ -27,18 +27,18 @@ export default function ResponsiveHeader() {
 
   return (
     <>
-      <header className='bg-green-800 shadow-sm border-b border-green-700 sticky top-0 z-30 safe-area-top'>
-        <div className='container-mobile'>
+      <header className='bg-green-white shadow-sm border-b border-green-700 sticky top-0 z-30 safe-area-top'>
+        <div className='container-mobile bg-white'>
           <div className='flex items-center justify-between h-16'>
             {/* Logo */}
             <Link
               to='/'
-              className='flex items-center space-x-2 text-xl font-bold text-white touch-target'
+              className='flex items-center space-x-2 text-xl font-bold text-black touch-target'
               onClick={closeMobileNav}
             >
               <span className='text-2xl'>📅</span>
               <span className='hidden sm:inline'>BOOKEasy</span>
-              <span className='sm:hidden text-lg'>BE</span>
+              <span className='sm:hidden text-lg'>BOOKEasy</span>
             </Link>
 
             {/* Desktop Navigation */}
@@ -49,10 +49,10 @@ export default function ResponsiveHeader() {
             >
               <Link
                 to='/'
-                className={`text-sm font-medium px-3 py-2 rounded-lg transition-all duration-200 touch-target ${
+                className={`text-sm font-medium px-3 py-2 transition-all duration-200 touch-target ${
                   isActivePath("/")
-                    ? "text-green-800 bg-green-100 border-b-2 border-green-800"
-                    : "text-green-100 hover:text-white hover:bg-green-700"
+                    ? "text-green-800 border-b-2 border-green-800"
+                    : "text-green-800 hover:text-white hover:bg-green-700"
                 }`}
               >
                 Home
@@ -61,7 +61,11 @@ export default function ResponsiveHeader() {
               {!user && (
                 <Link
                   to='/book-appointment'
-                  className='text-sm font-medium text-green-100 hover:text-white hover:bg-green-700 px-3 py-2 rounded-lg transition-all duration-200 touch-target'
+                  className={`text-sm font-medium px-3 py-2 rounded-lg transition-all duration-200 touch-target ${
+                    isActivePath("/book-appointment")
+                      ? "text-green-800"
+                      : "text-green-800"
+                  }`}
                 >
                   Book Now
                 </Link>
@@ -73,8 +77,8 @@ export default function ResponsiveHeader() {
                     to='/appointments'
                     className={`text-sm font-medium px-3 py-2 rounded-lg transition-all duration-200 touch-target ${
                       isActivePath("/appointments")
-                        ? "text-green-800 bg-green-100"
-                        : "text-green-100 hover:text-white hover:bg-green-700"
+                        ? "text-green-800"
+                        : "text-green-800 hover:text-white hover:bg-green-700"
                     }`}
                   >
                     My Appointments
@@ -104,16 +108,16 @@ export default function ResponsiveHeader() {
               {!user ? (
                 <>
                   <Link
-                    to='/login'
-                    className='text-sm font-medium text-green-100 hover:text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-all duration-200 touch-target'
-                  >
-                    Login
-                  </Link>
-                  <Link
                     to='/register'
                     className='btn btn-primary text-sm px-4 py-2 touch-target shadow-sm'
                   >
                     Register
+                  </Link>
+                  <Link
+                    to='/login'
+                    className='text-sm font-medium text-green-800 hover:text-white px-4 py-2 rounded-lg hover:bg-green-800 border border-green-800 transition-all duration-200 touch-target'
+                  >
+                    Login
                   </Link>
                 </>
               ) : (
@@ -134,13 +138,13 @@ export default function ResponsiveHeader() {
             {/* Mobile Menu Button */}
             <button
               onClick={toggleMobileNav}
-              className='md:hidden p-2 rounded-lg hover:bg-green-700 focus-ring-mobile touch-target transition-all duration-200'
+              className='md:hidden p-2 text-black rounded-lg hover:bg-green-800 focus-ring-mobile touch-target transition-all duration-200'
               aria-label='Open navigation menu'
               aria-expanded={isMobileNavOpen}
               aria-controls='mobile-navigation'
             >
               <svg
-                className='w-6 h-6 text-white'
+                className='w-6 h-6 text-black'
                 fill='none'
                 stroke='currentColor'
                 viewBox='0 0 24 24'
