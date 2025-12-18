@@ -1,4 +1,3 @@
-// src/pages/ProviderDashboard.jsx - Mobile-First Responsive Design
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
 import ServiceForm from "../components/Providers/ServiceForm.jsx";

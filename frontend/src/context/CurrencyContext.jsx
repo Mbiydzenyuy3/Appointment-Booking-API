@@ -1,4 +1,3 @@
-// Currency Context for multi-currency support
 import React, { createContext, useContext, useState, useEffect } from "react";
 
 const CurrencyContext = createContext();

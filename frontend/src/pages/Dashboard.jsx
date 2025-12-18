@@ -1,4 +1,3 @@
-// src/pages/UserDashboard.jsx - Mobile-First Responsive Design
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
 import RescheduleModal from "../components/Appointments/ResheduleModal.jsx";
