@@ -7,7 +7,7 @@ export const createSlot = async ({
   serviceId,
   day,
   startTime,
-  endTime,
+  endTime
 }) => {
   const client = await pool.connect();
 
@@ -63,15 +63,17 @@ export const createSlot = async ({
   }
 };
 
-// Get all slots for a provider
+// Get all slots for a provider with service information
 export async function getSlotsByProviderId(providerId) {
   const client = await pool.connect();
 
   try {
     const result = await client.query(
-      `SELECT * FROM time_slots
-       WHERE provider_id = $1
-       ORDER BY day, start_time`,
+      `SELECT ts.*, s.service_name, s.description as service_description, s.price as service_price, s.duration_minutes as service_duration
+       FROM time_slots ts
+       LEFT JOIN services s ON ts.service_id = s.service_id
+       WHERE ts.provider_id = $1
+       ORDER BY ts.day, ts.start_time`,
       [providerId]
     );
     return result.rows;
@@ -141,7 +143,7 @@ export const deleteSlot = async (slotId, providerId) => {
     if (slot.provider_id !== providerId) throw new Error("Unauthorized");
 
     await client.query(`DELETE FROM time_slots WHERE timeslot_id = $1`, [
-      slotId,
+      slotId
     ]);
 
     await client.query("COMMIT");
@@ -159,7 +161,7 @@ export async function searchAvailableSlots({
   serviceId,
   day,
   limit = 10,
-  offset = 0,
+  offset = 0
 }) {
   let query = `
     SELECT ts.*, s.service_name

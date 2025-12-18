@@ -1,4 +1,3 @@
-// src/components/Providers/TimeSlotForm.jsx
 import React, { useState } from "react";
 
 export default function TimeslotForm({ onCreate, services = [] }) {
@@ -128,7 +127,6 @@ export default function TimeslotForm({ onCreate, services = [] }) {
         </div>
       </div>
 
-      {/* Enhanced Submit Button with Maximum Visibility */}
       <div className='relative'>
         <button
           type='submit'

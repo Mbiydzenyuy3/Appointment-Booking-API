@@ -1,4 +1,3 @@
-// src/components/Appointments/Appointments.jsx
 import axios from "axios";
 export const createAppointments = (AppointmentData) =>
   axios.post("/Appointments/book", AppointmentData);

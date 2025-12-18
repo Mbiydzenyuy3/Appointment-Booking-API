@@ -11,9 +11,7 @@ export const useCurrency = () => {
   return context;
 };
 
-// Major world currencies with FCFA as priority
 export const CURRENCIES = [
-  // CEMAC and Central African Currencies
   {
     code: "XAF",
     name: "Central African CFA Franc",

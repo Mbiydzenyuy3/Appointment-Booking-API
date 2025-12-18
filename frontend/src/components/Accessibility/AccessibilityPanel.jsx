@@ -1,4 +1,3 @@
-// src/components/Accessibility/AccessibilityPanel.jsx
 import React, { useState } from "react";
 import { useAccessibility } from "../../hooks/useAccessibility";
 

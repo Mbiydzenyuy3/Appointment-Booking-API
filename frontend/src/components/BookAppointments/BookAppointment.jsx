@@ -78,7 +78,7 @@ export default function BookAppointmentForm({ providerId }) {
     }
   };
 
-  // Group timeslots by date for better mobile UX
+  // Grouped timeslots by date for better mobile UX
   const timeslotsByDate = timeslots.reduce((acc, slot) => {
     const date = formatDate(slot.day);
     if (!acc[date]) acc[date] = [];
@@ -97,7 +97,6 @@ export default function BookAppointmentForm({ providerId }) {
         </p>
       </div>
 
-      {/* Mobile-optimized date selector */}
       <div>
         <label
           htmlFor='date'
@@ -115,7 +114,6 @@ export default function BookAppointmentForm({ providerId }) {
         />
       </div>
 
-      {/* Timeslot selector - Mobile optimized */}
       <div>
         <label
           htmlFor='timeslot'
@@ -197,7 +195,6 @@ export default function BookAppointmentForm({ providerId }) {
         )}
       </div>
 
-      {/* Submit button - Mobile optimized */}
       <div className='pt-4 border-t border-gray-200'>
         <button
           type='submit'
@@ -215,7 +212,6 @@ export default function BookAppointmentForm({ providerId }) {
         </button>
       </div>
 
-      {/* Message display */}
       {message && (
         <div
           className={`p-4 rounded-xl ${

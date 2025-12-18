@@ -1,4 +1,3 @@
-// src/components/Accessibility/SkipLink.jsx
 import React from "react";
 
 const SkipLink = ({
