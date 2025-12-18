@@ -7,25 +7,11 @@ import { logInfo, logError, logDebug } from "../utils/logger.js";
 const { Pool } = pg;
 
 // Destructure env vars
-const {
-  DB_USER,
-  DB_PASSWORD,
-  DB_HOST,
-  DB_NAME,
-  DB_PORT,
-  NODE_ENV,
-  DB_NAME_TEST,
-} = process.env;
+const { DB_USER, DB_PASSWORD, DB_HOST, DB_NAME, DB_PORT, NODE_ENV } =
+  process.env;
 
 // 🔒 Validate DB config
-if (
-  !DB_HOST ||
-  !DB_PASSWORD ||
-  !DB_NAME ||
-  !DB_USER ||
-  !DB_PORT ||
-  !DB_NAME_TEST
-) {
+if (!DB_HOST || !DB_PASSWORD || !DB_NAME || !DB_USER || !DB_PORT) {
   logError(
     "❌ Database environment variables are missing! Check your .env file."
   );
@@ -38,14 +24,10 @@ const pool = new Pool({
   database: process.env.DB_NAME,
   password: process.env.DB_PASSWORD,
   port: process.env.DB_PORT,
-  connectionTimeoutMillis: 2000,
+  connectionTimeoutMillis: 2000
 });
 
-logInfo(
-  `📦 Database is configured for: ${
-    NODE_ENV === "test" ? DB_NAME_TEST : DB_NAME
-  }`
-);
+logInfo(`📦 Database is configured for: ${DB_NAME}`);
 
 // 🌱 Connection events
 pool.on("connect", () => {
