@@ -22,9 +22,10 @@ export default function ServiceForm({ onCreate }) {
       name: service.service_name,
       description: service.description,
       price: Number(service.price),
-      currency: selectedCurrency,
       durationMinutes: Number(service.duration_minutes)
     };
+
+    console.log("Service data being sent:", ServiceValues);
 
     onCreate(ServiceValues);
 
