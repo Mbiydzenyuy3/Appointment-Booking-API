@@ -75,10 +75,10 @@ export default function ResponsiveHeader() {
                 <>
                   <Link
                     to='/appointments'
-                    className={`text-sm font-medium px-3 py-2 rounded-lg transition-all duration-200 touch-target ${
+                    className={`text-sm font-medium px-3 py-2 transition-all duration-200 touch-target ${
                       isActivePath("/appointments")
-                        ? "text-green-800"
-                        : "text-green-800 hover:text-white hover:bg-green-700"
+                        ? "text-gray-800"
+                        : "text-gray-800 hover:text-green-800"
                     }`}
                   >
                     My Appointments
@@ -94,7 +94,7 @@ export default function ResponsiveHeader() {
                       isActivePath("/dashboard") ||
                       isActivePath("/provider/dashboard")
                         ? "text-green-800 bg-green-100"
-                        : "text-green-100 hover:text-white hover:bg-green-700"
+                        : "text-gray-800 hover:text-green-800"
                     }`}
                   >
                     Dashboard
@@ -122,15 +122,36 @@ export default function ResponsiveHeader() {
                 </>
               ) : (
                 <div className='flex items-center space-x-3'>
-                  <span className='text-sm text-green-100 hidden lg:inline truncate max-w-32'>
+                  <span className='text-sm text-gray-800 hidden lg:inline truncate max-w-32'>
                     {user.email}
                   </span>
-                  <button
-                    onClick={handleLogout}
-                    className='text-sm font-medium text-green-100 hover:text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-all duration-200 touch-target'
-                  >
-                    Logout
-                  </button>
+                  <div className='flex items-center space-x-3'>
+                    <button
+                      onClick={handleLogout}
+                      className='text-sm flex items-center gap-1 font-medium bg-green-800 text-green-800 hover:text-green-600 px-4 py-2 rounded-lg hover:bg-green-700 transition-all duration-200 touch-target z-10 border border-green-700'
+                    >
+                      Logout
+                      <span className='logout-icon'>
+                        <svg
+                          height='24'
+                          width='24'
+                          viewBox='0 0 24 24'
+                          xmlns='http://www.w3.org/2000/svg'
+                        >
+                          <g
+                            fill='none'
+                            stroke='currentColor'
+                            strokeLinecap='round'
+                            strokeLinejoin='round'
+                            strokeWidth='2'
+                          >
+                            <path d='M14 8V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2v-2' />
+                            <path d='M9 12h12l-3-3m0 6l3-3' />
+                          </g>
+                        </svg>
+                      </span>
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
