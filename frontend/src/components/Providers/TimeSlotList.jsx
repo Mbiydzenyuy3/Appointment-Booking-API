@@ -1,4 +1,3 @@
-// src/components/Providers/TimeSlotList.jsx
 import React from "react";
 import { useCurrency } from "../../context/CurrencyContext.jsx";
 
