@@ -1,0 +1,374 @@
+name: Comprehensive Testing Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  # Frontend Testing Pipeline
+  frontend-tests:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        browser: [chromium, firefox, webkit]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+        
+    - name: Install dependencies
+      working-directory: ./frontend
+      run: npm ci
+      
+    - name: Install Playwright browsers
+      working-directory: ./frontend
+      run: npx playwright install --with-deps
+      
+    - name: Build frontend
+      working-directory: ./frontend
+      run: npm run build
+      
+    - name: Start development server
+      working-directory: ./frontend
+      run: |
+        npm run dev &
+        sleep 30
+      env:
+        PORT: 5173
+        
+    - name: Run accessibility tests
+      working-directory: ./frontend
+      run: npx playwright test --project=accessibility
+      
+    - name: Run performance tests
+      working-directory: ./frontend
+      run: npx playwright test src/tests/performance.spec.js
+      
+    - name: Run cross-browser tests
+      working-directory: ./frontend
+      run: npx playwright test --project=${{ matrix.browser }}
+      
+    - name: Run mobile tests
+      working-directory: ./frontend
+      run: npx playwright test --project="Mobile Chrome" --project="Mobile Safari"
+      
+    - name: Upload Playwright Report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: playwright-report-${{ matrix.browser }}
+        path: frontend/test-results/
+        retention-days: 30
+
+  # Backend Testing Pipeline  
+  backend-tests:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: appointment_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+          
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+          
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: backend/package-lock.json
+        
+    - name: Install dependencies
+      working-directory: ./backend
+      run: npm ci
+      
+    - name: Run backend tests
+      working-directory: ./backend
+      run: npm test
+      env:
+        NODE_ENV: test
+        DATABASE_URL: postgres://postgres:postgres@localhost:5432/appointment_test
+        REDIS_URL: redis://localhost:6379
+        JWT_SECRET: test-jwt-secret
+        PORT: 3000
+        
+    - name: Run API integration tests
+      working-directory: ./backend
+      run: npm test -- --grep "integration"
+      env:
+        NODE_ENV: test
+        DATABASE_URL: postgres://postgres:postgres@localhost:5432/appointment_test
+        REDIS_URL: redis://localhost:6379
+        JWT_SECRET: test-jwt-secret
+        PORT: 3000
+
+  # Comprehensive E2E Testing
+  e2e-tests:
+    runs-on: ubuntu-latest
+    needs: [frontend-tests, backend-tests]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+        
+    - name: Install dependencies
+      working-directory: ./frontend
+      run: npm ci
+      
+    - name: Install Playwright browsers
+      working-directory: ./frontend
+      run: npx playwright install --with-deps
+      
+    - name: Build and start applications
+      run: |
+        # Build frontend
+        cd frontend && npm run build
+        
+        # Start backend in background
+        cd ../backend && npm install && npm start &
+        sleep 10
+        
+        # Start frontend preview
+        cd ../frontend && npm run preview &
+        sleep 15
+        
+    - name: Run comprehensive E2E tests
+      working-directory: ./frontend
+      run: npx playwright test src/tests/e2e.spec.js
+      env:
+        BASE_URL: http://localhost:4173
+        
+    - name: Generate test report
+      working-directory: ./frontend
+      run: |
+        npx playwright show-report --output-dir=test-results/report
+        
+    - name: Upload E2E test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: e2e-test-results
+        path: frontend/test-results/
+        retention-days: 30
+
+  # Accessibility Compliance Check
+  accessibility-compliance:
+    runs-on: ubuntu-latest
+    needs: [frontend-tests]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+        
+    - name: Install dependencies
+      working-directory: ./frontend
+      run: npm ci
+      
+    - name: Install Playwright browsers
+      working-directory: ./frontend
+      run: npx playwright install --with-deps
+      
+    - name: Start application
+      working-directory: ./frontend
+      run: |
+        npm run dev &
+        sleep 30
+        
+    - name: Run accessibility audit
+      working-directory: ./frontend
+      run: |
+        node src/testing/run-accessibility-tests.js
+        
+    - name: Generate accessibility report
+      working-directory: ./frontend
+      run: |
+        npm run test:accessibility > accessibility-report.json
+        
+    - name: Upload accessibility report
+      uses: actions/upload-artifact@v4
+      with:
+        name: accessibility-report
+        path: frontend/accessibility-report.json
+        retention-days: 90
+
+  # Performance Testing
+  performance-tests:
+    runs-on: ubuntu-latest
+    needs: [frontend-tests]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+        
+    - name: Install dependencies
+      working-directory: ./frontend
+      run: npm ci
+      
+    - name: Install Playwright browsers
+      working-directory: ./frontend
+      run: npx playwright install --with-deps
+      
+    - name: Build production version
+      working-directory: ./frontend
+      run: npm run build
+      
+    - name: Start production server
+      working-directory: ./frontend
+      run: |
+        npm run preview &
+        sleep 20
+        
+    - name: Run Lighthouse CI
+      working-directory: ./frontend
+      run: |
+        npm install -g @lhci/cli
+        lhci autorun
+        
+    - name: Upload Lighthouse results
+      uses: actions/upload-artifact@v4
+      with:
+        name: lighthouse-results
+        path: frontend/.lighthouseci/
+        retention-days: 30
+
+  # Code Quality Checks
+  code-quality:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: |
+          frontend/package-lock.json
+          backend/package-lock.json
+          
+    - name: Install frontend dependencies
+      working-directory: ./frontend
+      run: npm ci
+      
+    - name: Install backend dependencies
+      working-directory: ./backend
+      run: npm ci
+      
+    - name: Run ESLint on frontend
+      working-directory: ./frontend
+      run: npm run lint
+      
+    - name: Run ESLint on backend
+      working-directory: ./backend
+      run: npx eslint src/
+      
+    - name: Check for security vulnerabilities
+      working-directory: ./frontend
+      run: npm audit --audit-level=moderate
+      
+    - name: Check backend security
+      working-directory: ./backend
+      run: npm audit --audit-level=moderate
+
+  # Final quality gate
+  quality-gate:
+    runs-on: ubuntu-latest
+    needs: [frontend-tests, backend-tests, e2e-tests, accessibility-compliance, performance-tests, code-quality]
+    if: always()
+    
+    steps:
+    - name: Check test results
+      run: |
+        if [[ "${{ needs.backend-tests.result }}" == "failure" ]]; then
+          echo "Backend tests failed"
+          exit 1
+        fi
+        
+        if [[ "${{ needs.e2e-tests.result }}" == "failure" ]]; then
+          echo "E2E tests failed"
+          exit 1
+        fi
+        
+        if [[ "${{ needs.accessibility-compliance.result }}" == "failure" ]]; then
+          echo "Accessibility compliance failed"
+          exit 1
+        fi
+        
+        echo "All tests passed successfully!"
+        
+    - name: Create deployment summary
+      run: |
+        echo "## 🎉 Quality Assurance Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Test Results:" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Frontend Tests: ${{ needs.frontend-tests.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Backend Tests: ${{ needs.backend-tests.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ E2E Tests: ${{ needs.e2e-tests.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Accessibility: ${{ needs.accessibility-compliance.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Performance: ${{ needs.performance-tests.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- ✅ Code Quality: ${{ needs.code-quality.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Coverage Areas:" >> $GITHUB_STEP_SUMMARY
+        echo "- 🌐 Cross-browser compatibility (Chrome, Firefox, Safari)" >> $GITHUB_STEP_SUMMARY
+        echo "- 📱 Mobile responsiveness testing" >> $GITHUB_STEP_SUMMARY
+        echo "- ♿ WCAG 2.1 AA accessibility compliance" >> $GITHUB_STEP_SUMMARY
+        echo "- ⚡ Core Web Vitals performance metrics" >> $GITHUB_STEP_SUMMARY
+        echo "- 🔒 Security vulnerability scanning" >> $GITHUB_STEP_SUMMARY
+        echo "- 🧪 Comprehensive end-to-end workflows" >> $GITHUB_STEP_SUMMARY

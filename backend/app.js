@@ -13,6 +13,8 @@ import { initSocket } from "./src/sockets/socket.js";
 import swaggerUi from "swagger-ui-express";
 import swaggerSpec from "./swaggerConfig.js";
 
+import { initializeRedis } from "./src/config/redis.js";
+import cacheService from "./src/services/cache-service.js";
 // Route Imports
 import indexRouter from "./src/routes/index.js";
 import authRouter from "./src/routes/auth.js";
@@ -21,6 +23,7 @@ import slotRouter from "./src/routes/slot.js";
 import providerRouter from "./src/routes/provider.js";
 import serviceRoutes from "./src/routes/service.js";
 import aiSchedulerRouter from "./src/routes/ai-scheduler.js";
+import performanceRouter from "./src/routes/performance.js";
 
 const app = express();
 
@@ -50,6 +53,7 @@ app.use("/slots", slotRouter);
 app.use("/providers", providerRouter);
 app.use("/services", serviceRoutes);
 app.use("/api/ai-scheduler", aiSchedulerRouter);
+app.use("/api/performance", performanceRouter);
 
 // Swagger Documentation
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));

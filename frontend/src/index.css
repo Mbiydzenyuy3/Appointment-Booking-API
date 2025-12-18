@@ -815,3 +815,291 @@ select:focus {
     border-radius: 12px;
   }
 }
+
+/* =================== SENIOR-FRIENDLY DESIGN ENHANCEMENTS =================== */
+
+/* Enhanced High Contrast Modes for Seniors */
+.high-contrast {
+  --text-primary: #000000;
+  --text-secondary: #1a1a1a;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f5;
+  --primary-500: #000080;
+  --border-default: #000000;
+}
+
+.high-contrast-enhanced {
+  --text-primary: #000000;
+  --text-secondary: #000000;
+  --bg-primary: #ffffff;
+  --bg-secondary: #ffffff;
+  --primary-500: #000000;
+  --border-default: #000000;
+  filter: contrast(150%);
+}
+
+.high-contrast-maximum {
+  --text-primary: #000000;
+  --text-secondary: #000000;
+  --bg-primary: #ffffff;
+  --bg-secondary: #ffffff;
+  --primary-500: #000000;
+  --border-default: #000000;
+  filter: contrast(200%) brightness(110%);
+}
+
+/* Senior Mode Specific Enhancements */
+.senior-mode {
+  /* Larger base font size for seniors */
+  font-size: 18px !important;
+}
+
+.senior-mode h1 {
+  font-size: 3rem !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+}
+
+.senior-mode h2 {
+  font-size: 2.5rem !important;
+  line-height: 1.3 !important;
+  font-weight: 600 !important;
+}
+
+.senior-mode h3 {
+  font-size: 2rem !important;
+  line-height: 1.4 !important;
+  font-weight: 600 !important;
+}
+
+.senior-mode p,
+.senior-mode span,
+.senior-mode div {
+  font-size: 1.25rem !important;
+  line-height: 1.6 !important;
+}
+
+/* Simplified Navigation for Seniors */
+.simplified-navigation .mobile-nav,
+.simplified-navigation .dropdown-menu,
+.simplified-navigation .mega-menu {
+  display: none !important;
+}
+
+.simplified-navigation .nav-simple {
+  display: block !important;
+}
+
+/* Larger Touch Targets for Seniors */
+.large-touch-targets button,
+.large-touch-targets .btn,
+.large-touch-targets [role="button"],
+.large-touch-targets a {
+  min-height: 60px !important;
+  min-width: 60px !important;
+  padding: 16px 24px !important;
+  font-size: 1.25rem !important;
+}
+
+.large-touch-targets input,
+.large-touch-targets textarea,
+.large-touch-targets select {
+  min-height: 60px !important;
+  padding: 16px 20px !important;
+  font-size: 1.25rem !important;
+}
+
+.large-touch-targets .touch-target {
+  min-height: 60px !important;
+  min-width: 60px !important;
+}
+
+/* High Visibility Mode for Seniors */
+.high-visibility button,
+.high-visibility .btn,
+.high-visibility input,
+.high-visibility select,
+.high-visibility textarea {
+  border: 3px solid var(--primary-500) !important;
+  box-shadow: 0 0 0 2px rgba(54, 153, 54, 0.3) !important;
+}
+
+.high-visibility a {
+  text-decoration: underline !important;
+  text-decoration-thickness: 3px !important;
+  text-underline-offset: 4px !important;
+}
+
+/* Slow Animations for Seniors */
+.slow-animations * {
+  animation-duration: 1s !important;
+  transition-duration: 0.5s !important;
+}
+
+.slow-animations .fade-in {
+  animation: fadeIn 1s ease-in-out !important;
+}
+
+.slow-animations .slide-up {
+  animation: slideUp 0.8s ease-out !important;
+}
+
+.slow-animations .hover-lift:hover {
+  transform: translateY(-4px) !important;
+  transition: transform 0.8s ease !important;
+}
+
+/* Enhanced Focus Indicators for Seniors */
+.senior-mode .focus-ring:focus,
+.senior-mode .focus-ring-mobile:focus {
+  outline: 4px solid var(--primary-500) !important;
+  outline-offset: 4px !important;
+  box-shadow: 0 0 0 6px rgba(54, 153, 54, 0.2) !important;
+}
+
+/* Senior-Optimized Button Styles */
+.senior-mode .btn-primary {
+  padding: 16px 32px !important;
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  border-radius: 12px !important;
+  min-height: 56px !important;
+}
+
+.senior-mode .btn-secondary {
+  padding: 16px 32px !important;
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  border-radius: 12px !important;
+  min-height: 56px !important;
+}
+
+.senior-mode .btn-outline {
+  padding: 16px 32px !important;
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  border-radius: 12px !important;
+  min-height: 56px !important;
+  border-width: 3px !important;
+}
+
+/* Senior-Optimized Form Elements */
+.senior-mode .input-field {
+  padding: 16px 20px !important;
+  font-size: 1.25rem !important;
+  border-radius: 12px !important;
+  border-width: 3px !important;
+  min-height: 56px !important;
+}
+
+.senior-mode input,
+.senior-mode textarea,
+.senior-mode select {
+  padding: 16px 20px !important;
+  font-size: 1.25rem !important;
+  border-radius: 12px !important;
+  border-width: 3px !important;
+  min-height: 56px !important;
+}
+
+/* Enhanced Card Styles for Seniors */
+.senior-mode .feature-card,
+.senior-mode .booking-card {
+  padding: 24px !important;
+  border-radius: 16px !important;
+  border-width: 3px !important;
+  margin: 16px 0 !important;
+}
+
+.senior-mode .feature-card h3,
+.senior-mode .booking-card h3 {
+  font-size: 1.75rem !important;
+  margin-bottom: 16px !important;
+}
+
+.senior-mode .feature-card p,
+.senior-mode .booking-card p {
+  font-size: 1.125rem !important;
+  line-height: 1.7 !important;
+}
+
+/* Senior-Optimized Modal Styles */
+.senior-mode .modal {
+  padding: 32px !important;
+  border-radius: 20px !important;
+  border-width: 4px !important;
+}
+
+.senior-mode .modal h2 {
+  font-size: 2rem !important;
+  margin-bottom: 24px !important;
+}
+
+.senior-mode .modal p {
+  font-size: 1.25rem !important;
+  line-height: 1.7 !important;
+  margin-bottom: 16px !important;
+}
+
+/* Navigation Simplification for Seniors */
+.senior-mode .nav-simple {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+}
+
+.senior-mode .nav-simple a {
+  padding: 16px 24px !important;
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  border-radius: 12px !important;
+  border: 3px solid transparent !important;
+  text-decoration: none !important;
+  transition: all 0.3s ease !important;
+}
+
+.senior-mode .nav-simple a:hover,
+.senior-mode .nav-simple a:focus {
+  border-color: var(--primary-500) !important;
+  background-color: var(--primary-50) !important;
+}
+
+/* Text Spacing Enhancements for Seniors */
+.senior-mode p,
+.senior-mode span,
+.senior-mode div,
+.senior-mode li {
+  line-height: 1.8 !important;
+  letter-spacing: 0.5px !important;
+}
+
+.senior-mode h1,
+.senior-mode h2,
+.senior-mode h3,
+.senior-mode h4,
+.senior-mode h5,
+.senior-mode h6 {
+  letter-spacing: 1px !important;
+}
+
+/* Enhanced Error and Success States for Seniors */
+.senior-mode .error-message,
+.senior-mode .success-message {
+  padding: 16px 20px !important;
+  font-size: 1.25rem !important;
+  border-radius: 12px !important;
+  border-width: 3px !important;
+  margin: 16px 0 !important;
+}
+
+.senior-mode .error-message {
+  border-color: #dc2626 !important;
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+}
+
+.senior-mode .success-message {
+  border-color: #16a34a !important;
+  background-color: #f0fdf4 !important;
+  color: #15803d !important;
+}

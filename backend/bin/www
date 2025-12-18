@@ -7,6 +7,8 @@ import debug from "debug";
 import { app, initSocket } from "../app.js";
 import { logInfo, logError, logDebug } from "../src/utils/logger.js";
 import { connectToDb, initializeDbSchema } from "../src/config/db.js";
+import { initializeRedis } from "../src/config/redis.js";
+import cacheService from "../src/services/cache-service.js";
 
 /**
  * Get port from environment and store in Express
@@ -85,6 +87,7 @@ async function startServer() {
     logInfo(`Attempting to start server on port ${PORT}`);
     await connectToDb();
     await initializeDbSchema(); // optional, depending on your use case
+    await initializeRedis(); // Initialize Redis cache
     server.listen(PORT);
     server.on("error", onError);
     server.on("listening", onListening);

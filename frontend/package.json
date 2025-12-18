@@ -7,7 +7,19 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "start": "vite preview"
+    "start": "vite preview",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:accessibility": "node src/testing/run-accessibility-tests.js",
+    "test:cross-browser": "playwright test --project=chromium --project=firefox --project=webkit",
+    "test:mobile": "playwright test --project='Mobile Chrome' --project='Mobile Safari'",
+    "test:performance": "node src/testing/run-performance-tests.js",
+    "test:all": "npm run test:unit && npm run test:e2e && npm run test:accessibility && npm run test:performance",
+    "test:ci": "npm run test:unit && npm run test:e2e -- --reporter=line && npm run test:accessibility",
+    "codegen": "playwright codegen",
+    "show-report": "playwright show-report"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.7",
@@ -31,8 +43,10 @@
     "yup": "^1.6.1"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^1.0.0",
     "@axe-core/react": "^4.11.0",
     "@eslint/js": "^9.25.0",
+    "@playwright/test": "^1.52.0",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "@vitejs/plugin-react": "^4.4.1",
@@ -42,6 +56,10 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
+    "lighthouse": "^12.2.2",
+    "puppeteer": "^24.0.0",
+    "vitest": "^2.1.8",
+    "vitest-axe": "^0.1.0",
     "vite": "^6.3.5"
   }
 }
