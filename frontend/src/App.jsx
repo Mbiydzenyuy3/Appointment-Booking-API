@@ -8,6 +8,7 @@ import {
 import { Provider } from "./context/AuthContext.jsx";
 import { SocketProvider } from "./context/Socketio.jsx";
 import { AISchedulerProvider } from "./context/AISchedulerContext.jsx";
+import { CurrencyProvider } from "./context/CurrencyContext.jsx";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import HomePage from "./pages/LandingPage.jsx";
@@ -38,102 +39,104 @@ function PublicLayout({ children }) {
 
 function App() {
   return (
-    <Provider>
-      <SocketProvider>
-        <AISchedulerProvider>
-          <Router>
-            <Routes>
-              {/* Public Routes */}
-              <Route
-                path='/'
-                element={
-                  <PublicLayout>
-                    <HomePage />
-                  </PublicLayout>
-                }
-              />
-              <Route
-                path='/login'
-                element={
-                  <PublicLayout>
-                    <LoginPage />
-                  </PublicLayout>
-                }
-              />
-              <Route
-                path='/register'
-                element={
-                  <PublicLayout>
-                    <RegisterPage />
-                  </PublicLayout>
-                }
-              />
+    <CurrencyProvider>
+      <Provider>
+        <SocketProvider>
+          <AISchedulerProvider>
+            <Router>
+              <Routes>
+                {/* Public Routes */}
+                <Route
+                  path='/'
+                  element={
+                    <PublicLayout>
+                      <HomePage />
+                    </PublicLayout>
+                  }
+                />
+                <Route
+                  path='/login'
+                  element={
+                    <PublicLayout>
+                      <LoginPage />
+                    </PublicLayout>
+                  }
+                />
+                <Route
+                  path='/register'
+                  element={
+                    <PublicLayout>
+                      <RegisterPage />
+                    </PublicLayout>
+                  }
+                />
 
-              {/* Protected Routes */}
-              <Route
-                path='/dashboard'
-                element={
-                  <PrivateRoute allowedRoles={["client"]}>
-                    <AuthLayout>
-                      <DashboardPage />
-                    </AuthLayout>
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path='/provider/dashboard'
-                element={
-                  <PrivateRoute allowedRoles={["provider"]}>
-                    <AuthLayout>
-                      <ProviderDashboard />
-                    </AuthLayout>
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path='/slots'
-                element={
-                  <PrivateRoute>
-                    <AuthLayout>
-                      <SlotPage />
-                    </AuthLayout>
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path='/timeslots'
-                element={
-                  <PrivateRoute>
-                    <AuthLayout>
-                      <TimeSlotsPage />
-                    </AuthLayout>
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path='/appointments'
-                element={
-                  <PrivateRoute>
-                    <AuthLayout>
-                      <AppointmentsPage />
-                    </AuthLayout>
-                  </PrivateRoute>
-                }
-              />
+                {/* Protected Routes */}
+                <Route
+                  path='/dashboard'
+                  element={
+                    <PrivateRoute allowedRoles={["client"]}>
+                      <AuthLayout>
+                        <DashboardPage />
+                      </AuthLayout>
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path='/provider/dashboard'
+                  element={
+                    <PrivateRoute allowedRoles={["provider"]}>
+                      <AuthLayout>
+                        <ProviderDashboard />
+                      </AuthLayout>
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path='/slots'
+                  element={
+                    <PrivateRoute>
+                      <AuthLayout>
+                        <SlotPage />
+                      </AuthLayout>
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path='/timeslots'
+                  element={
+                    <PrivateRoute>
+                      <AuthLayout>
+                        <TimeSlotsPage />
+                      </AuthLayout>
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path='/appointments'
+                  element={
+                    <PrivateRoute>
+                      <AuthLayout>
+                        <AppointmentsPage />
+                      </AuthLayout>
+                    </PrivateRoute>
+                  }
+                />
 
-              {/* Fallback */}
-              <Route path='*' element={<Navigate to='/' />} />
-            </Routes>
-            <ToastContainer
-              position='bottom-right'
-              autoClose={3000}
-              className='toast-container'
-              toastClassName='toast-item'
-            />
-          </Router>
-        </AISchedulerProvider>
-      </SocketProvider>
-    </Provider>
+                {/* Fallback */}
+                <Route path='*' element={<Navigate to='/' />} />
+              </Routes>
+              <ToastContainer
+                position='bottom-right'
+                autoClose={3000}
+                className='toast-container'
+                toastClassName='toast-item'
+              />
+            </Router>
+          </AISchedulerProvider>
+        </SocketProvider>
+      </Provider>
+    </CurrencyProvider>
   );
 }
 

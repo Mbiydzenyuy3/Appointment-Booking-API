@@ -314,6 +314,112 @@ select:focus {
   @apply bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2;
 }
 
+/* Ensure form buttons are always visible */
+form button {
+  position: relative !important;
+  z-index: 1000 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  pointer-events: auto !important;
+}
+
+/* Fix for ServiceForm and TimeSlotForm buttons */
+.bg-white form button[type="submit"] {
+  position: relative !important;
+  z-index: 1001 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  pointer-events: auto !important;
+  min-height: 48px !important;
+}
+
+/* Enhanced button visibility for form submit buttons */
+.form-submit-button {
+  position: relative !important;
+  z-index: 9999 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  pointer-events: auto !important;
+  background-color: #16a34a !important;
+  color: white !important;
+  border: 2px solid #16a34a !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  transform: translateZ(0) !important;
+  backface-visibility: hidden !important;
+}
+
+.form-submit-button:hover {
+  background-color: #15803d !important;
+  border-color: #15803d !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  transform: translateY(-1px) translateZ(0) !important;
+}
+
+.form-submit-button:active {
+  background-color: #166534 !important;
+  border-color: #166534 !important;
+  transform: translateY(0) translateZ(0) !important;
+}
+
+.form-submit-button:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.3),
+    0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Force visibility for any potentially hidden form elements */
+form .form-submit-button {
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: flex !important;
+  position: relative !important;
+  z-index: 9999 !important;
+}
+
+/* Ensure form containers don't hide their buttons */
+.relative.bg-white form {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Prevent any parent elements from hiding buttons */
+.bg-white {
+  position: relative !important;
+}
+
+/* Force button rendering on all devices and browsers */
+.form-submit-button,
+button.form-submit-button {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  font-family: inherit !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  line-height: 1.5 !important;
+  text-align: center !important;
+  text-decoration: none !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  word-spacing: normal !important;
+  white-space: normal !important;
+  direction: ltr !important;
+  unicode-bidi: normal !important;
+}
+
 .btn-secondary {
   @apply bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-6 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2;
 }

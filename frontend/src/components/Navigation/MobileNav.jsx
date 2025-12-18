@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
+import CurrencySelector from "../Common/CurrencySelector.jsx";
 
 export default function MobileNav({ isOpen, onClose }) {
   const { user, logout } = useAuth();
@@ -61,6 +62,12 @@ export default function MobileNav({ isOpen, onClose }) {
               </p>
             </div>
           )}
+
+          {/* Currency Selector */}
+          <div className='px-4 py-3 border-b border-gray-200'>
+            <p className='text-sm font-medium text-gray-700 mb-2'>Currency</p>
+            <CurrencySelector />
+          </div>
 
           {/* Navigation Links */}
           <div className='py-2'>

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
 import MobileNav from "./MobileNav.jsx";
+import CurrencySelector from "../Common/CurrencySelector.jsx";
 
 export default function ResponsiveHeader() {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
@@ -105,6 +106,7 @@ export default function ResponsiveHeader() {
 
             {/* Desktop Auth Buttons */}
             <div className='hidden md:flex items-center space-x-3'>
+              <CurrencySelector />
               {!user ? (
                 <>
                   <Link
