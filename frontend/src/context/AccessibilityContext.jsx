@@ -1,27 +1,20 @@
-// src/context/AccessibilityContext.jsx
 import React, { createContext, useState, useEffect } from "react";
 
 const AccessibilityContext = createContext();
 
 export const AccessibilityProvider = ({ children }) => {
   const [settings, setSettings] = useState({
-    // Enhanced font size options for seniors
-    fontSize: "medium", // extra-small, small, medium, large, extra-large, senior
-    // Enhanced high contrast options
+    fontSize: "medium",
     highContrast: false,
-    highContrastMode: "normal", // normal, enhanced, maximum
-    // Motion and animation preferences
+    highContrastMode: "normal",
     reducedMotion: false,
-    // Screen reader and assistive technology
     screenReaderMode: false,
     keyboardNavigation: true,
     focusIndicators: true,
-    // Senior-specific preferences
     seniorMode: false,
     simplifiedNavigation: false,
     largerTouchTargets: false,
     voiceNavigation: false,
-    // UI enhancement preferences
     showLabels: true,
     highVisibility: false,
     slowAnimations: false

@@ -1,4 +1,3 @@
-// src/components/Tutorials/ContextualHelp.jsx
 import React, { useEffect, useRef, useCallback } from "react";
 import { X, Play, Book, MessageCircle, Settings } from "lucide-react";
 import { useTutorial } from "../../hooks/useTutorial";

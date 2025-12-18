@@ -28,7 +28,6 @@ export default function MobileNav({ isOpen, onClose }) {
 
   return (
     <>
-      {/* Mobile Navigation Panel */}
       <nav
         className={`fixed top-0 left-0 h-full w-80 max-w-[85vw] bg-white text-gray-900 shadow-xl z-50 transform transition-transform duration-300 ease-in-out safe-area-top safe-area-bottom ${
           isOpen ? "translate-x-0" : "-translate-x-full"
@@ -36,7 +35,6 @@ export default function MobileNav({ isOpen, onClose }) {
         role='navigation'
         aria-label='Main navigation'
       >
-        {/* Navigation Header */}
         <div className='flex items-center justify-between p-4 border-b text-gray-800 border-gray-200 safe-area-top'>
           <Link
             to='/'
@@ -48,9 +46,7 @@ export default function MobileNav({ isOpen, onClose }) {
           </Link>
         </div>
 
-        {/* Navigation Content */}
         <div className='flex-1 overflow-y-auto py-4'>
-          {/* User Info */}
           {user && (
             <div className='px-4 py-3 bg-gray-50 border-b border-gray-200'>
               <p className='text-sm text-gray-600'>Welcome back,</p>
@@ -63,13 +59,11 @@ export default function MobileNav({ isOpen, onClose }) {
             </div>
           )}
 
-          {/* Currency Selector */}
           <div className='px-4 py-3 border-b border-gray-200'>
             <p className='text-sm font-medium text-gray-700 mb-2'>Currency</p>
             <CurrencySelector />
           </div>
 
-          {/* Navigation Links */}
           <div className='py-2'>
             {filteredNavItems.map((item) => (
               <Link
@@ -87,7 +81,6 @@ export default function MobileNav({ isOpen, onClose }) {
             ))}
           </div>
 
-          {/* Authentication Links */}
           <div className='border-t border-gray-200 mt-4 pt-4'>
             {!user ? (
               <div className='space-y-2 px-4'>
@@ -119,7 +112,6 @@ export default function MobileNav({ isOpen, onClose }) {
           </div>
         </div>
 
-        {/* Navigation Footer */}
         <div className='border-t border-gray-200 p-4 safe-area-bottom'>
           <p className='text-xs text-gray-500 text-center'>
             © {new Date().getFullYear()} BOOKEasy

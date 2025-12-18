@@ -1,18 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { LazyWrapper, OptimizedImage } from "../LazyLoading/index";
 
-/**
- * Performance Monitoring Dashboard Component
- * Displays real-time performance metrics and analytics
- */
 const PerformanceDashboard = () => {
   const [metrics, setMetrics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [refreshInterval, setRefreshInterval] = useState(30); // seconds
+  const [refreshInterval, setRefreshInterval] = useState(30);
   const [autoRefresh, setAutoRefresh] = useState(true);
 
-  // Fetch metrics data
   const fetchMetrics = async () => {
     try {
       const response = await fetch("/api/performance/metrics");
@@ -29,7 +24,6 @@ const PerformanceDashboard = () => {
     }
   };
 
-  // Auto-refresh effect
   useEffect(() => {
     if (autoRefresh && refreshInterval > 0) {
       const interval = setInterval(fetchMetrics, refreshInterval * 1000);
@@ -48,7 +42,6 @@ const PerformanceDashboard = () => {
     fetchMetrics();
   };
 
-  // Format bytes to human readable
   const formatBytes = (bytes) => {
     if (bytes === 0) return "0 Bytes";
     const k = 1024;
@@ -57,13 +50,11 @@ const PerformanceDashboard = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
-  // Format duration
   const formatDuration = (ms) => {
     if (ms < 1000) return `${ms}ms`;
     return `${(ms / 1000).toFixed(2)}s`;
   };
 
-  // Get status color
   const getStatusColor = (status) => {
     switch (status) {
       case "healthy":
@@ -77,7 +68,6 @@ const PerformanceDashboard = () => {
     }
   };
 
-  // Alert level color
   const getAlertColor = (level) => {
     switch (level) {
       case "critical":

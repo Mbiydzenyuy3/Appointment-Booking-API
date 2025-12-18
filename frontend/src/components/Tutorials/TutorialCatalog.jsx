@@ -1,4 +1,3 @@
-// src/components/Tutorials/TutorialCatalog.jsx
 import React, { useState, useEffect } from "react";
 import {
   Play,
