@@ -21,7 +21,6 @@ export const appointmentSchema = Joi.object({
       'any.required': 'Appointment time is required',
     }),
 })
-
 /**
  * Used when canceling an existing appointment
  */
