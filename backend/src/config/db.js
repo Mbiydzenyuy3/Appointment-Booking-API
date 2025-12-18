@@ -4,20 +4,23 @@ dotenv.config();
 import pg from "pg";
 import { logInfo, logError, logDebug } from "../utils/logger.js";
 
+if (process.env.NODE_ENV !== "production") {
+  dotenv.config();
+}
+
 const { Pool } = pg;
 
-// Destructure env vars
 const { DB_USER, DB_PASSWORD, DB_HOST, DB_NAME, DB_PORT, NODE_ENV } =
   process.env;
 
-// 🔒 Validate DB config
-if (!DB_HOST || !DB_PASSWORD || !DB_NAME || !DB_USER || !DB_PORT) {
-  logError(
-    "❌ Database environment variables are missing! Check your .env file."
-  );
-  process.exit(1);
+// Validate required env variables
+const requiredVars = { DB_USER, DB_PASSWORD, DB_HOST, DB_NAME, DB_PORT };
+for (const [key, value] of Object.entries(requiredVars)) {
+  if (!value) {
+    logError(`❌ Environment variable ${key} is missing!`);
+    process.exit(1);
+  }
 }
-
 const pool = new Pool({
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
@@ -28,8 +31,12 @@ const pool = new Pool({
 });
 
 logInfo(`📦 Database is configured for: ${DB_NAME}`);
+logInfo(
+  `DB_HOST: ${DB_HOST}, DB_USER: ${DB_USER}, DB_PASSWORD: ${
+    DB_PASSWORD ? "DEFINED" : "UNDEFINED"
+  }`
+);
 
-// 🌱 Connection events
 pool.on("connect", () => {
   logInfo(`🔗 Client connected (Pool size: ${pool.totalCount})`);
 });
@@ -38,7 +45,6 @@ pool.on("error", (err) => {
   process.exit(-1);
 });
 
-// 🔌 Connect to the DB pool (used in app startup)
 const connectToDb = async () => {
   const maxRetries = 5;
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
