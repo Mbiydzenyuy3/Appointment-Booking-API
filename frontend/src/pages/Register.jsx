@@ -67,7 +67,8 @@ export default function Register() {
             console.log("Register response:", res);
 
             if (res.success) {
-              navigate("/login");
+              if (res.user_type === "provider") navigate("/provider/dashboard");
+              else navigate("/dashboard");
             } else {
               setFormError(res.message || "Registration failed");
             }

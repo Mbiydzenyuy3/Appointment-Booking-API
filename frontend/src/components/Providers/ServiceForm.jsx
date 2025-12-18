@@ -6,7 +6,7 @@ export default function ServiceForm({ onCreate }) {
     name: "",
     description: "",
     duration_minutes: "",
-    price: "",
+    price: ""
   });
 
   const handleChange = (e) => {
@@ -21,7 +21,7 @@ export default function ServiceForm({ onCreate }) {
       name: service.service_name,
       description: service.description,
       price: Number(service.price),
-      durationMinutes: Number(service.duration_minutes),
+      durationMinutes: Number(service.duration_minutes)
     };
 
     onCreate(ServiceValues);
@@ -30,54 +30,56 @@ export default function ServiceForm({ onCreate }) {
       service_name: "",
       description: "",
       price: "",
-      duration_minutes: "",
+      duration_minutes: ""
     });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-4 shadow rounded">
-      <h2 className="text-xl font-semibold mb-2">Add a Service</h2>
+    <form onSubmit={handleSubmit} className='bg-white p-4 shadow rounded'>
+      <h2 className='text-xl font-semibold mb-2 text-gray-700'>
+        Add a Service
+      </h2>
       <input
-        type="text"
-        name="service_name"
+        type='text'
+        name='service_name'
         value={service.service_name}
         onChange={handleChange}
-        placeholder="Service name"
-        className="block w-full mb-2 p-2 border rounded"
+        placeholder='Service name'
+        className='block w-full mb-2 p-2 border rounded  text-gray-700'
         required
       />
       <textarea
-        name="description"
+        name='description'
         value={service.description}
         onChange={handleChange}
-        placeholder="Description"
-        className="block w-full mb-2 p-2 border rounded"
+        placeholder='Description'
+        className='block w-full mb-2 p-2 border rounded text-gray-700'
         required
       />
 
       <input
-        type="number"
-        name="price"
+        type='number'
+        name='price'
         value={service.price}
         onChange={handleChange}
-        placeholder="Price"
-        className="block w-full mb-2 p-2 border rounded"
+        placeholder='Price'
+        className='block w-full mb-2 p-2 border rounded  text-gray-700'
         required
       />
 
       <input
-        type="number"
-        name="duration_minutes"
+        type='number'
+        name='duration_minutes'
         value={service.duration_minutes}
         onChange={handleChange}
-        placeholder="duration Minutes"
-        className="block w-full mb-2 p-2 border rounded"
+        placeholder='duration Minutes'
+        className='block w-full mb-2 p-2 border rounded  text-gray-700'
         required
       />
 
       <button
-        type="submit"
-        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+        type='submit'
+        className='bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600'
       >
         Create Service
       </button>
