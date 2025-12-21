@@ -8,21 +8,21 @@ export default function BookAppointmentForm({ providerId }) {
   const [message, setMessage] = useState(null);
   const [selectedDate, setSelectedDate] = useState("");
 
+  const fetchTimeslots = async () => {
+    if (!providerId) return;
+
+    try {
+      const response = await api.get(`/slots/${providerId}`);
+      const data = response.data.data;
+      setTimeslots(Array.isArray(data) ? data : []);
+      console.log("Fetched timeslots:", data);
+    } catch (error) {
+      console.error("Failed to fetch timeslots:", error);
+      setTimeslots([]);
+    }
+  };
+
   useEffect(() => {
-    const fetchTimeslots = async () => {
-      if (!providerId) return;
-
-      try {
-        const response = await api.get(`/slots/${providerId}`);
-        const data = response.data.data;
-        setTimeslots(Array.isArray(data) ? data : []);
-        console.log("Fetched timeslots:", data);
-      } catch (error) {
-        console.error("Failed to fetch timeslots:", error);
-        setTimeslots([]);
-      }
-    };
-
     fetchTimeslots();
   }, [providerId]);
 
@@ -68,11 +68,25 @@ export default function BookAppointmentForm({ providerId }) {
       console.log("Sending booking payload:", payload);
       const response = await api.post("/appointments/book", payload);
       setMessage(response.data.message || "Appointment booked successfully!");
+
+      // Refresh timeslots to remove the booked slot
+      await fetchTimeslots();
+
+      // Reset form
+      setSelectedTimeslotId("");
+      setSelectedDate("");
     } catch (err) {
       console.error("Booking failed:", err);
       const errorMsg =
-        err.response?.data?.message || "Internal server error. Try again.";
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        "Internal server error. Try again.";
       setMessage(errorMsg);
+
+      // If slot is already booked, refresh the list to remove it
+      if (err.response?.status === 409) {
+        await fetchTimeslots();
+      }
     } finally {
       setLoading(false);
     }
