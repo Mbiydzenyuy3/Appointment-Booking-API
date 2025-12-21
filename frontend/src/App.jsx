@@ -14,6 +14,9 @@ import "react-toastify/dist/ReactToastify.css";
 import HomePage from "./pages/LandingPage.jsx";
 import LoginPage from "./pages/Login.jsx";
 import RegisterPage from "./pages/Register.jsx";
+import ForgotPassword from "./pages/ForgotPassword.jsx";
+import ResetPassword from "./pages/ResetPassword.jsx";
+import UserProfile from "./pages/UserProfile.jsx";
 import DashboardPage from "./pages/Dashboard.jsx";
 import ProviderDashboard from "./pages/ProviderDashboard.jsx";
 import TimeSlotsPage from "./pages/TimeSlotPage.jsx";
@@ -82,6 +85,22 @@ function App() {
                     </PublicLayout>
                   }
                 />
+                <Route
+                  path='/forgot-password'
+                  element={
+                    <PublicLayout>
+                      <ForgotPassword />
+                    </PublicLayout>
+                  }
+                />
+                <Route
+                  path='/reset-password'
+                  element={
+                    <PublicLayout>
+                      <ResetPassword />
+                    </PublicLayout>
+                  }
+                />
 
                 {/* Protected Routes */}
                 <Route
@@ -141,6 +160,26 @@ function App() {
                       <ClientAuthLayout>
                         <AppointmentsPage />
                       </ClientAuthLayout>
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path='/profile'
+                  element={
+                    <PrivateRoute>
+                      <ClientAuthLayout>
+                        <UserProfile />
+                      </ClientAuthLayout>
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path='/provider/profile'
+                  element={
+                    <PrivateRoute allowedRoles={["provider"]}>
+                      <ProviderAuthLayout>
+                        <UserProfile />
+                      </ProviderAuthLayout>
                     </PrivateRoute>
                   }
                 />
