@@ -75,7 +75,7 @@ export async function updateById(
       `
       UPDATE services
       SET provider_id = $1,
-          name = $2,
+          service_name = $2,
           description = $3,
           price = $4,
           duration_minutes = $5

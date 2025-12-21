@@ -1,16 +1,23 @@
-// src/context/AccessibilityContext.jsx
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useState, useEffect } from "react";
 
 const AccessibilityContext = createContext();
 
 export const AccessibilityProvider = ({ children }) => {
   const [settings, setSettings] = useState({
-    fontSize: "medium", // small, medium, large
+    fontSize: "medium",
     highContrast: false,
+    highContrastMode: "normal",
     reducedMotion: false,
     screenReaderMode: false,
     keyboardNavigation: true,
-    focusIndicators: true
+    focusIndicators: true,
+    seniorMode: false,
+    simplifiedNavigation: false,
+    largerTouchTargets: false,
+    voiceNavigation: false,
+    showLabels: true,
+    highVisibility: false,
+    slowAnimations: false
   });
 
   // Load settings from localStorage on mount
@@ -40,19 +47,64 @@ export const AccessibilityProvider = ({ children }) => {
     // Apply settings to document
     const root = document.documentElement;
 
-    // Font size
+    // Enhanced font size system for seniors
     const fontSizes = {
+      "extra-small": "12px",
       small: "14px",
       medium: "16px",
-      large: "18px"
+      large: "20px",
+      "extra-large": "24px",
+      senior: "28px"
     };
     root.style.fontSize = fontSizes[settings.fontSize];
 
-    // High contrast
+    // Enhanced high contrast modes
     if (settings.highContrast) {
       root.classList.add("high-contrast");
+      if (settings.highContrastMode === "enhanced") {
+        root.classList.add("high-contrast-enhanced");
+      } else if (settings.highContrastMode === "maximum") {
+        root.classList.add("high-contrast-maximum");
+      }
     } else {
       root.classList.remove("high-contrast");
+      root.classList.remove("high-contrast-enhanced");
+      root.classList.remove("high-contrast-maximum");
+    }
+
+    // Senior mode enhancements
+    if (settings.seniorMode) {
+      root.classList.add("senior-mode");
+    } else {
+      root.classList.remove("senior-mode");
+    }
+
+    // Simplified navigation
+    if (settings.simplifiedNavigation) {
+      root.classList.add("simplified-navigation");
+    } else {
+      root.classList.remove("simplified-navigation");
+    }
+
+    // Larger touch targets
+    if (settings.largerTouchTargets) {
+      root.classList.add("large-touch-targets");
+    } else {
+      root.classList.remove("large-touch-targets");
+    }
+
+    // High visibility mode
+    if (settings.highVisibility) {
+      root.classList.add("high-visibility");
+    } else {
+      root.classList.remove("high-visibility");
+    }
+
+    // Slow animations for seniors
+    if (settings.slowAnimations) {
+      root.classList.add("slow-animations");
+    } else {
+      root.classList.remove("slow-animations");
     }
 
     // Reduced motion
@@ -79,12 +131,26 @@ export const AccessibilityProvider = ({ children }) => {
 
   const resetSettings = () => {
     const defaultSettings = {
-      fontSize: "medium",
+      // Enhanced font size options for seniors
+      fontSize: "medium", // extra-small, small, medium, large, extra-large, senior
+      // Enhanced high contrast options
       highContrast: false,
+      highContrastMode: "normal", // normal, enhanced, maximum
+      // Motion and animation preferences
       reducedMotion: false,
+      // Screen reader and assistive technology
       screenReaderMode: false,
       keyboardNavigation: true,
-      focusIndicators: true
+      focusIndicators: true,
+      // Senior-specific preferences
+      seniorMode: false,
+      simplifiedNavigation: false,
+      largerTouchTargets: false,
+      voiceNavigation: false,
+      // UI enhancement preferences
+      showLabels: true,
+      highVisibility: false,
+      slowAnimations: false
     };
     setSettings(defaultSettings);
   };
@@ -102,12 +168,4 @@ export const AccessibilityProvider = ({ children }) => {
   );
 };
 
-export const useAccessibility = () => {
-  const context = useContext(AccessibilityContext);
-  if (!context) {
-    throw new Error(
-      "useAccessibility must be used within an AccessibilityProvider"
-    );
-  }
-  return context;
-};
+export { AccessibilityContext };

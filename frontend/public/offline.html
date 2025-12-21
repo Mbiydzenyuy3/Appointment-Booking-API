@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BOOKEasy - Offline</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+
+    .offline-container {
+      text-align: center;
+      padding: 2rem;
+      max-width: 500px;
+      width: 90%;
+    }
+
+    .offline-icon {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 2rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .offline-icon svg {
+      width: 60px;
+      height: 60px;
+      fill: currentColor;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+
+    .subtitle {
+      font-size: 1.2rem;
+      margin-bottom: 2rem;
+      opacity: 0.9;
+      font-weight: 300;
+    }
+
+    .message {
+      font-size: 1rem;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+      opacity: 0.8;
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .btn {
+      padding: 0.75rem 2rem;
+      border: none;
+      border-radius: 50px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-primary {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-primary:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: white;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .status-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 25px;
+      font-size: 0.9rem;
+      margin-top: 1rem;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ff6b6b;
+      animation: pulse 2s infinite;
+    }
+
+    .status-dot.online {
+      background: #51cf66;
+    }
+
+    @keyframes pulse {
+      0% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.5;
+      }
+
+      100% {
+        opacity: 1;
+      }
+    }
+
+    .features {
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .features h3 {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+
+    .feature-list {
+      list-style: none;
+      text-align: left;
+      display: inline-block;
+    }
+
+    .feature-list li {
+      padding: 0.5rem 0;
+      opacity: 0.8;
+    }
+
+    .feature-list li::before {
+      content: "✓";
+      color: #51cf66;
+      font-weight: bold;
+      margin-right: 0.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .offline-container {
+        padding: 1rem;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      .subtitle {
+        font-size: 1rem;
+      }
+
+      .actions {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+        max-width: 300px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="offline-container">
+    <div class="offline-icon">
+      <svg viewBox="0 0 24 24">
+        <path
+          d="M23.64 7c-.45-.34-4.93-4-11.64-4-1.5 0-2.89.19-4.15.48L18.18 13.8 23.64 7zm-6.6 8.22L3.27 1.44 2 2.72l2.05 2.06C1.91 5.76.59 6.82.36 7l-3 8 2 2 8-3 .27-.27zM7.73 10l8 8 2-2-8-8-2 2z" />
+      </svg>
+    </div>
+
+    <h1>You're Offline</h1>
+    <p class="subtitle">No internet connection found</p>
+
+    <p class="message">
+      Don't worry! You can still access your previously viewed content and the app will sync when you're back online.
+    </p>
+
+    <div class="actions">
+      <button class="btn btn-primary" onclick="retryConnection()">
+        Try Again
+      </button>
+      <a href="/" class="btn btn-secondary">
+        Go to Homepage
+      </a>
+    </div>
+
+    <div class="status-indicator">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText">Checking connection...</span>
+    </div>
+
+    <div class="features">
+      <h3>Available Offline Features:</h3>
+      <ul class="feature-list">
+        <li>View cached appointments</li>
+        <li>Browse service providers</li>
+        <li>Access saved time slots</li>
+        <li>View appointment history</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // Connection status monitoring
+    function updateConnectionStatus () {
+      const statusDot=document.getElementById('statusDot');
+      const statusText=document.getElementById('statusText');
+
+      if (navigator.onLine) {
+        statusDot.className='status-dot online';
+        statusText.textContent='Connection restored!';
+
+        // Auto-redirect to homepage after a short delay
+        setTimeout(() => {
+          window.location.href='/';
+        }, 2000);
+      } else {
+        statusDot.className='status-dot';
+        statusText.textContent='No internet connection';
+      }
+    }
+
+    function retryConnection () {
+      updateConnectionStatus();
+
+      if (navigator.onLine) {
+        window.location.reload();
+      } else {
+        // Show retry message
+        const statusText=document.getElementById('statusText');
+        statusText.textContent='Still offline. Please check your connection.';
+
+        setTimeout(() => {
+          updateConnectionStatus();
+        }, 2000);
+      }
+    }
+
+    // Monitor online/offline status
+    window.addEventListener('online', updateConnectionStatus);
+    window.addEventListener('offline', updateConnectionStatus);
+
+    // Initial status check
+    updateConnectionStatus();
+
+    // Periodic connection check
+    setInterval(updateConnectionStatus, 5000);
+  </script>
+</body>
+
+</html>

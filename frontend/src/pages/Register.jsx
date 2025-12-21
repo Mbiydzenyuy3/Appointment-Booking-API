@@ -1,4 +1,3 @@
-// src/pages/Register.jsx - Mobile-First Responsive Design
 import React from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
@@ -67,7 +66,8 @@ export default function Register() {
             console.log("Register response:", res);
 
             if (res.success) {
-              navigate("/login");
+              if (res.user_type === "provider") navigate("/provider/dashboard");
+              else navigate("/dashboard");
             } else {
               setFormError(res.message || "Registration failed");
             }

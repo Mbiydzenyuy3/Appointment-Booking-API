@@ -1,4 +1,3 @@
-// src/components/Slots/api.js
 import axios from "axios";
 export const createSlot = (slotData) => axios.post("/slots/create", slotData);
 export const getSlotsByProvider = (providerId) =>

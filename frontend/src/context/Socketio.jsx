@@ -1,4 +1,3 @@
-//src/context/socket.io.jsx
 import React from "react";
 import { createContext, useContext, useEffect, useState } from "react";
 import { io } from "socket.io-client";
@@ -9,9 +8,7 @@ export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    const newSocket = io(
-      "https://appointment-booking-api-production.up.railway.app"
-    );
+    const newSocket = io("https://appointment-booking-api-yzxg.onrender.com/");
     setSocket(newSocket);
 
     return () => {

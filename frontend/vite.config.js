@@ -50,20 +50,54 @@ export default defineConfig({
             options: {
               cacheName: "api-cache",
               expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 // 24 hours
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 2 // 2 hours
+              },
+              networkTimeoutSeconds: 3,
+              cacheableResponse: {
+                statuses: [0, 200]
               }
-              // Removed cacheKeyWillBeUsed to avoid validation errors
             }
           },
           {
-            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
+            urlPattern: /^https:\/\/.*\.(?:png|jpg|jpeg|svg|gif|webp|avif)$/,
             handler: "CacheFirst",
             options: {
               cacheName: "images-cache",
               expiration: {
-                maxEntries: 100,
+                maxEntries: 200,
                 maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          {
+            urlPattern: /^https:\/\/.*\.(?:js|css|woff2|woff|ttf|eot)$/,
+            handler: "StaleWhileRevalidate",
+            options: {
+              cacheName: "static-resources",
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // 7 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          {
+            urlPattern: /\/$/,
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "pages-cache",
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24 // 24 hours
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
               }
             }
           }
@@ -88,7 +122,9 @@ export default defineConfig({
         manualChunks: {
           vendor: ["react", "react-dom"],
           router: ["react-router-dom"],
-          forms: ["formik", "yup"]
+          forms: ["formik", "yup"],
+          ui: ["react-modal", "react-datepicker", "react-hot-toast"],
+          utils: ["date-fns", "axios", "jwt-decode"]
         }
       }
     }

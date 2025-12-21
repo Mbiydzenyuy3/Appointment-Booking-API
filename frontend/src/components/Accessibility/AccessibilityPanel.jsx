@@ -1,6 +1,5 @@
-// src/components/Accessibility/AccessibilityPanel.jsx
 import React, { useState } from "react";
-import { useAccessibility } from "../../context/AccessibilityContext.jsx";
+import { useAccessibility } from "../../hooks/useAccessibility";
 
 const AccessibilityPanel = () => {
   const { settings, updateSetting, resetSettings } = useAccessibility();

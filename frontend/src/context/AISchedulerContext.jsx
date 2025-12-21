@@ -1,5 +1,3 @@
-// AI-Powered Accessibility-First Scheduling Context
-
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "./AuthContext.jsx";
 import api from "../services/api.js";

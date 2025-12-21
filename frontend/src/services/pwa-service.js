@@ -1,4 +1,3 @@
-// PWA Service for handling Progressive Web App functionality
 
 class PWAService {
   constructor() {

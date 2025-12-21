@@ -1,4 +1,3 @@
-// Smart AI-Powered Accessibility-First Scheduler Component
 import React, { useState, useEffect, useCallback } from "react";
 import { useAIScheduler } from "../../hooks/useAIScheduler.js";
 import { useAuth } from "../../context/AuthContext.jsx";
@@ -97,11 +96,11 @@ export default function SmartScheduler({ serviceId, onSlotSelect, onClose }) {
 
     const { aiScore, cognitiveLoad, focusProtection } = slotData;
 
-    if (aiScore > 130) return "🌟"; // Excellent accessibility fit
-    if (aiScore > 110) return "✨"; // Good accessibility fit
-    if (cognitiveLoad < 0.8) return "🧠"; // Low cognitive load
-    if (focusProtection > 30) return "🛡️"; // Focus protection
-    return "👍"; // Good option
+    if (aiScore > 130) return "🌟";
+    if (aiScore > 110) return "✨";
+    if (cognitiveLoad < 0.8) return "🧠";
+    if (focusProtection > 30) return "🛡️";
+    return "👍";
   };
 
   const getSlotExplanation = (slot) => {
