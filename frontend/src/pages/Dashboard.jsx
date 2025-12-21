@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import RescheduleModal from "../components/Appointments/ResheduleModal.jsx";
 import BookAppointmentForm from "../components/BookAppointments/BookAppointment.jsx";
@@ -6,7 +7,8 @@ import api from "../services/api.js";
 import { toast } from "react-toastify";
 
 const UserDashboard = () => {
-  const { logout } = useAuth();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [services, setServices] = useState([]);
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,6 +25,8 @@ const UserDashboard = () => {
 
   const handleReschedule = async (newDate) => {
     const appt = rescheduleModal.appointment;
+    if (!appt) return;
+
     try {
       await api.delete(`/appointments/${appt._id}`);
       const res = await api.post("/appointments/book", {
@@ -34,7 +38,8 @@ const UserDashboard = () => {
       setAppointments((prev) =>
         prev.map((a) => (a._id === appt._id ? res.data : a))
       );
-    } catch {
+    } catch (error) {
+      console.error("Reschedule error:", error);
       toast.error("Failed to reschedule");
     }
   };
@@ -43,10 +48,11 @@ const UserDashboard = () => {
     try {
       await api.delete(`/appointments/${appointmentId}`);
       setAppointments((prev) =>
-        prev.filter((appt) => appt.appointment_id !== appointmentId)
+        prev.filter((appt) => appt._id !== appointmentId)
       );
       toast.success("Appointment cancelled");
-    } catch {
+    } catch (error) {
+      console.error("Cancel appointment error:", error);
       toast.error("Failed to cancel appointment");
     }
   };
@@ -56,7 +62,7 @@ const UserDashboard = () => {
       const token = localStorage.getItem("token");
       if (!token) {
         toast.error("Unauthorized. Please log in.");
-        logout();
+        navigate("/login");
         return;
       }
 
@@ -77,7 +83,8 @@ const UserDashboard = () => {
             ? appointmentsRes.data.data
             : []
         );
-      } catch {
+      } catch (error) {
+        console.error("Fetch data error:", error);
         toast.error("Failed to load data");
       } finally {
         setLoading(false);
@@ -85,7 +92,7 @@ const UserDashboard = () => {
     };
 
     fetchData();
-  }, [logout]);
+  }, []);
 
   if (loading) {
     return (
@@ -100,22 +107,14 @@ const UserDashboard = () => {
 
   return (
     <div className='max-w-7xl mx-auto'>
-      {/* Mobile-first header */}
-      <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8'>
-        <div>
-          <h1 className='text-2xl sm:text-3xl font-bold text-gray-900'>
-            Client Dashboard
-          </h1>
-          <p className='text-gray-600 mt-1'>
-            Manage your appointments and services
-          </p>
-        </div>
-        <button
-          onClick={logout}
-          className='btn btn-secondary w-full sm:w-auto px-6 py-3 text-sm font-medium touch-target order-2 sm:order-1'
-        >
-          Logout
-        </button>
+      {/* Page title section */}
+      <div className='mb-6 sm:mb-8'>
+        <h1 className='text-2xl sm:text-3xl font-bold text-gray-900'>
+          {user?.name ? `Welcome, ${user.name}` : "Client Dashboard"}
+        </h1>
+        <p className='text-gray-600 mt-1'>
+          Manage your appointments and services
+        </p>
       </div>
 
       {/* Available Services Section */}

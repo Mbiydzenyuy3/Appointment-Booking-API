@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import LandingHeader from "../components/LandingHeader.jsx";
+import LandingHeader from "../components/Navigation/LandingHeader.jsx";
 import Footer from "../components/Footer.jsx";
 
 export default function HomePage() {
@@ -9,7 +9,10 @@ export default function HomePage() {
       {/* Mobile responsive header */}
       <LandingHeader />
 
-      <main className='min-h-80 py-6 sm:py-8 lg:px-12 flex-grow flex items-center justify-center hero-overlay relative background-landing'>
+      <main
+        id='hero'
+        className='min-h-80 py-6 sm:py-8 lg:px-12 flex-grow flex items-center justify-center hero-overlay relative background-landing'
+      >
         <div className='overlay flex items-center justify-center w-full'>
           <div className='text-center px-4 sm:px-6 lg:px-8 content max-w-4xl mx-auto'>
             <h2 className='text-3xl xs:text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-4 sm:mb-6 drop-shadow-lg leading-tight'>
@@ -64,7 +67,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      <section className='bg-white py-12 sm:py-16'>
+      <section id='features' className='bg-white py-12 sm:py-16'>
         <div className='container-mobile'>
           <div className='text-center mb-8 sm:mb-12'>
             <h3 className='text-2xl sm:text-3xl font-bold text-gray-900'>
@@ -266,7 +269,7 @@ export default function HomePage() {
       </section>
 
       {/* --- TESTIMONIALS --- */}
-      <section className='py-12 sm:py-20 bg-green-100'>
+      <section id='testimonials' className='py-12 sm:py-20 bg-green-100'>
         <div className='container-mobile text-center'>
           <h2 className='text-2xl sm:text-3xl lg:text-4xl font-bold mb-8 sm:mb-12 text-green-900'>
             What Professionals Say

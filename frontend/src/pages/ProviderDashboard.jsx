@@ -136,31 +136,15 @@ export default function ProviderDashboard() {
 
   return (
     <div className='min-h-screen max-w-7xl mx-auto'>
-      {/* Mobile-first header */}
+      {/* Page title section */}
       <div className='mb-6 sm:mb-8'>
-        <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6'>
-          <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
-            <div>
-              <h1 className='text-2xl sm:text-3xl font-bold text-gray-900'>
-                Provider Dashboard
-              </h1>
-              <p className='text-gray-600 mt-1'>
-                Welcome, {user?.email || "Provider"}! Manage your services and
-                schedule.
-              </p>
-            </div>
-            <div className='flex items-center gap-2 text-sm text-gray-500 bg-gray-50 px-3 py-2 rounded-lg'>
-              <svg className='w-4 h-4' fill='currentColor' viewBox='0 0 20 20'>
-                <path
-                  fillRule='evenodd'
-                  d='M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z'
-                  clipRule='evenodd'
-                />
-              </svg>
-              <span className='capitalize'>{user.user_type}</span>
-            </div>
-          </div>
-        </div>
+        <h1 className='text-2xl sm:text-3xl font-bold text-gray-900'>
+          Provider Dashboard
+        </h1>
+        <p className='text-gray-600 mt-1'>
+          Welcome, {user?.email || "Provider"}! Manage your services and
+          schedule.
+        </p>
       </div>
 
       {loading ? (

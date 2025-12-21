@@ -17,16 +17,28 @@ import RegisterPage from "./pages/Register.jsx";
 import DashboardPage from "./pages/Dashboard.jsx";
 import ProviderDashboard from "./pages/ProviderDashboard.jsx";
 import TimeSlotsPage from "./pages/TimeSlotPage.jsx";
-import ResponsiveHeader from "./components/Navigation/ResponsiveHeader.jsx";
+import ClientDashboardHeader from "./components/Navigation/ClientDashboardHeader.jsx";
+import ProviderDashboardHeader from "./components/Navigation/ProviderDashboardHeader.jsx";
 import AppointmentsPage from "./pages/Appointments.jsx";
 import SlotPage from "./pages/Slots.jsx";
+import Unauthorized from "./pages/Unauthorized.jsx";
 import PrivateRoute from "./routes/PrivateRoute.jsx";
 
-// Layout component for authenticated pages
-function AuthLayout({ children }) {
+// Layout component for authenticated client pages
+function ClientAuthLayout({ children }) {
   return (
     <div className='min-h-screen bg-gray-50'>
-      <ResponsiveHeader />
+      <ClientDashboardHeader />
+      <main className='container-mobile py-4 sm:py-6 lg:py-8'>{children}</main>
+    </div>
+  );
+}
+
+// Layout component for authenticated provider pages
+function ProviderAuthLayout({ children }) {
+  return (
+    <div className='min-h-screen bg-gray-50'>
+      <ProviderDashboardHeader />
       <main className='container-mobile py-4 sm:py-6 lg:py-8'>{children}</main>
     </div>
   );
@@ -76,9 +88,9 @@ function App() {
                   path='/dashboard'
                   element={
                     <PrivateRoute allowedRoles={["client"]}>
-                      <AuthLayout>
+                      <ClientAuthLayout>
                         <DashboardPage />
-                      </AuthLayout>
+                      </ClientAuthLayout>
                     </PrivateRoute>
                   }
                 />
@@ -86,9 +98,9 @@ function App() {
                   path='/provider/dashboard'
                   element={
                     <PrivateRoute allowedRoles={["provider"]}>
-                      <AuthLayout>
+                      <ProviderAuthLayout>
                         <ProviderDashboard />
-                      </AuthLayout>
+                      </ProviderAuthLayout>
                     </PrivateRoute>
                   }
                 />
@@ -96,9 +108,9 @@ function App() {
                   path='/slots'
                   element={
                     <PrivateRoute>
-                      <AuthLayout>
+                      <ClientAuthLayout>
                         <SlotPage />
-                      </AuthLayout>
+                      </ClientAuthLayout>
                     </PrivateRoute>
                   }
                 />
@@ -106,20 +118,38 @@ function App() {
                   path='/timeslots'
                   element={
                     <PrivateRoute>
-                      <AuthLayout>
+                      <ProviderAuthLayout>
                         <TimeSlotsPage />
-                      </AuthLayout>
+                      </ProviderAuthLayout>
                     </PrivateRoute>
                   }
                 />
                 <Route
                   path='/appointments'
                   element={
-                    <PrivateRoute>
-                      <AuthLayout>
+                    <PrivateRoute allowedRoles={["provider"]}>
+                      <ProviderAuthLayout>
                         <AppointmentsPage />
-                      </AuthLayout>
+                      </ProviderAuthLayout>
                     </PrivateRoute>
+                  }
+                />
+                <Route
+                  path='/my-appointments'
+                  element={
+                    <PrivateRoute allowedRoles={["client"]}>
+                      <ClientAuthLayout>
+                        <AppointmentsPage />
+                      </ClientAuthLayout>
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path='/unauthorized'
+                  element={
+                    <PublicLayout>
+                      <Unauthorized />
+                    </PublicLayout>
                   }
                 />
 

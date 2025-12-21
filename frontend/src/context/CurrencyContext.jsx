@@ -334,7 +334,7 @@ export const CURRENCIES = [
 ];
 
 export const CurrencyProvider = ({ children }) => {
-  const [selectedCurrency, setSelectedCurrency] = useState("USD"); // Default to USD
+  const [selectedCurrency, setSelectedCurrency] = useState("XAF"); // Default to FCFA
   const [userCurrency, setUserCurrency] = useState(null);
 
   // Auto-detect user's currency based on location
@@ -417,8 +417,8 @@ export const CurrencyProvider = ({ children }) => {
         return currencyMap[countryCode];
       }
 
-      // Default to USD if no match found
-      return "USD";
+      // Default to FCFA if no match found
+      return "XAF";
     };
 
     const detectedCurrency = detectUserCurrency();
