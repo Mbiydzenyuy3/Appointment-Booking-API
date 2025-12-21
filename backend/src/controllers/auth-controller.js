@@ -289,23 +289,110 @@ export async function googleAuthCallback(req, res, next) {
       });
     }
 
-    // TODO: Verify Google token with Google API
-    // For now, we'll implement basic structure
+    // Import Google OAuth2 client
+    const { OAuth2Client } = await import("google-auth-library");
 
-    // This would typically involve:
-    // 1. Verify the token with Google
-    // 2. Extract user info from Google
-    // 3. Check if user exists in our database
-    // 4. Create user if doesn't exist
-    // 5. Generate our JWT token
+    const googleClient = new OAuth2Client(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+      process.env.GOOGLE_CALLBACK_URL
+    );
 
-    res.status(501).json({
-      success: false,
-      message: "Google OAuth not implemented yet."
+    // Verify the Google token
+    const ticket = await googleClient.verifyIdToken({
+      idToken: tokenId,
+      audience: process.env.GOOGLE_CLIENT_ID
+    });
+
+    const payload = ticket.getPayload();
+    const { email, name, picture, sub: googleId } = payload;
+
+    logInfo(`Google OAuth callback for email: ${email}`);
+
+    // Check if user exists by Google ID
+    let user = await AuthService.getUserByGoogleId(googleId);
+
+    if (!user) {
+      // Check if user exists by email (linking Google account to existing user)
+      const existingUser = await AuthService.getUserByEmail(email);
+
+      if (existingUser) {
+        // Link Google account to existing user
+        user = await AuthService.updateUserWithGoogleId(
+          existingUser.user_id,
+          googleId,
+          { picture }
+        );
+        logInfo(`Linked Google account to existing user: ${email}`);
+      } else {
+        // Create new user with Google OAuth data
+        const userData = {
+          name,
+          email,
+          password: null, // No password for OAuth users
+          user_type: "client", // Default to client, can be changed later
+          google_id: googleId,
+          profile_picture: picture,
+          email_verified: true
+        };
+
+        user = await AuthService.createGoogleUser(userData);
+        logInfo(`Created new Google user: ${email}`);
+      }
+    }
+
+    // Get provider ID if user is a provider
+    let providerId = null;
+    if (user.user_type === "provider") {
+      const providerResult = await query(
+        "SELECT provider_id FROM providers WHERE user_id = $1",
+        [user.user_id]
+      );
+      if (providerResult.rowCount > 0) {
+        providerId = providerResult.rows[0].provider_id;
+      }
+    }
+
+    // Generate JWT token
+    const token = AuthService.generateToken(user, providerId);
+
+    logInfo(`Google authentication successful for user: ${email}`);
+
+    res.status(200).json({
+      success: true,
+      token,
+      message: "Google authentication successful",
+      data: {
+        user_id: user.user_id,
+        provider_id: providerId,
+        email: user.email,
+        user_type: user.user_type,
+        name: user.name,
+        profile_picture: user.profile_picture
+      }
     });
   } catch (err) {
     logError("Error in Google OAuth", err);
-    next(err);
+
+    // Handle specific Google OAuth errors
+    if (err.message && err.message.includes("Invalid token")) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid Google token."
+      });
+    }
+
+    if (err.message && err.message.includes("Token used too late")) {
+      return res.status(401).json({
+        success: false,
+        message: "Google token has expired."
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "Google authentication failed. Please try again."
+    });
   }
 }
 
