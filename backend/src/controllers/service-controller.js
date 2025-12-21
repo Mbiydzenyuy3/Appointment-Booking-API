@@ -59,7 +59,7 @@ export async function list(req, res, next) {
           .status(403)
           .json({ message: "You must have a provider profile first." });
       }
-      services = await ServiceService.listServicesForProvider(
+      services = await ServiceService.getServicesByProviderId(
         provider.provider_id
       );
     } else {
@@ -70,6 +70,18 @@ export async function list(req, res, next) {
     return res.status(200).json({ success: true, data: services });
   } catch (err) {
     logError("listServices controller error", err);
+    next(err);
+  }
+}
+
+// List services by provider ID
+export async function listByProvider(req, res, next) {
+  try {
+    const { providerId } = req.params;
+    const services = await ServiceService.getServicesByProviderId(providerId);
+    return res.status(200).json({ success: true, data: services });
+  } catch (err) {
+    logError("listByProvider controller error", err);
     next(err);
   }
 }

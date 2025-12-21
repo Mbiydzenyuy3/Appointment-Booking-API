@@ -45,16 +45,6 @@ export async function listAllServices() {
   try {
     return await ServiceModel.findAllServices();
   } catch (err) {
-    logError("getServicesByProviderId: failed", err);
-    throw err;
-  }
-}
-
-// List all services
-export async function listAllServices() {
-  try {
-    return await ServiceModel.findAllServices();
-  } catch (err) {
     logError("listAllServices: failed", err);
     throw err;
   }

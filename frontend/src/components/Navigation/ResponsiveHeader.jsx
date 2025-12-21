@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
-import MobileNav from "./MobileNav.jsx";
+// import MobileNav from "./MobileNav.jsx";
 import CurrencySelector from "../Common/CurrencySelector.jsx";
 
 export default function ResponsiveHeader() {
@@ -195,7 +195,7 @@ export default function ResponsiveHeader() {
       </header>
 
       {/* Mobile Navigation */}
-      <MobileNav isOpen={isMobileNavOpen} onClose={closeMobileNav} />
+      {/* <MobileNav isOpen={isMobileNavOpen} onClose={closeMobileNav} /> */}
     </>
   );
 }
