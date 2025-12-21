@@ -1,0 +1,13 @@
+import React, { StrictMode } from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App.jsx";
+import "./index.css";
+import { registerSW } from "virtual:pwa-register";
+
+registerSW();
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <StrictMode>
+    <App />
+  </StrictMode>
+);

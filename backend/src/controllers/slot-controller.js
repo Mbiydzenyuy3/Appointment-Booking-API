@@ -52,7 +52,12 @@ export async function update(req, res, next) {
 
     return res.json({ success: true, message: "Slot updated", data: updated });
   } catch (err) {
-    logError("Slot update error", err);
+    if (err.message === "Slot overlaps with an existing slot") {
+      return res.status(409).json({
+        success: false,
+        message: err.message,
+      });
+    }
     next(err);
   }
 }

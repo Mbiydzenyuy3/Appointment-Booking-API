@@ -1,7 +1,7 @@
 //validator/auth-validator.js
 import Joi from "joi";
 
-// Registration schema for register
+// Registration schema for registration endpoint
 export const registerSchema = Joi.object({
   name: Joi.string().min(3).max(30).required().messages({
     "string.min": "Name should have at least 3 characters",
@@ -27,7 +27,7 @@ export const registerSchema = Joi.object({
   user_type: Joi.string().valid("client", "provider").default("client"),
 });
 
-// Login schema for login
+// Login schema for login endpoint
 export const loginSchema = Joi.object({
   email: Joi.string().email({ minDomainSegments: 2 }).required().messages({
     "string.email": "Please provide a valid email address",

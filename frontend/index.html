@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/appointmentbook.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+
+  <!-- PWA Meta Tags -->
+  <title>BOOKEasy - Appointment Booking Platform</title>
+  <meta name="description"
+    content="Seamless appointment booking platform for service providers and clients. Book, manage, and receive real-time updates with our intuitive platform." />
+  <meta name="theme-color" content="#369936" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="BOOKEasy" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="application-name" content="BOOKEasy" />
+
+  <!-- PWA Icons -->
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="apple-touch-icon" sizes="167x167" href="/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+  <link rel="manifest" href="/manifest.json" />
+
+  <!-- Open Graph Meta Tags -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="BOOKEasy - Appointment Booking Platform" />
+  <meta property="og:description" content="Seamless appointment booking platform for service providers and clients." />
+  <meta property="og:image" content="/og-image.png" />
+  <meta property="og:url" content="https://bookeasy.com" />
+  <meta property="og:site_name" content="BOOKEasy" />
+
+  <!-- Twitter Card Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="BOOKEasy - Appointment Booking Platform" />
+  <meta name="twitter:description" content="Seamless appointment booking platform for service providers and clients." />
+  <meta name="twitter:image" content="/twitter-image.png" />
+
+  <!-- Microsoft Tiles -->
+  <meta name="msapplication-TileColor" content="#369936" />
+  <meta name="msapplication-TileImage" content="/mstile-144x144.png" />
+
+  <!-- Preload critical resources -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <!-- Security Headers -->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https: wss:;" />
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+
+  <!-- PWA Install Prompt -->
+  <script>
+    // PWA Install Prompt
+    let deferredPrompt;
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt=e;
+
+      // Show install button/notification
+      const installButton=document.createElement('button');
+      installButton.innerHTML='📱 Install App';
+      installButton.style.cssText=`
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #369936;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 25px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(54, 153, 54, 0.3);
+        z-index: 9999;
+        transition: all 0.3s ease;
+      `;
+
+      installButton.addEventListener('click', async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const {outcome}=await deferredPrompt.userChoice;
+          console.log(`User response to the install prompt: ${outcome}`);
+          deferredPrompt=null;
+          installButton.remove();
+        }
+      });
+
+      document.body.appendChild(installButton);
+
+      // Auto-hide after 10 seconds
+      setTimeout(() => {
+        if (installButton.parentNode) {
+          installButton.style.opacity='0';
+          setTimeout(() => installButton.remove(), 300);
+        }
+      }, 10000);
+    });
+
+    // Service Worker Registration
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then((registration) => {
+            console.log('SW registered: ', registration);
+          })
+          .catch((registrationError) => {
+            console.log('SW registration failed: ', registrationError);
+          });
+      });
+    }
+
+    // Handle app install
+    window.addEventListener('appinstalled', () => {
+      console.log('PWA was installed');
+      deferredPrompt=null;
+    });
+  </script>
+</body>
+
+</html>

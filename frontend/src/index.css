@@ -1,0 +1,1211 @@
+/* Import Google Fonts for better typography */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap");
+
+@import "tailwindcss";
+
+/* CSS Custom Properties for our Dark Green Brand Colors */
+:root {
+  /* Primary Brand Colors */
+  --primary-50: #f0f9f0;
+  --primary-100: #dcf2dc;
+  --primary-200: #bce5bc;
+  --primary-300: #8dd28d;
+  --primary-400: #5bb65b;
+  --primary-500: #369936;
+  --primary-600: #2a7d2a;
+  --primary-700: #236223;
+  --primary-800: #1f4f1f;
+  --primary-900: #1b421b;
+  --primary-950: #0c240c;
+
+  /* Text Colors */
+  --text-primary: #1b421b;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-inverse: #ffffff;
+
+  /* Background Colors */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-muted: #f1f5f9;
+
+  /* Status Colors */
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --error: #ef4444;
+
+  /* Border Colors */
+  --border-light: #e2e8f0;
+  --border-default: #cbd5e1;
+  --border-dark: #94a3b8;
+
+  /* Mobile-specific variables */
+  --touch-target-min: 44px;
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
+}
+
+/* Global Styles */
+* {
+  box-sizing: border-box;
+  /* Improve touch performance on mobile */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+html {
+  scroll-behavior: smooth;
+  /* Prevent zoom on input focus on iOS */
+  font-size: 16px;
+}
+
+body {
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  line-height: 1.6;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  /* Improve text rendering */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Mobile optimizations */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
+}
+
+/* Mobile-first responsive container */
+.container-mobile {
+  width: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 640px) {
+  .container-mobile {
+    max-width: 640px;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .container-mobile {
+    max-width: 768px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-mobile {
+    max-width: 1440px;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+/* Keyframe Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes bounceSoft {
+  0%,
+  20%,
+  53%,
+  80%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  40%,
+  43% {
+    transform: translate3d(0, -8px, 0);
+  }
+  70% {
+    transform: translate3d(0, -4px, 0);
+  }
+  90% {
+    transform: translate3d(0, -2px, 0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Focus Styles for Accessibility */
+.focus-ring:focus {
+  outline: 2px solid var(--primary-500);
+  outline-offset: 2px;
+  border-radius: 0.25rem;
+}
+
+/* Mobile-optimized focus styles */
+.focus-ring-mobile:focus {
+  outline: 2px solid var(--primary-500);
+  outline-offset: 2px;
+  border-radius: 0.25rem;
+  transform: scale(1.02);
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  :root {
+    --primary-500: #0f5a0f;
+    --text-primary: #000000;
+    --bg-primary: #ffffff;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Dark Theme Support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text-primary: #f0f9f0;
+    --text-secondary: #cbd5e1;
+    --bg-primary: #0c240c;
+    --bg-secondary: #1b421b;
+  }
+}
+
+/* Mobile-first responsive typography */
+@media (max-width: 640px) {
+  html {
+    font-size: 14px;
+  }
+
+  h1 {
+    font-size: 1.75rem;
+    line-height: 1.2;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    line-height: 1.3;
+  }
+
+  h3 {
+    font-size: 1.25rem;
+    line-height: 1.4;
+  }
+}
+
+/* Touch-friendly interactive elements */
+button,
+.btn,
+[role="button"],
+[tabindex] {
+  /* Ensure minimum touch target size */
+  min-height: var(--touch-target-min);
+  min-width: var(--touch-target-min);
+  /* Improve touch feedback */
+  touch-action: manipulation;
+  /* Better mobile interactions */
+  -webkit-appearance: none;
+  appearance: none;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+/* Touch-friendly links */
+a {
+  /* Ensure links are easily tappable */
+  min-height: var(--touch-target-min);
+  display: inline-flex;
+  align-items: center;
+  touch-action: manipulation;
+}
+
+/* Mobile-optimized form elements */
+input,
+textarea,
+select {
+  font-size: 16px; /* Prevents zoom on iOS */
+  min-height: var(--touch-target-min);
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border-default);
+  transition: all 0.2s ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 3px rgba(54, 153, 54, 0.1);
+}
+
+/* Mobile-first button styles */
+.btn-primary {
+  @apply bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2;
+}
+
+/* Ensure form buttons are always visible */
+form button {
+  position: relative !important;
+  z-index: 1000 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  pointer-events: auto !important;
+}
+
+/* Fix for ServiceForm and TimeSlotForm buttons */
+.bg-white form button[type="submit"] {
+  position: relative !important;
+  z-index: 1001 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  pointer-events: auto !important;
+  min-height: 48px !important;
+}
+
+/* Enhanced button visibility for form submit buttons */
+.form-submit-button {
+  position: relative !important;
+  z-index: 9999 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  pointer-events: auto !important;
+  background-color: #16a34a !important;
+  color: white !important;
+  border: 2px solid #16a34a !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  transform: translateZ(0) !important;
+  backface-visibility: hidden !important;
+}
+
+.form-submit-button:hover {
+  background-color: #15803d !important;
+  border-color: #15803d !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  transform: translateY(-1px) translateZ(0) !important;
+}
+
+.form-submit-button:active {
+  background-color: #166534 !important;
+  border-color: #166534 !important;
+  transform: translateY(0) translateZ(0) !important;
+}
+
+.form-submit-button:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.3),
+    0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Force visibility for any potentially hidden form elements */
+form .form-submit-button {
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: flex !important;
+  position: relative !important;
+  z-index: 9999 !important;
+}
+
+/* Ensure form containers don't hide their buttons */
+.relative.bg-white form {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Prevent any parent elements from hiding buttons */
+.bg-white {
+  position: relative !important;
+}
+
+/* Force button rendering on all devices and browsers */
+.form-submit-button,
+button.form-submit-button {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  font-family: inherit !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  line-height: 1.5 !important;
+  text-align: center !important;
+  text-decoration: none !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  word-spacing: normal !important;
+  white-space: normal !important;
+  direction: ltr !important;
+  unicode-bidi: normal !important;
+}
+
+.btn-secondary {
+  @apply bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-6 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2;
+}
+
+.btn-outline {
+  @apply border-2 border-green-600 text-green-600 hover:bg-green-600 hover:text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2;
+}
+
+/* Mobile-optimized input styles */
+.input-field {
+  @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200;
+}
+
+.input-field:focus {
+  outline: none;
+}
+
+/* Mobile-friendly modal styles */
+@media (max-width: 768px) {
+  .modal {
+    margin: 1rem;
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+  }
+
+  .modal-backdrop {
+    padding: 1rem;
+  }
+}
+
+/* Mobile navigation styles */
+.mobile-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: white;
+  z-index: 50;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease-in-out;
+}
+
+.mobile-nav.open {
+  transform: translateX(0);
+}
+
+/* Safe area support for devices with notches */
+.safe-area-top {
+  padding-top: var(--safe-area-inset-top);
+}
+
+.safe-area-bottom {
+  padding-bottom: var(--safe-area-inset-bottom);
+}
+
+.safe-area-left {
+  padding-left: var(--safe-area-inset-left);
+}
+
+.safe-area-right {
+  padding-right: var(--safe-area-inset-right);
+}
+
+/* Mobile-optimized card layouts */
+@media (max-width: 640px) {
+  .card-mobile {
+    margin: 0.5rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .card-mobile .card-content {
+    padding: 1rem;
+  }
+}
+
+/* Loading States */
+.loading-spinner {
+  @apply inline-block w-4 h-4 border-2 border-green-200 border-t-green-600 rounded-full animate-spin;
+}
+
+/* Mobile-optimized grid layouts */
+@media (max-width: 640px) {
+  .grid-mobile {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 768px) {
+  .grid-mobile {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Accessibility Utilities */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Focus improvements for better accessibility */
+.focus-visible:focus {
+  outline: 2px solid var(--primary-500);
+  outline-offset: 2px;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-muted);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-400);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-500);
+}
+
+/* Mobile-optimized animations */
+@media (max-width: 640px) {
+  .fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  .slide-up {
+    animation: slideUp 0.2s ease-out;
+  }
+
+  .bounce-soft {
+    animation: bounceSoft 0.4s ease-in-out;
+  }
+}
+
+/* Additional Animation Classes for Landing Page */
+.fade-in-up {
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.slide-in-left {
+  animation: slideInLeft 0.8s ease-out;
+}
+
+.slide-in-right {
+  animation: slideInRight 0.8s ease-out;
+}
+
+.scale-in {
+  animation: scaleIn 0.6s ease-out;
+}
+
+/* Interactive Elements */
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Mobile-optimized hover effects */
+@media (hover: none) and (pointer: coarse) {
+  .hover-lift:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .hover-lift:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
+  }
+}
+
+/* Gradient Text */
+.gradient-text {
+  background: linear-gradient(135deg, var(--primary-600), var(--primary-800));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.background-landing {
+  background-image: url("./assets/background.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: black;
+}
+
+/* Hero section overlay for better text accessibility */
+.hero-overlay {
+  position: relative;
+}
+
+.hero-overlay::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.button-index {
+  position: relative;
+  z-index: 10;
+}
+
+.feature-card {
+  @apply bg-white p-6 rounded-xl shadow-md border border-gray-200 hover:shadow-lg transition-all duration-300;
+}
+
+.feature-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--primary-300);
+}
+
+/* Mobile-optimized feature cards */
+@media (max-width: 640px) {
+  .feature-card {
+    padding: 1rem;
+    margin: 0.5rem 0;
+  }
+
+  .feature-card:hover {
+    transform: none;
+  }
+
+  .feature-card:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+}
+
+/* High-performance mobile animations */
+@media (max-width: 640px) {
+  .animate-mobile {
+    will-change: transform;
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
+}
+
+/* Custom Component Styles */
+.booking-card {
+  @apply bg-white rounded-xl shadow-md border border-gray-200 hover:shadow-lg transition-all duration-300;
+}
+
+.booking-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Mobile-optimized booking cards */
+@media (max-width: 640px) {
+  .booking-card {
+    margin: 0;
+    border-radius: 12px;
+  }
+
+  .booking-card:hover {
+    transform: none;
+  }
+
+  .booking-card:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
+  }
+}
+
+/* Toast Container Mobile Optimizations */
+.toast-container {
+  z-index: 9999 !important;
+}
+
+@media (max-width: 640px) {
+  .toast-container > div {
+    margin-bottom: 0.5rem !important;
+    max-width: calc(100vw - 2rem) !important;
+    left: 1rem !important;
+    right: 1rem !important;
+    transform: none !important;
+  }
+}
+
+/* Mobile DatePicker Optimizations */
+.mobile-datepicker-wrapper .react-datepicker {
+  border: none;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
+}
+
+.mobile-datepicker-wrapper .react-datepicker__header {
+  background-color: var(--primary-600);
+  border-bottom: none;
+  border-radius: 12px 12px 0 0;
+}
+
+.mobile-datepicker-wrapper .react-datepicker__current-month {
+  color: white;
+  font-weight: 600;
+}
+
+.mobile-datepicker-wrapper .react-datepicker__day-name {
+  color: white;
+  font-weight: 500;
+}
+
+.mobile-datepicker-wrapper .react-datepicker__day {
+  border-radius: 8px;
+  margin: 2px;
+  min-width: 36px;
+  height: 36px;
+  line-height: 32px;
+  font-size: 14px;
+}
+
+.mobile-datepicker-wrapper .react-datepicker__day:hover {
+  background-color: var(--primary-100);
+  color: var(--primary-700);
+}
+
+.mobile-datepicker-wrapper .react-datepicker__day--selected {
+  background-color: var(--primary-600) !important;
+  color: white !important;
+}
+
+.mobile-datepicker-wrapper .react-datepicker__day--keyboard-selected {
+  background-color: var(--primary-100);
+  color: var(--primary-700);
+}
+
+.mobile-datepicker-wrapper .react-datepicker__navigation {
+  top: 13px;
+}
+
+.mobile-datepicker-wrapper .react-datepicker__navigation--previous {
+  left: 15px;
+}
+
+.mobile-datepicker-wrapper .react-datepicker__navigation--next {
+  right: 15px;
+}
+
+.mobile-datepicker-wrapper .react-datepicker__time-container {
+  border-left: 1px solid #ddd;
+}
+
+.mobile-datepicker-wrapper .react-datepicker__time-list-item {
+  border-radius: 4px;
+  margin: 1px 2px;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.mobile-datepicker-wrapper .react-datepicker__time-list-item:hover {
+  background-color: var(--primary-50);
+}
+
+.mobile-datepicker-wrapper .react-datepicker__time-list-item--selected {
+  background-color: var(--primary-600) !important;
+  color: white !important;
+}
+
+/* Touch improvements for better mobile interaction */
+@media (max-width: 640px) {
+  /* Improve tap targets */
+  button,
+  .btn,
+  [role="button"] {
+    min-height: 48px;
+    padding: 12px 16px;
+  }
+
+  /* Better spacing for mobile */
+  input,
+  textarea,
+  select {
+    min-height: 48px;
+    padding: 12px 16px;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  /* Larger touch targets for links */
+  a {
+    min-height: 48px;
+    padding: 8px 4px;
+  }
+
+  /* Better modal sizing on mobile */
+  .modal {
+    margin: 0.5rem;
+    max-height: calc(100vh - 1rem);
+    border-radius: 16px;
+  }
+}
+
+/* Enhanced touch feedback */
+@media (hover: none) and (pointer: coarse) {
+  button:active,
+  .btn:active,
+  [role="button"]:active {
+    transform: scale(0.96);
+    transition: transform 0.1s ease;
+  }
+
+  input:active,
+  textarea:active,
+  select:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
+  }
+}
+
+/* Improved mobile scrolling */
+@media (max-width: 640px) {
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Custom scrollbar for webkit browsers */
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 2px;
+  }
+}
+
+/* Performance optimizations for mobile */
+@media (max-width: 640px) {
+  /* Reduce GPU-intensive animations on lower-end devices */
+  .hover-lift,
+  .feature-card,
+  .booking-card {
+    will-change: auto;
+  }
+
+  /* Simplify transitions for better performance */
+  * {
+    transition-duration: 0.15s !important;
+  }
+}
+
+/* Enhanced mobile navigation improvements */
+@media (max-width: 640px) {
+  .mobile-nav-panel {
+    width: 85vw;
+    max-width: 320px;
+  }
+
+  /* Better spacing in mobile navigation */
+  .mobile-nav-link {
+    padding: 16px 20px;
+    margin: 2px 8px;
+    border-radius: 8px;
+  }
+
+  /* Touch-friendly close button */
+  .mobile-nav-close {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+  }
+}
+
+/* =================== SENIOR-FRIENDLY DESIGN ENHANCEMENTS =================== */
+
+/* Enhanced High Contrast Modes for Seniors */
+.high-contrast {
+  --text-primary: #000000;
+  --text-secondary: #1a1a1a;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f5;
+  --primary-500: #000080;
+  --border-default: #000000;
+}
+
+.high-contrast-enhanced {
+  --text-primary: #000000;
+  --text-secondary: #000000;
+  --bg-primary: #ffffff;
+  --bg-secondary: #ffffff;
+  --primary-500: #000000;
+  --border-default: #000000;
+  filter: contrast(150%);
+}
+
+.high-contrast-maximum {
+  --text-primary: #000000;
+  --text-secondary: #000000;
+  --bg-primary: #ffffff;
+  --bg-secondary: #ffffff;
+  --primary-500: #000000;
+  --border-default: #000000;
+  filter: contrast(200%) brightness(110%);
+}
+
+/* Senior Mode Specific Enhancements */
+.senior-mode {
+  /* Larger base font size for seniors */
+  font-size: 18px !important;
+}
+
+.senior-mode h1 {
+  font-size: 3rem !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+}
+
+.senior-mode h2 {
+  font-size: 2.5rem !important;
+  line-height: 1.3 !important;
+  font-weight: 600 !important;
+}
+
+.senior-mode h3 {
+  font-size: 2rem !important;
+  line-height: 1.4 !important;
+  font-weight: 600 !important;
+}
+
+.senior-mode p,
+.senior-mode span,
+.senior-mode div {
+  font-size: 1.25rem !important;
+  line-height: 1.6 !important;
+}
+
+/* Simplified Navigation for Seniors */
+.simplified-navigation .mobile-nav,
+.simplified-navigation .dropdown-menu,
+.simplified-navigation .mega-menu {
+  display: none !important;
+}
+
+.simplified-navigation .nav-simple {
+  display: block !important;
+}
+
+/* Larger Touch Targets for Seniors */
+.large-touch-targets button,
+.large-touch-targets .btn,
+.large-touch-targets [role="button"],
+.large-touch-targets a {
+  min-height: 60px !important;
+  min-width: 60px !important;
+  padding: 16px 24px !important;
+  font-size: 1.25rem !important;
+}
+
+.large-touch-targets input,
+.large-touch-targets textarea,
+.large-touch-targets select {
+  min-height: 60px !important;
+  padding: 16px 20px !important;
+  font-size: 1.25rem !important;
+}
+
+.large-touch-targets .touch-target {
+  min-height: 60px !important;
+  min-width: 60px !important;
+}
+
+/* High Visibility Mode for Seniors */
+.high-visibility button,
+.high-visibility .btn,
+.high-visibility input,
+.high-visibility select,
+.high-visibility textarea {
+  border: 3px solid var(--primary-500) !important;
+  box-shadow: 0 0 0 2px rgba(54, 153, 54, 0.3) !important;
+}
+
+.high-visibility a {
+  text-decoration: underline !important;
+  text-decoration-thickness: 3px !important;
+  text-underline-offset: 4px !important;
+}
+
+/* Slow Animations for Seniors */
+.slow-animations * {
+  animation-duration: 1s !important;
+  transition-duration: 0.5s !important;
+}
+
+.slow-animations .fade-in {
+  animation: fadeIn 1s ease-in-out !important;
+}
+
+.slow-animations .slide-up {
+  animation: slideUp 0.8s ease-out !important;
+}
+
+.slow-animations .hover-lift:hover {
+  transform: translateY(-4px) !important;
+  transition: transform 0.8s ease !important;
+}
+
+/* Enhanced Focus Indicators for Seniors */
+.senior-mode .focus-ring:focus,
+.senior-mode .focus-ring-mobile:focus {
+  outline: 4px solid var(--primary-500) !important;
+  outline-offset: 4px !important;
+  box-shadow: 0 0 0 6px rgba(54, 153, 54, 0.2) !important;
+}
+
+/* Senior-Optimized Button Styles */
+.senior-mode .btn-primary {
+  padding: 16px 32px !important;
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  border-radius: 12px !important;
+  min-height: 56px !important;
+}
+
+.senior-mode .btn-secondary {
+  padding: 16px 32px !important;
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  border-radius: 12px !important;
+  min-height: 56px !important;
+}
+
+.senior-mode .btn-outline {
+  padding: 16px 32px !important;
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  border-radius: 12px !important;
+  min-height: 56px !important;
+  border-width: 3px !important;
+}
+
+/* Senior-Optimized Form Elements */
+.senior-mode .input-field {
+  padding: 16px 20px !important;
+  font-size: 1.25rem !important;
+  border-radius: 12px !important;
+  border-width: 3px !important;
+  min-height: 56px !important;
+}
+
+.senior-mode input,
+.senior-mode textarea,
+.senior-mode select {
+  padding: 16px 20px !important;
+  font-size: 1.25rem !important;
+  border-radius: 12px !important;
+  border-width: 3px !important;
+  min-height: 56px !important;
+}
+
+/* Enhanced Card Styles for Seniors */
+.senior-mode .feature-card,
+.senior-mode .booking-card {
+  padding: 24px !important;
+  border-radius: 16px !important;
+  border-width: 3px !important;
+  margin: 16px 0 !important;
+}
+
+.senior-mode .feature-card h3,
+.senior-mode .booking-card h3 {
+  font-size: 1.75rem !important;
+  margin-bottom: 16px !important;
+}
+
+.senior-mode .feature-card p,
+.senior-mode .booking-card p {
+  font-size: 1.125rem !important;
+  line-height: 1.7 !important;
+}
+
+/* Senior-Optimized Modal Styles */
+.senior-mode .modal {
+  padding: 32px !important;
+  border-radius: 20px !important;
+  border-width: 4px !important;
+}
+
+.senior-mode .modal h2 {
+  font-size: 2rem !important;
+  margin-bottom: 24px !important;
+}
+
+.senior-mode .modal p {
+  font-size: 1.25rem !important;
+  line-height: 1.7 !important;
+  margin-bottom: 16px !important;
+}
+
+/* Navigation Simplification for Seniors */
+.senior-mode .nav-simple {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+}
+
+.senior-mode .nav-simple a {
+  padding: 16px 24px !important;
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  border-radius: 12px !important;
+  border: 3px solid transparent !important;
+  text-decoration: none !important;
+  transition: all 0.3s ease !important;
+}
+
+.senior-mode .nav-simple a:hover,
+.senior-mode .nav-simple a:focus {
+  border-color: var(--primary-500) !important;
+  background-color: var(--primary-50) !important;
+}
+
+/* Text Spacing Enhancements for Seniors */
+.senior-mode p,
+.senior-mode span,
+.senior-mode div,
+.senior-mode li {
+  line-height: 1.8 !important;
+  letter-spacing: 0.5px !important;
+}
+
+.senior-mode h1,
+.senior-mode h2,
+.senior-mode h3,
+.senior-mode h4,
+.senior-mode h5,
+.senior-mode h6 {
+  letter-spacing: 1px !important;
+}
+
+/* Enhanced Error and Success States for Seniors */
+.senior-mode .error-message,
+.senior-mode .success-message {
+  padding: 16px 20px !important;
+  font-size: 1.25rem !important;
+  border-radius: 12px !important;
+  border-width: 3px !important;
+  margin: 16px 0 !important;
+}
+
+.senior-mode .error-message {
+  border-color: #dc2626 !important;
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+}
+
+.senior-mode .success-message {
+  border-color: #16a34a !important;
+  background-color: #f0fdf4 !important;
+  color: #15803d !important;
+}

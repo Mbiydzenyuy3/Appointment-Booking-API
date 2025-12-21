@@ -11,7 +11,6 @@ const router = express.Router()
  * /services/create:
  *   post:
  *     summary: Create a new service
- *
  */
 router.post(
   '/create',
@@ -25,18 +24,27 @@ router.post(
  * /services:
  *   get:
  *     summary: List all services for the authenticated provider
- *
  */
 router.get('/', authMiddleware, ServiceController.list)
+
+/**
+ * @swagger
+ * /services/provider/{providerId}:
+ *   get:
+ *     summary: List services by provider ID
+ */
+router.get(
+  '/provider/:providerId',
+  authMiddleware,
+  ServiceController.listByProvider
+)
 
 /**
  * @swagger
  * /services/{serviceId}:
  *   put:
  *     summary: Update a service by ID
- *
  */
-
 router.put(
   '/:serviceId',
   authMiddleware,
@@ -50,19 +58,6 @@ router.put(
  *   delete:
  *     summary: Delete a service by ID
  */
-
 router.delete('/:serviceId', authMiddleware, ServiceController.remove)
-
-/**
- * @swagger
- * /services/provider/{providerId}:
- *   get:
- *     summary: List services by provider ID
- */
-router.get(
-  '/provider/:providerId',
-  authMiddleware,
-  ServiceController.listByProvider
-)
 
 export default router

@@ -1,17 +1,15 @@
-// src/controllers/service-controller.js
 import * as ServiceService from "../services/services-service.js";
 import { logError, logDebug } from "../utils/logger.js";
 import ProviderModel from "../models/provider-model.js";
 
+// Create a new service
 export async function create(req, res, next) {
   try {
     const userId = req.user?.user_id;
     const { name, description, price, durationMinutes } = req.body;
 
-    // 🔍 Look up provider_id from providers table
     const provider = await ProviderModel.findByUserId(userId);
-
-    if (!provider || !provider.provider_id) {
+    if (!provider?.provider_id) {
       return res
         .status(403)
         .json({ message: "You must have a provider profile first." });
@@ -24,7 +22,7 @@ export async function create(req, res, next) {
       name,
       description,
       price,
-      durationMinutes,
+      durationMinutes
     });
 
     const service = await ServiceService.createServices({
@@ -32,13 +30,13 @@ export async function create(req, res, next) {
       name,
       description,
       price,
-      durationMinutes,
+      durationMinutes
     });
 
     return res.status(201).json({
       success: true,
       message: "Service created successfully",
-      data: service,
+      data: service
     });
   } catch (err) {
     logError("createService controller error", err);
@@ -61,7 +59,7 @@ export async function list(req, res, next) {
           .status(403)
           .json({ message: "You must have a provider profile first." });
       }
-      services = await ServiceService.listServicesForProvider(
+      services = await ServiceService.getServicesByProviderId(
         provider.provider_id
       );
     } else {
@@ -76,56 +74,63 @@ export async function list(req, res, next) {
   }
 }
 
-export async function listByProvider(req, res) {
+// List services by provider ID
+export async function listByProvider(req, res, next) {
   try {
-    const providerId = req.params.providerId;
+    const { providerId } = req.params;
     const services = await ServiceService.getServicesByProviderId(providerId);
-    res.status(200).json({ success: true, data: services });
+    return res.status(200).json({ success: true, data: services });
   } catch (err) {
-    console.error("Failed to list services by provider:", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    logError("listByProvider controller error", err);
+    next(err);
   }
 }
 
+// Update a service by ID
 export async function update(req, res, next) {
   try {
-    const userId = req.user?.user_id;
     const { serviceId } = req.params;
     const updates = req.body;
+    const userId = req.user?.user_id;
 
+    // Verify provider ownership
     const provider = await ProviderModel.findByUserId(userId);
-    if (!provider || !provider.provider_id) {
+    if (!provider?.provider_id) {
       return res
         .status(403)
         .json({ message: "You must have a provider profile first." });
     }
 
-    updates.providerId = provider.provider_id;
+    // Verify the service belongs to this provider
+    const existingService = await ServiceService.getServiceById(serviceId);
+    if (existingService.providerId !== provider.provider_id) {
+      return res
+        .status(403)
+        .json({ message: "You can only update your own services." });
+    }
 
-    const updatedService = await ServiceService.updateService(
-      serviceId,
-      updates
-    );
+    const updated = await ServiceService.updateService(serviceId, updates);
+
     return res.status(200).json({
       success: true,
       message: "Service updated successfully",
-      data: updatedService,
+      data: updated
     });
   } catch (err) {
     logError("updateService controller error", err);
     next(err);
   }
 }
-
+// Delete a service by ID
 export async function remove(req, res, next) {
   try {
     const { serviceId } = req.params;
 
-    const deletedService = await ServiceService.deleteService(serviceId);
+    await ServiceService.deleteService(serviceId);
+
     return res.status(200).json({
       success: true,
-      message: "Service deleted successfully",
-      data: deletedService,
+      message: "Service deleted successfully"
     });
   } catch (err) {
     logError("deleteService controller error", err);
