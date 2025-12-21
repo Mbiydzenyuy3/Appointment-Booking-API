@@ -22,7 +22,9 @@ export async function book({
   try {
     const appointment = await CreateAppointment({
       userId,
-      timeslotId
+      timeslotId,
+      appointment_date,
+      appointment_time
     });
 
     // Emit targeted socket notification (assumes this function does targeting internally)
