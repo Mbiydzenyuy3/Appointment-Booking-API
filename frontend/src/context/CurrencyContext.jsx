@@ -335,104 +335,19 @@ export const CURRENCIES = [
 
 export const CurrencyProvider = ({ children }) => {
   const [selectedCurrency, setSelectedCurrency] = useState("XAF"); // Default to FCFA
-  const [userCurrency, setUserCurrency] = useState(null);
 
-  // Auto-detect user's currency based on location
+  // Always default to XAF (FCFA) unless user explicitly changed it
   useEffect(() => {
-    const detectUserCurrency = () => {
-      // Try to detect from browser language/region
-      const language = navigator.language || navigator.userLanguage;
-
-      // Common currency mappings based on country codes
-      const currencyMap = {
-        // Central Africa (CEMAC)
-        CM: "XAF", // Cameroon
-        CF: "XAF", // Central African Republic
-        TD: "XAF", // Chad
-        CG: "XAF", // Republic of Congo
-        GQ: "XAF", // Equatorial Guinea
-        GA: "XAF", // Gabon
-
-        // West Africa
-        BF: "XOF", // Burkina Faso
-        CI: "XOF", // Côte d'Ivoire
-        GW: "XOF", // Guinea-Bissau
-        ML: "XOF", // Mali
-        NE: "XOF", // Niger
-        SN: "XOF", // Senegal
-        TG: "XOF", // Togo
-        BJ: "XOF", // Benin
-        MA: "MAD", // Morocco
-        NG: "NGN", // Nigeria
-        EG: "EGP", // Egypt
-        ZA: "ZAR", // South Africa
-        KE: "KES", // Kenya
-        GH: "GHS", // Ghana
-
-        // Major international
-        US: "USD",
-        GB: "GBP",
-        DE: "EUR",
-        FR: "EUR",
-        IT: "EUR",
-        ES: "EUR",
-        JP: "JPY",
-        CA: "CAD",
-        AU: "AUD",
-        CN: "CNY",
-        IN: "INR",
-        BR: "BRL",
-        MX: "MXN",
-        SG: "SGD",
-        HK: "HKD",
-        NZ: "NZD",
-        SE: "SEK",
-        NO: "NOK",
-        DK: "DKK",
-        CH: "CHF",
-        PL: "PLN",
-        CZ: "CZK",
-        HU: "HUF",
-        RU: "RUB",
-        KR: "KRW",
-        TH: "THB",
-        MY: "MYR",
-        ID: "IDR",
-        PH: "PHP",
-        AE: "AED",
-        SA: "SAR",
-        IL: "ILS",
-        TR: "TRY",
-        CL: "CLP",
-        CO: "COP",
-        PE: "PEN",
-        AR: "ARS"
-      };
-
-      // Extract country code from locale
-      const countryCode = language.split("-")[1] || language.split("_")[1];
-
-      if (countryCode && currencyMap[countryCode]) {
-        setUserCurrency(currencyMap[countryCode]);
-        return currencyMap[countryCode];
-      }
-
-      // Default to FCFA if no match found
-      return "XAF";
-    };
-
-    const detectedCurrency = detectUserCurrency();
-    // Only auto-set if user hasn't manually selected a currency
-    if (!localStorage.getItem("selectedCurrency")) {
-      setSelectedCurrency(detectedCurrency);
-    }
-  }, []);
-
-  // Load saved currency from localStorage
-  useEffect(() => {
+    // Check if user has explicitly selected a currency
     const savedCurrency = localStorage.getItem("selectedCurrency");
+
     if (savedCurrency && CURRENCIES.find((c) => c.code === savedCurrency)) {
+      // User has explicitly selected a currency, use it
       setSelectedCurrency(savedCurrency);
+    } else {
+      // No explicit selection, always default to XAF
+      setSelectedCurrency("XAF");
+      localStorage.removeItem("selectedCurrency"); // Ensure clean state
     }
   }, []);
 
@@ -459,7 +374,6 @@ export const CurrencyProvider = ({ children }) => {
 
   const value = {
     selectedCurrency,
-    userCurrency,
     currencies: CURRENCIES,
     changeCurrency,
     formatPrice,

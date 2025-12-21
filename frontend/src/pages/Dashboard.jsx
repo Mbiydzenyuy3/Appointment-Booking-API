@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
+import { useCurrency } from "../context/CurrencyContext.jsx";
 import RescheduleModal from "../components/Appointments/ResheduleModal.jsx";
 import BookAppointmentForm from "../components/BookAppointments/BookAppointment.jsx";
 import api from "../services/api.js";
@@ -8,6 +9,7 @@ import { toast } from "react-toastify";
 
 const UserDashboard = () => {
   const { user } = useAuth();
+  const { formatPrice } = useCurrency();
   const navigate = useNavigate();
   const [services, setServices] = useState([]);
   const [appointments, setAppointments] = useState([]);
@@ -149,7 +151,7 @@ const UserDashboard = () => {
                       {service.service_name}
                     </h3>
                     <div className='bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium'>
-                      ${service.price}
+                      {formatPrice(service.price)}
                     </div>
                   </div>
 

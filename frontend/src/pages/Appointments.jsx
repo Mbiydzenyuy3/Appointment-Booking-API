@@ -3,10 +3,12 @@ import { useEffect, useState } from "react";
 import api from "../services/api.js";
 import { toast } from "react-toastify";
 import { useAuth } from "../context/AuthContext.jsx";
+import { useCurrency } from "../context/CurrencyContext.jsx";
 import { useLocation } from "react-router-dom";
 
 export default function AppointmentPage() {
   const { user } = useAuth();
+  const { formatPrice } = useCurrency();
   const location = useLocation();
   const [appointments, setAppointments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -217,7 +219,7 @@ export default function AppointmentPage() {
                             clipRule='evenodd'
                           />
                         </svg>
-                        ${appointment.price}
+                        {formatPrice(appointment.price)}
                       </div>
                     )}
                   </div>
