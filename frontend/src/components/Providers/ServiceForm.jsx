@@ -1,4 +1,3 @@
-// src/components/Providers/ServiceForm.jsx
 import React, { useState } from "react";
 import { useCurrency } from "../../context/CurrencyContext.jsx";
 import CurrencySelector from "../Common/CurrencySelector.jsx";
@@ -23,9 +22,10 @@ export default function ServiceForm({ onCreate }) {
       name: service.service_name,
       description: service.description,
       price: Number(service.price),
-      currency: selectedCurrency,
       durationMinutes: Number(service.duration_minutes)
     };
+
+    console.log("Service data being sent:", ServiceValues);
 
     onCreate(ServiceValues);
 
@@ -37,7 +37,7 @@ export default function ServiceForm({ onCreate }) {
     });
   };
 
-  // Get currency symbol for the input field
+  // Get currency symbols for the different countries, not all but majority of the worlds currencies to make the app more inclusive to all users
   const getCurrencySymbol = (currency) => {
     const symbols = {
       XAF: "FCFA",
@@ -204,7 +204,6 @@ export default function ServiceForm({ onCreate }) {
         </div>
       </div>
 
-      {/* Enhanced Submit Button with Maximum Visibility */}
       <div className='relative'>
         <button
           type='submit'

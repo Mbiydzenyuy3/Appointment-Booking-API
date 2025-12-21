@@ -1,4 +1,3 @@
-// src/hooks/useAccessibility.js
 import { useContext } from "react";
 import { AccessibilityContext } from "../context/AccessibilityContext.jsx";
 

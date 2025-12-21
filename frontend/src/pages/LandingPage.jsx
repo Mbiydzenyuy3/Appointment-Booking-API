@@ -6,7 +6,7 @@ import Footer from "../components/Footer.jsx";
 export default function HomePage() {
   return (
     <div className='min-h-screen bg-gray-50 flex flex-col'>
-      {/* Mobile-first responsive header */}
+      {/* Mobile responsive header */}
       <LandingHeader />
 
       <main className='min-h-80 py-6 sm:py-8 lg:px-12 flex-grow flex items-center justify-center hero-overlay relative background-landing'>

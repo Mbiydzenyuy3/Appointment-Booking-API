@@ -1,12 +1,7 @@
 import { pool } from "../config/db.js";
 
 // Create and book an appointment
-export const CreateAppointment = async ({
-  timeslotId,
-  userId,
-  appointment_date,
-  appointment_time
-}) => {
+export const CreateAppointment = async ({ timeslotId, userId, appointment_date, appointment_time }) => {
   const client = await pool.connect();
 
   try {
@@ -24,12 +19,7 @@ export const CreateAppointment = async ({
       throw new Error("Slot is already booked or unavailable");
     }
 
-    const {
-      provider_id,
-      service_id,
-      day: slot_day,
-      start_time: slot_start_time
-    } = slot;
+    const { provider_id, service_id, day: slot_day, start_time: slot_start_time } = slot;
 
     // Use provided date/time or fallback to slot data
     const finalAppointmentDate = appointment_date || slot_day;
@@ -50,7 +40,7 @@ export const CreateAppointment = async ({
         service_id,
         finalAppointmentDate,
         finalAppointmentTime,
-        "booked"
+        "booked",
       ]
     );
 
@@ -90,7 +80,7 @@ export const cancelAppointment = async (appointmentId) => {
 
     // Delete the appointment
     await client.query(`DELETE FROM appointments WHERE appointment_id = $1`, [
-      appointmentId
+      appointmentId,
     ]);
 
     // Reopen the time slot
@@ -135,6 +125,7 @@ export const findAppointmentsByUser = async (
   query += ` ORDER BY appointment_date DESC, appointment_time DESC LIMIT $${i++} OFFSET $${i++}`;
   params.push(limit, offset);
 
-  const result = await pool.query(query, params);
-  return result.rows;
-};
+  const result = await pool.query(query, params)
+  return result.rows
+}
+

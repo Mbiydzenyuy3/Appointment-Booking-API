@@ -1,4 +1,3 @@
-// Currency Context for multi-currency support
 import React, { createContext, useContext, useState, useEffect } from "react";
 
 const CurrencyContext = createContext();
@@ -11,9 +10,7 @@ export const useCurrency = () => {
   return context;
 };
 
-// Major world currencies with FCFA as priority
 export const CURRENCIES = [
-  // CEMAC and Central African Currencies
   {
     code: "XAF",
     name: "Central African CFA Franc",

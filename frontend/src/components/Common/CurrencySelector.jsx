@@ -1,4 +1,3 @@
-// Currency Selector Component
 import React, { useState } from "react";
 import { useCurrency } from "../../context/CurrencyContext.jsx";
 
@@ -38,7 +37,6 @@ export default function CurrencySelector() {
 
   return (
     <div className='relative'>
-      {/* Currency Selector Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className='flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 min-w-[160px] justify-between'
@@ -69,10 +67,8 @@ export default function CurrencySelector() {
         </svg>
       </button>
 
-      {/* Currency Dropdown */}
       {isOpen && (
         <>
-          {/* Backdrop */}
           <div
             className='fixed inset-0 z-10'
             onClick={() => setIsOpen(false)}
@@ -80,7 +76,6 @@ export default function CurrencySelector() {
 
           {/* Dropdown Menu */}
           <div className='absolute top-full mt-2 right-0 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-20 max-h-96 overflow-hidden'>
-            {/* Search Input */}
             <div className='p-3 border-b border-gray-100'>
               <input
                 type='text'
@@ -95,7 +90,6 @@ export default function CurrencySelector() {
             {/* Currency List */}
             <div className='max-h-64 overflow-y-auto'>
               {searchTerm ? (
-                // Filtered Results
                 <div>
                   {filteredCurrencies.length > 0 ? (
                     filteredCurrencies.map((currency) => (
@@ -135,7 +129,6 @@ export default function CurrencySelector() {
               ) : (
                 // Grouped by Region
                 <div>
-                  {/* Show user's detected currency first if different */}
                   {userCurrency && userCurrency !== selectedCurrency && (
                     <div className='border-b border-gray-100'>
                       <div className='px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider'>

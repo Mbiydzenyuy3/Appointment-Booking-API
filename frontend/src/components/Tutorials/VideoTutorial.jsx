@@ -1,4 +1,3 @@
-// src/components/Tutorials/VideoTutorial.jsx
 import React, { useState, useRef, useEffect } from "react";
 import {
   Play,

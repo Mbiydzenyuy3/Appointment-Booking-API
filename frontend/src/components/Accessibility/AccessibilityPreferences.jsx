@@ -1,4 +1,3 @@
-// Accessibility Preferences Configuration Component
 import React, { useState, useEffect } from "react";
 import { useAIScheduler } from "../../hooks/useAIScheduler.js";
 

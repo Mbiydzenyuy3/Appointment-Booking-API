@@ -1,4 +1,3 @@
-// src/pages/TimeSlotPage.jsx
 import React from "react";
 import { useEffect, useState } from "react";
 import api from "../services/api.js";
@@ -24,12 +23,12 @@ export default function TimeSlotPage() {
   }, [slotId]);
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Slot Details</h1>
+    <div className='p-6'>
+      <h1 className='text-2xl font-bold mb-4'>Slot Details</h1>
       {isLoading ? (
         <p>Loading...</p>
       ) : slot ? (
-        <div className="bg-white p-4 shadow rounded">
+        <div className='bg-white p-4 shadow rounded'>
           <p>
             <strong>Time:</strong> {new Date(slot.time).toLocaleString()}
           </p>

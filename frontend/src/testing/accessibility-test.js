@@ -1,4 +1,3 @@
-// Accessibility Testing Script
 import { configureAxe } from "@axe-core/react";
 import axe from "axe-core";
 

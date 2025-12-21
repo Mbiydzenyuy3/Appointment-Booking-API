@@ -63,17 +63,16 @@ export const createSlot = async ({
   }
 };
 
-// Get all slots for a provider
+// Get all slots for a provider with service information
 export async function getSlotsByProviderId(providerId) {
   const client = await pool.connect();
 
   try {
     const result = await client.query(
-      `SELECT ts.*, p.user_id as provider_user_id, u.name as provider_name
+      `SELECT ts.*, s.service_name, s.description as service_description, s.price as service_price, s.duration_minutes as service_duration
        FROM time_slots ts
-       LEFT JOIN providers p ON ts.provider_id = p.provider_id
-       LEFT JOIN users u ON p.user_id = u.user_id
-       WHERE ts.provider_id = $1 AND ts.is_available = true AND ts.is_booked = false
+       LEFT JOIN services s ON ts.service_id = s.service_id
+       WHERE ts.provider_id = $1
        ORDER BY ts.day, ts.start_time`,
       [providerId]
     );
