@@ -5,9 +5,6 @@ import {
   useLazyImage
 } from "../../hooks/useLazyLoading";
 
-/**
- * Loading component for lazy-loaded components
- */
 export const LazyLoadingSpinner = ({
   size = "medium",
   message = "Loading..."
@@ -28,9 +25,6 @@ export const LazyLoadingSpinner = ({
   );
 };
 
-/**
- * Error component for lazy-loaded components
- */
 export const LazyErrorBoundary = ({
   error,
   retry,
@@ -77,9 +71,6 @@ export const LazyErrorBoundary = ({
   );
 };
 
-/**
- * Wrapper component for lazy-loaded components with error handling
- */
 export const LazyWrapper = ({
   importFunc,
   fallback = null,
@@ -112,9 +103,6 @@ export const LazyWrapper = ({
   return null;
 };
 
-/**
- * Component for lazy loading images with optimized settings
- */
 export const OptimizedImage = ({
   src,
   alt,
@@ -123,7 +111,6 @@ export const OptimizedImage = ({
   format = "auto",
   ...props
 }) => {
-  // Add image optimization parameters if using a CDN
   const optimizedSrc = src.includes("?")
     ? `${src}&q=${quality}&f=${format}`
     : `${src}?q=${quality}&f=${format}`;
@@ -153,9 +140,6 @@ export const OptimizedImage = ({
   );
 };
 
-/**
- * Component for lazy loading background images
- */
 export const LazyBackgroundImage = ({
   src,
   children,

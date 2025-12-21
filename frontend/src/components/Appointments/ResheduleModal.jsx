@@ -1,4 +1,3 @@
-// src/components/Appointments/RescheduleModal.jsx - Mobile-First Design
 import React, { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -27,7 +26,6 @@ export default function RescheduleModal({
   return (
     <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 safe-area-bottom'>
       <div className='bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto'>
-        {/* Header */}
         <div className='p-4 sm:p-6 border-b border-gray-100'>
           <div className='flex items-center justify-between'>
             <h2 className='text-xl font-bold text-gray-900'>
@@ -58,7 +56,6 @@ export default function RescheduleModal({
           </p>
         </div>
 
-        {/* Content */}
         <div className='p-4 sm:p-6'>
           <div className='mb-6'>
             <label className='block text-sm font-medium text-gray-700 mb-3'>
@@ -83,7 +80,6 @@ export default function RescheduleModal({
             </div>
           </div>
 
-          {/* Selected date display */}
           <div className='bg-green-50 border border-green-200 rounded-lg p-3 mb-6'>
             <div className='flex items-center'>
               <svg
@@ -116,7 +112,6 @@ export default function RescheduleModal({
             </div>
           </div>
 
-          {/* Action buttons */}
           <div className='flex flex-col sm:flex-row gap-3'>
             <button
               onClick={onClose}

@@ -78,7 +78,7 @@ export default function BookAppointmentForm({ providerId }) {
     }
   };
 
-  // Group timeslots by date for better mobile UX
+  // Grouped timeslots by date for better mobile UX
   const timeslotsByDate = timeslots.reduce((acc, slot) => {
     const date = formatDate(slot.day);
     if (!acc[date]) acc[date] = [];

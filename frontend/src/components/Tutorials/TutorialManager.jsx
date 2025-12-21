@@ -1,4 +1,3 @@
-// src/components/Tutorials/TutorialManager.jsx
 import React from "react";
 import { useTutorial } from "../../hooks/useTutorial";
 import VideoTutorial from "./VideoTutorial";

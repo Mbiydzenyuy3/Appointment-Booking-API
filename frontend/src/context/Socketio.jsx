@@ -1,4 +1,3 @@
-//src/context/socket.io.jsx
 import React from "react";
 import { createContext, useContext, useEffect, useState } from "react";
 import { io } from "socket.io-client";

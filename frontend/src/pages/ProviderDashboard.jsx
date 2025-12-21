@@ -1,10 +1,10 @@
-// src/pages/ProviderDashboard.jsx - Mobile-First Responsive Design
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
 import ServiceForm from "../components/Providers/ServiceForm.jsx";
 import ServiceList from "../components/Providers/ServiceList.jsx";
 import TimeslotForm from "../components/Providers/TimeSlotForm.jsx";
 import TimeslotList from "../components/Providers/TimeSlotList.jsx";
+import AuthDebugger from "../components/Providers/AuthDebugger.jsx";
 import api from "../services/api.js";
 import toast from "react-hot-toast";
 
@@ -40,13 +40,45 @@ export default function ProviderDashboard() {
 
   const handleCreateService = async (newService) => {
     console.log("Creating service with data:", newService);
+    console.log("Current user:", user);
+
+    // Check if user is authenticated
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("You are not logged in. Please log in again.");
+      return;
+    }
+
     try {
       const res = await api.post("/services/create", newService);
       setServices((prev) => [...prev, res.data.data]);
       toast.success("Service created");
     } catch (error) {
       console.error("Create service error:", error);
-      toast.error("Failed to create service");
+
+      // More specific error handling
+      if (error.response?.status === 401) {
+        toast.error("Authentication failed. Please log in again.");
+        // Optionally redirect to login or trigger logout
+        // window.location.href = "/login";
+      } else if (error.response?.status === 403) {
+        toast.error("You don't have permission to create services.");
+      } else if (
+        error.response?.status === 400 &&
+        error.response?.data?.errors
+      ) {
+        // Handle validation errors
+        const validationErrors = error.response.data.errors;
+        if (validationErrors.length > 0) {
+          toast.error(`Validation error: ${validationErrors.join(", ")}`);
+        } else {
+          toast.error(error.response?.data?.message || "Invalid service data");
+        }
+      } else {
+        toast.error(
+          error.response?.data?.message || "Failed to create service"
+        );
+      }
     }
   };
 
@@ -103,7 +135,7 @@ export default function ProviderDashboard() {
   }
 
   return (
-    <div className='max-w-7xl mx-auto'>
+    <div className='min-h-screen max-w-7xl mx-auto'>
       {/* Mobile-first header */}
       <div className='mb-6 sm:mb-8'>
         <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6'>
@@ -140,6 +172,9 @@ export default function ProviderDashboard() {
         </div>
       ) : (
         <>
+          {/* Authentication Debugger - Remove in production */}
+          <AuthDebugger />
+
           {/* Mobile Tab Navigation */}
           <div className='mb-6 sm:hidden'>
             <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-2'>

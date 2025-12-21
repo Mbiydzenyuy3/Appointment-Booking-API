@@ -1,4 +1,3 @@
-// Smart Scheduling Dashboard & Analytics Component
 import React, { useState, useEffect, useCallback } from "react";
 import { useAIScheduler } from "../../hooks/useAIScheduler.js";
 import { useAuth } from "../../context/AuthContext.jsx";
