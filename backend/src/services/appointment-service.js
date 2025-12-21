@@ -1,9 +1,5 @@
 import { pool } from "../config/db.js";
-import {
-  CreateAppointment,
-  cancelAppointment, // renamed from deleteAppointment
-  findAppointmentsByUser
-} from "../models/appointment-model.js";
+import { CreateAppointment } from "../models/appointment-model.js";
 
 import {
   emitAppointmentBooked,
@@ -50,7 +46,7 @@ export async function cancel(appointmentId) {
       [appointmentId]
     );
 
-    const appointment = apptRes.rows[0];
+    let appointment = apptRes.rows[0];
     if (!appointment) throw new Error("Appointment not found");
 
     await client.query("DELETE FROM appointments WHERE appointment_id = $1", [
@@ -62,10 +58,11 @@ export async function cancel(appointmentId) {
     );
 
     await client.query("COMMIT");
+    appointment = await cancelAppointment(appointmentId);
 
     emitAppointmentCancelled(appointment);
 
-    logInfo(`Appointment cancelled:`, appointment.id);
+    logInfo(`Appointment cancelled:`, appointment.appointment_id);
     return appointment;
   } catch (err) {
     logError(" Error cancelling appointment:", err);

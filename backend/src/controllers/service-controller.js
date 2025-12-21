@@ -91,6 +91,23 @@ export async function update(req, res, next) {
   try {
     const { serviceId } = req.params;
     const updates = req.body;
+    const userId = req.user?.user_id;
+
+    // Verify provider ownership
+    const provider = await ProviderModel.findByUserId(userId);
+    if (!provider?.provider_id) {
+      return res
+        .status(403)
+        .json({ message: "You must have a provider profile first." });
+    }
+
+    // Verify the service belongs to this provider
+    const existingService = await ServiceService.getServiceById(serviceId);
+    if (existingService.providerId !== provider.provider_id) {
+      return res
+        .status(403)
+        .json({ message: "You can only update your own services." });
+    }
 
     const updated = await ServiceService.updateService(serviceId, updates);
 
@@ -104,7 +121,6 @@ export async function update(req, res, next) {
     next(err);
   }
 }
-
 // Delete a service by ID
 export async function remove(req, res, next) {
   try {

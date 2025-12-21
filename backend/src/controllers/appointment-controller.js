@@ -61,12 +61,18 @@ export async function CreateAppointment(req, res) {
 export async function cancelAppointment(req, res, next) {
   try {
     const { appointmentId } = req.params;
+    const userId = req.user?.user_id;
     const result = await appointmentService.cancel(appointmentId);
 
     if (!result) {
       return res.status(404).json({ message: "Appointment not found" });
     }
 
+    if (result.user_id !== userId) {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to cancel this appointment" });
+    }
     return res.json({ message: "Appointment cancelled", data: result });
   } catch (err) {
     logError("Cancel appointment failed", err);

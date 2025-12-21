@@ -60,6 +60,5 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Add error handler middleware
 app.use(ErrorHandler);
-app.use(ErrorHandler);
 
 export { app, initSocket };
