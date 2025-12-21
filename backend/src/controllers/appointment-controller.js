@@ -62,8 +62,7 @@ export async function cancelAppointment(req, res, next) {
   try {
     const { appointmentId } = req.params;
     const userId = req.user?.user_id;
-    const result = await appointmentService.cancel(appointmentId);
-
+    const result = await appointmentService.cancel(appointmentId, userId);
     if (!result) {
       return res.status(404).json({ message: "Appointment not found" });
     }
@@ -75,8 +74,11 @@ export async function cancelAppointment(req, res, next) {
     }
     return res.json({ message: "Appointment cancelled", data: result });
   } catch (err) {
-    logError("Cancel appointment failed", err);
-    next(err);
+    if (err.message === "Not authorized") {
+      return res
+        .status(403)
+        .json({ message: "Not authorized to cancel this appointment" });
+    }
   }
 }
 
