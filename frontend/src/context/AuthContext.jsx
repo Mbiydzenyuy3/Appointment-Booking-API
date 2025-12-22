@@ -30,23 +30,45 @@ export const Provider = ({ children }) => {
     setIsLoading(false);
   }, []);
 
-  const login = async (email, password) => {
+  const login = async (
+    email,
+    password,
+    isGoogleAuth = false,
+    userData = null
+  ) => {
     try {
-      const response = await api.post("/auth/login", { email, password });
-      const { token } = response.data;
+      if (isGoogleAuth && userData) {
+        // Handle Google OAuth login
+        // userData should contain the user information from Google
+        const decoded = {
+          sub: userData.user_id,
+          email: userData.email,
+          user_type: userData.user_type,
+          provider_id: userData.provider_id,
+          name: userData.name,
+          profile_picture: userData.profile_picture
+        };
 
-      if (token && token.split(".").length === 3) {
-        localStorage.setItem("token", token);
-        const decoded = jwtDecode(token);
         setUser(decoded);
-        return { success: true, user_type: decoded.user_type };
+        return { success: true, user_type: userData.user_type };
       } else {
-        return { success: false, message: "Invalid token received" };
+        // Handle regular email/password login
+        const response = await api.post("/auth/login", { email, password });
+        const { token } = response.data;
+
+        if (token && token.split(".").length === 3) {
+          localStorage.setItem("token", token);
+          const decoded = jwtDecode(token);
+          setUser(decoded);
+          return { success: true, user_type: decoded.user_type };
+        } else {
+          return { success: false, message: "Invalid token received" };
+        }
       }
     } catch (error) {
       return {
         success: false,
-        message: error.response?.data?.message || "Login failed",
+        message: error.response?.data?.message || "Login failed"
       };
     }
   };
@@ -58,7 +80,7 @@ export const Provider = ({ children }) => {
     } catch (error) {
       return {
         success: false,
-        message: error.response?.data?.message || "Registration failed",
+        message: error.response?.data?.message || "Registration failed"
       };
     }
   };
