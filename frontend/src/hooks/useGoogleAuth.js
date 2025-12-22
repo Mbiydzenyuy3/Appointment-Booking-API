@@ -27,18 +27,21 @@ export function useGoogleAuth() {
   };
 
   const signInWithGoogle = async () => {
-    if (!isInitialized) {
-      initializeGoogleAuth();
-    }
-
     setIsLoading(true);
 
     try {
+      // Initialize if not already done
+      if (!isInitialized) {
+        initializeGoogleAuth();
+        // Wait a bit for initialization
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+
       if (!window.google) {
         throw new Error("Google SDK not loaded. Please refresh the page and try again.");
       }
 
-      // Use Google's ID token flow
+      // Use Google's One Tap flow or direct sign-in
       window.google.accounts.id.renderButton(
         document.getElementById("google-signin-button"),
         {
@@ -50,7 +53,7 @@ export function useGoogleAuth() {
         }
       );
 
-      // Trigger the Google sign-in flow
+      // Automatically trigger sign-in
       window.google.accounts.id.prompt();
     } catch (error) {
       console.error("Google sign-in error:", error);
@@ -100,7 +103,7 @@ export function useGoogleAuth() {
   };
 
   const renderGoogleButton = (elementId = "google-signin-button") => {
-    if (!window.google) {
+    if (!window.google || !isInitialized) {
       console.warn("Google SDK not loaded yet");
       return null;
     }
