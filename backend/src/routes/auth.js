@@ -97,6 +97,19 @@ router.post("/google-auth", AuthController.googleAuthCallback);
 router.get("/profile", authMiddleware, AuthController.getUserProfile);
 router.put("/profile", authMiddleware, AuthController.updateUserProfile);
 
+// Provider profile routes (protected)
+router.put(
+  "/provider-profile",
+  authMiddleware,
+  AuthController.updateProviderProfile
+);
+
+// Password management routes (protected)
+router.put("/change-password", authMiddleware, AuthController.changePassword);
+
+// Account management routes (protected)
+router.delete("/delete-account", authMiddleware, AuthController.deleteAccount);
+
 // User type update route (for new Google users)
 router.put("/update-user-type", authMiddleware, AuthController.updateUserType);
 

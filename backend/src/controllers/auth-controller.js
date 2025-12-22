@@ -413,7 +413,7 @@ export async function googleAuthCallback(req, res, next) {
           name,
           email,
           password: null,
-          user_type: "client",
+          user_type: null, // Set to null so user can choose later
           google_id: googleId,
           profile_picture: picture,
           email_verified: email_verified || true
@@ -450,7 +450,7 @@ export async function googleAuthCallback(req, res, next) {
         user_id: user.user_id,
         provider_id: providerId,
         email: user.email,
-        user_type: user.user_type,
+        user_type: user.user_type, // This will be null for new users
         name: user.name,
         profile_picture: user.profile_picture,
         is_new_user: isNewUser
@@ -561,6 +561,222 @@ export async function updateUserProfile(req, res, next) {
     });
   } catch (err) {
     logError("Error updating user profile", err);
+    next(err);
+  }
+}
+
+// Controller function to update provider profile
+export async function updateProviderProfile(req, res, next) {
+  const userId = req.user.sub;
+  const { bio, hourly_rate, service_types } = req.body;
+
+  try {
+    // First, get the provider_id for this user
+    const providerResult = await query(
+      "SELECT provider_id FROM providers WHERE user_id = $1",
+      [userId]
+    );
+
+    if (providerResult.rowCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Provider profile not found."
+      });
+    }
+
+    const providerId = providerResult.rows[0].provider_id;
+
+    // Update provider profile
+    await query(
+      `UPDATE providers SET 
+        bio = COALESCE($1, bio),
+        hourly_rate = COALESCE($2, hourly_rate),
+        service_types = COALESCE($3, service_types),
+        updated_at = CURRENT_TIMESTAMP
+       WHERE provider_id = $4`,
+      [bio, hourly_rate, service_types, providerId]
+    );
+
+    logInfo(`Provider profile updated for user ID: ${userId}`);
+
+    res.status(200).json({
+      success: true,
+      message: "Provider profile updated successfully."
+    });
+  } catch (err) {
+    logError("Error updating provider profile", err);
+    next(err);
+  }
+}
+
+// Controller function to change password
+export async function changePassword(req, res, next) {
+  const userId = req.user.sub;
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({
+      success: false,
+      message: "Current password and new password are required."
+    });
+  }
+
+  if (newPassword.length < 6) {
+    return res.status(400).json({
+      success: false,
+      message: "New password must be at least 6 characters long."
+    });
+  }
+
+  try {
+    // Get current user with password
+    const userResult = await query(
+      "SELECT password FROM users WHERE user_id = $1",
+      [userId]
+    );
+
+    if (userResult.rowCount === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found."
+      });
+    }
+
+    const user = userResult.rows[0];
+
+    // If user has a password (not OAuth-only), verify current password
+    if (user.password) {
+      const isCurrentPasswordValid = await bcrypt.compare(
+        currentPassword,
+        user.password
+      );
+
+      if (!isCurrentPasswordValid) {
+        return res.status(401).json({
+          success: false,
+          message: "Current password is incorrect."
+        });
+      }
+    } else {
+      // User doesn't have a password (OAuth-only), they can set one
+      logInfo(`Setting password for OAuth user: ${userId}`);
+    }
+
+    // Hash new password
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password
+    await query(
+      "UPDATE users SET password = $1, updated_at = CURRENT_TIMESTAMP WHERE user_id = $2",
+      [hashedNewPassword, userId]
+    );
+
+    logInfo(`Password changed successfully for user ID: ${userId}`);
+
+    res.status(200).json({
+      success: true,
+      message: "Password changed successfully."
+    });
+  } catch (err) {
+    logError("Error changing password", err);
+    next(err);
+  }
+}
+
+// Controller function to delete user account
+export async function deleteAccount(req, res, next) {
+  const userId = req.user.sub;
+  const { confirmationText } = req.body;
+
+  // Require confirmation to prevent accidental deletions
+  if (confirmationText !== "DELETE") {
+    return res.status(400).json({
+      success: false,
+      message: "Please type 'DELETE' to confirm account deletion."
+    });
+  }
+
+  const client = await query("BEGIN");
+
+  try {
+    // Get user info before deletion for logging
+    const userResult = await query(
+      "SELECT email, user_type FROM users WHERE user_id = $1",
+      [userId]
+    );
+
+    if (userResult.rowCount === 0) {
+      await query("ROLLBACK");
+      return res.status(404).json({
+        success: false,
+        message: "User not found."
+      });
+    }
+
+    const user = userResult.rows[0];
+
+    // Delete all related data (cascade will handle most, but we ensure cleanup)
+
+    // Cancel any upcoming appointments
+    await query(
+      `UPDATE appointments 
+       SET status = 'canceled', updated_at = CURRENT_TIMESTAMP 
+       WHERE user_id = $1 AND status = 'booked'`,
+      [userId]
+    );
+
+    // If user is a provider, handle their appointments and services
+    if (user.user_type === "provider") {
+      // Get provider_id
+      const providerResult = await query(
+        "SELECT provider_id FROM providers WHERE user_id = $1",
+        [userId]
+      );
+
+      if (providerResult.rowCount > 0) {
+        const providerId = providerResult.rows[0].provider_id;
+
+        // Cancel provider's appointments
+        await query(
+          `UPDATE appointments 
+           SET status = 'canceled', updated_at = CURRENT_TIMESTAMP 
+           WHERE provider_id = $1 AND status = 'booked'`,
+          [providerId]
+        );
+
+        // Delete time slots
+        await query("DELETE FROM time_slots WHERE provider_id = $1", [
+          providerId
+        ]);
+
+        // Delete services
+        await query("DELETE FROM services WHERE provider_id = $1", [
+          providerId
+        ]);
+
+        // Delete provider record
+        await query("DELETE FROM providers WHERE provider_id = $1", [
+          providerId
+        ]);
+      }
+    }
+
+    // Delete user (this will cascade to appointments and other related records)
+    await query("DELETE FROM users WHERE user_id = $1", [userId]);
+
+    await query("COMMIT");
+
+    logInfo(
+      `Account deleted successfully for user: ${user.email} (${user.user_type})`
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Account deleted successfully. You have been logged out."
+    });
+  } catch (err) {
+    await query("ROLLBACK");
+    logError("Error deleting account", err);
     next(err);
   }
 }

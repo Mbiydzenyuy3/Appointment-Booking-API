@@ -25,6 +25,9 @@ export async function createGoogleUser(userData) {
   const client = await query("BEGIN");
 
   try {
+    // For new Google users, set user_type as null so they can choose later
+    const userType = userData.user_type || null;
+
     // Insert user
     const userResult = await query(
       `INSERT INTO users (name, email, password, user_type, google_id, profile_picture, email_verified)
@@ -34,7 +37,7 @@ export async function createGoogleUser(userData) {
         userData.name,
         userData.email,
         userData.password, // null for OAuth users
-        userData.user_type,
+        userType, // null for new users, will be set after user selection
         userData.google_id,
         userData.profile_picture,
         userData.email_verified || true

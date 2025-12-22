@@ -81,7 +81,7 @@ const initializeDbSchema = async () => {
         name VARCHAR(50) NOT NULL,
         email VARCHAR(100) UNIQUE NOT NULL,
         password VARCHAR(255),
-        user_type VARCHAR(50) CHECK(user_type IN ('client', 'provider')) NOT NULL,
+        user_type VARCHAR(50) CHECK(user_type IN ('client', 'provider')),
         google_id VARCHAR(255) UNIQUE,
         profile_picture TEXT,
         email_verified BOOLEAN DEFAULT FALSE,

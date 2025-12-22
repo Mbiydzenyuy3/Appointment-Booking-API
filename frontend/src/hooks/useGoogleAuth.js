@@ -179,11 +179,11 @@ export function useGoogleAuth() {
 
         // Handle routing based on user type and whether they're new
         if (loginResult.success) {
-          if (userData.is_new_user) {
-            // New user needs to select user type
+          if (userData.is_new_user || !userData.user_type) {
+            // New user or user without user_type needs to select user type
             navigate("/select-user-type");
           } else {
-            // Existing user - redirect to appropriate dashboard
+            // Existing user with user_type - redirect to appropriate dashboard
             if (userData.user_type === "provider") {
               navigate("/provider/dashboard");
             } else {

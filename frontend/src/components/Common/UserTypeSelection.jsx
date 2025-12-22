@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
 import api from "../../services/api.js";
@@ -8,6 +8,17 @@ export default function UserTypeSelection() {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    // If user already has a user_type, redirect to appropriate dashboard
+    if (user?.user_type) {
+      if (user.user_type === "provider") {
+        navigate("/provider/dashboard");
+      } else {
+        navigate("/dashboard");
+      }
+    }
+  }, [user, navigate]);
 
   const handleUserTypeSelect = async (selectedUserType) => {
     setIsLoading(true);
@@ -20,12 +31,11 @@ export default function UserTypeSelection() {
       });
 
       if (response.data.success) {
-        // Navigate to appropriate dashboard
-        if (selectedUserType === "provider") {
-          navigate("/provider/dashboard");
-        } else {
-          navigate("/dashboard");
-        }
+        // Update the token in localStorage
+        localStorage.setItem("token", response.data.token);
+
+        // Reload the page to update auth context with new token
+        window.location.reload();
       } else {
         setError(response.data.message || "Failed to update user type");
       }

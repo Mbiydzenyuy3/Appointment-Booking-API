@@ -43,7 +43,7 @@ export const Provider = ({ children }) => {
         const decoded = {
           sub: userData.user_id,
           email: userData.email,
-          user_type: userData.user_type,
+          user_type: userData.user_type, // This can be null for new users
           provider_id: userData.provider_id,
           name: userData.name,
           profile_picture: userData.profile_picture,
@@ -54,7 +54,7 @@ export const Provider = ({ children }) => {
         return {
           success: true,
           user_type: userData.user_type,
-          is_new_user: userData.is_new_user || false
+          is_new_user: userData.is_new_user || !userData.user_type
         };
       } else {
         // Handle regular email/password login

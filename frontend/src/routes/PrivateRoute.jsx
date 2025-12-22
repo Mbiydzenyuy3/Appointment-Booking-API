@@ -21,6 +21,11 @@ const PrivateRoute = ({ children, allowedRoles }) => {
     return <Navigate to='/login' replace />;
   }
 
+  // If user doesn't have a user_type, redirect to user type selection
+  if (!user.user_type) {
+    return <Navigate to='/select-user-type' replace />;
+  }
+
   // If role checking is required but no roles specified, allow all authenticated users
   if (allowedRoles && allowedRoles.length > 0) {
     const userRole = user?.user_type;
