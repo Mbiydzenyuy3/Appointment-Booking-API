@@ -42,3 +42,31 @@ export async function updateUserProfile(req, res, next) {
     });
   }
 }
+
+export async function deleteAccount(req, res, next) {
+  try {
+    const { confirmationText } = req.body;
+
+    // Require confirmation to prevent accidental deletions
+    if (confirmationText !== "DELETE") {
+      return res.status(400).json({
+        success: false,
+        message: "Please type 'DELETE' to confirm account deletion."
+      });
+    }
+
+    // Mock successful deletion
+    console.log("Mock account deletion successful");
+
+    res.status(200).json({
+      success: true,
+      message: "Account deleted successfully (mock). You have been logged out."
+    });
+  } catch (err) {
+    console.error("Mock delete error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Mock server error"
+    });
+  }
+}

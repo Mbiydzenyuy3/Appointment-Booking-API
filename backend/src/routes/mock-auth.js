@@ -13,4 +13,11 @@ router.put(
   MockAuthController.updateUserProfile
 );
 
+// Account management routes (protected)
+router.delete(
+  "/delete-account",
+  mockAuthMiddleware,
+  MockAuthController.deleteAccount
+);
+
 export default router;
