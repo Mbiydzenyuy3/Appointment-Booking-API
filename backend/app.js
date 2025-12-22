@@ -24,6 +24,7 @@ import providerRouter from "./src/routes/provider.js";
 import serviceRoutes from "./src/routes/service.js";
 import aiSchedulerRouter from "./src/routes/ai-scheduler.js";
 import performanceRouter from "./src/routes/performance.js";
+import debugAuthRouter from "./src/routes/debug-auth.js";
 
 const app = express();
 
@@ -48,6 +49,7 @@ app.use(express.static(path.join(__dirname, "public")));
 // API Routes
 app.use("/", indexRouter);
 app.use("/auth", authRouter);
+app.use("/debug-auth", debugAuthRouter);
 app.use("/appointments", appointmentRouter);
 app.use("/slots", slotRouter);
 app.use("/providers", providerRouter);
