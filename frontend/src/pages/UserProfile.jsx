@@ -40,7 +40,15 @@ export default function UserProfile() {
       }
     } catch (error) {
       console.error("Error fetching profile:", error);
-      toast.error("Failed to load profile data");
+      if (error.response?.status === 404) {
+        toast.error(
+          "Profile endpoint not available. Please check backend configuration."
+        );
+      } else if (error.response?.status === 401) {
+        toast.error("Session expired. Please log in again.");
+      } else {
+        toast.error("Failed to load profile data");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -624,7 +632,7 @@ export default function UserProfile() {
                             </p>
                             <p className='mt-2 font-medium'>
                               Type{" "}
-                              <span className='font-mono bg-red-100 px-1 rounded'>
+                              <span className='font-mono bg-red-600 px-1 rounded'>
                                 DELETE
                               </span>{" "}
                               to confirm:

@@ -85,7 +85,7 @@ export const UserModel = async ({
 export const findByEmail = async (email) => {
   try {
     const { rows } = await query(
-      `SELECT id, name, email, password, user_type, age, accessibility_preferences, ai_learning_data, focus_time_preferences, cognitive_load_profile 
+      `SELECT user_id, name, email, password, user_type, age, accessibility_preferences, ai_learning_data, focus_time_preferences, cognitive_load_profile 
        FROM users WHERE email = $1 LIMIT 1`,
       [email]
     );
@@ -103,8 +103,8 @@ export const findByEmail = async (email) => {
 export const findById = async (userId) => {
   try {
     const { rows } = await query(
-      `SELECT id, name, email, user_type, age, accessibility_preferences, ai_learning_data, focus_time_preferences, cognitive_load_profile, accessibility_history, created_at, updated_at
-       FROM users WHERE id = $1 LIMIT 1`,
+      `SELECT user_id, name, email, user_type, age, accessibility_preferences, ai_learning_data, focus_time_preferences, cognitive_load_profile, accessibility_history, created_at, updated_at
+       FROM users WHERE user_id = $1 LIMIT 1`,
       [userId]
     );
     return rows[0] ?? null;
@@ -125,8 +125,8 @@ export const updateAccessibilityPreferences = async (userId, preferences) => {
        SET accessibility_preferences = $1, 
            accessibility_history = COALESCE(accessibility_history, '[]'::jsonb) || $2,
            updated_at = NOW()
-       WHERE id = $3
-       RETURNING id, name, email, accessibility_preferences, accessibility_history`,
+       WHERE user_id = $3
+       RETURNING user_id, name, email, accessibility_preferences, accessibility_history`,
       [
         JSON.stringify(preferences),
         JSON.stringify([
@@ -157,7 +157,7 @@ export const addAILearningData = async (userId, learningData) => {
        SET ai_learning_data = COALESCE(ai_learning_data, '[]'::jsonb) || $1,
            cognitive_load_profile = COALESCE(cognitive_load_profile, '{}'::jsonb) || $2,
            updated_at = NOW()
-       WHERE id = $3
+       WHERE user_id = $3
        RETURNING ai_learning_data, cognitive_load_profile`,
       [
         JSON.stringify([
@@ -188,7 +188,7 @@ export const updateFocusTimePreferences = async (userId, focusPreferences) => {
       `UPDATE users 
        SET focus_time_preferences = $1,
            updated_at = NOW()
-       WHERE id = $2
+       WHERE user_id = $2
        RETURNING focus_time_preferences`,
       [JSON.stringify(focusPreferences), userId]
     );
@@ -209,7 +209,7 @@ export const updateCognitiveLoadProfile = async (userId, profile) => {
       `UPDATE users 
        SET cognitive_load_profile = $1,
            updated_at = NOW()
-       WHERE id = $2
+       WHERE user_id = $2
        RETURNING cognitive_load_profile`,
       [JSON.stringify(profile), userId]
     );
@@ -228,7 +228,7 @@ export const getAccessibilityProfile = async (userId) => {
   try {
     const { rows } = await query(
       `SELECT 
-         id, name, email, user_type, age,
+         user_id, name, email, user_type, age,
          accessibility_preferences,
          ai_learning_data,
          focus_time_preferences,
@@ -236,7 +236,7 @@ export const getAccessibilityProfile = async (userId) => {
          accessibility_history,
          created_at, updated_at
        FROM users 
-       WHERE id = $1`,
+       WHERE user_id = $1`,
       [userId]
     );
 
@@ -317,7 +317,7 @@ export const findUsersByAccessibilityNeeds = async (needs) => {
     }
 
     let queryString = `
-      SELECT id, name, email, user_type, accessibility_preferences, focus_time_preferences, cognitive_load_profile
+      SELECT user_id, name, email, user_type, accessibility_preferences, focus_time_preferences, cognitive_load_profile
       FROM users
     `;
 
@@ -361,7 +361,7 @@ export const getAISchedulingAnalytics = async (userId) => {
          (SELECT COUNT(*) FROM appointments WHERE user_id = $1 AND status = 'completed') as completed_appointments,
          (SELECT COUNT(*) FROM appointments WHERE user_id = $1 AND status = 'cancelled') as cancelled_appointments
        FROM users 
-       WHERE id = $1`,
+       WHERE user_id = $1`,
       [userId]
     );
 

@@ -1,10 +1,11 @@
 import React, { useEffect } from "react";
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import { Formik, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useGoogleAuth } from "../hooks/useGoogleAuth.js";
+import PasswordInput from "../components/Common/PasswordInput.jsx";
 
 const RegisterSchema = Yup.object().shape({
   name: Yup.string().required("name input field is required"),
@@ -169,27 +170,20 @@ export default function Register() {
               </div>
 
               <div>
-                <label
-                  htmlFor='password'
-                  className='block text-sm font-medium text-gray-700 mb-2'
-                >
-                  Password
-                </label>
-                <Field
+                <PasswordInput
                   name='password'
-                  type='password'
+                  label='Password'
                   placeholder='Create a password'
-                  className='input-field w-full touch-target text-gray-700'
                   autoComplete='new-password'
+                  showPasswordRequirements={true}
+                  error={
+                    <ErrorMessage
+                      name='password'
+                      component='p'
+                      className='text-sm text-red-600 mt-1'
+                    />
+                  }
                 />
-                <ErrorMessage
-                  name='password'
-                  component='p'
-                  className='text-sm text-red-600 mt-1'
-                />
-                <p className='text-xs text-gray-500 mt-1'>
-                  Password must be at least 6 characters long
-                </p>
               </div>
 
               <div>

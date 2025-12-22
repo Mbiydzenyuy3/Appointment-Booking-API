@@ -5,6 +5,7 @@ import * as Yup from "yup";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useGoogleAuth } from "../hooks/useGoogleAuth.js";
+import PasswordInput from "../components/Common/PasswordInput.jsx";
 // import GoogleAuthDebugger from "../components/Providers/GoogleAuthDebugger.jsx";
 
 const LoginSchema = Yup.object().shape({
@@ -132,23 +133,18 @@ export default function Login() {
               </div>
 
               <div>
-                <label
-                  htmlFor='password'
-                  className='block text-sm font-medium text-gray-700 mb-2'
-                >
-                  Password
-                </label>
-                <Field
+                <PasswordInput
                   name='password'
-                  type='password'
+                  label='Password'
                   placeholder='Enter your password'
-                  className='input-field w-full touch-target text-gray-800'
                   autoComplete='current-password'
-                />
-                <ErrorMessage
-                  name='password'
-                  component='p'
-                  className='text-sm text-red-600 mt-1'
+                  error={
+                    <ErrorMessage
+                      name='password'
+                      component='p'
+                      className='text-sm text-red-600 mt-1'
+                    />
+                  }
                 />
               </div>
 

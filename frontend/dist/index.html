@@ -51,14 +51,14 @@
   <!-- Security Headers -->
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta http-equiv="Content-Security-Policy"
-    content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https: wss:;" />
-  <script type="module" crossorigin src="/assets/index-CSRoDtcH.js"></script>
+    content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https: wss: https://accounts.google.com; frame-src 'self' https://accounts.google.com;" />
+  <script type="module" crossorigin src="/assets/index-CjJ1mteV.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/vendor-dQk0gtQ5.js">
   <link rel="modulepreload" crossorigin href="/assets/router-DxJn-UIb.js">
   <link rel="modulepreload" crossorigin href="/assets/utils-CqmlIfnS.js">
   <link rel="modulepreload" crossorigin href="/assets/ui-BVUmmWul.js">
-  <link rel="modulepreload" crossorigin href="/assets/forms-CYWCvzRD.js">
-  <link rel="stylesheet" crossorigin href="/assets/index-COPRJQif.css">
+  <link rel="modulepreload" crossorigin href="/assets/forms-jtq3j-se.js">
+  <link rel="stylesheet" crossorigin href="/assets/index-masnlw9Z.css">
 <link rel="manifest" href="/manifest.webmanifest"></head>
 
 <body>
@@ -114,18 +114,7 @@
       }, 10000);
     });
 
-    // Service Worker Registration
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-          .then((registration) => {
-            console.log('SW registered: ', registration);
-          })
-          .catch((registrationError) => {
-            console.log('SW registration failed: ', registrationError);
-          });
-      });
-    }
+    // Service Worker is handled by VitePWA plugin
 
     // Handle app install
     window.addEventListener('appinstalled', () => {
