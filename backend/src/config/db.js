@@ -90,6 +90,12 @@ const initializeDbSchema = async () => {
         bio TEXT,
         reset_token VARCHAR(255),
         reset_token_expiry TIMESTAMP,
+        age INTEGER,
+        accessibility_preferences JSONB DEFAULT '{}',
+        ai_learning_data JSONB DEFAULT '[]',
+        focus_time_preferences JSONB DEFAULT '{}',
+        cognitive_load_profile JSONB DEFAULT '{}',
+        accessibility_history JSONB DEFAULT '[]',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
@@ -105,7 +111,20 @@ const initializeDbSchema = async () => {
       ADD COLUMN IF NOT EXISTS address TEXT,
       ADD COLUMN IF NOT EXISTS bio TEXT,
       ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255),
-      ADD COLUMN IF NOT EXISTS reset_token_expiry TIMESTAMP;
+      ADD COLUMN IF NOT EXISTS reset_token_expiry TIMESTAMP,
+      ADD COLUMN IF NOT EXISTS age INTEGER,
+      ADD COLUMN IF NOT EXISTS accessibility_preferences JSONB DEFAULT '{}',
+      ADD COLUMN IF NOT EXISTS ai_learning_data JSONB DEFAULT '[]',
+      ADD COLUMN IF NOT EXISTS focus_time_preferences JSONB DEFAULT '{}',
+      ADD COLUMN IF NOT EXISTS cognitive_load_profile JSONB DEFAULT '{}',
+      ADD COLUMN IF NOT EXISTS accessibility_history JSONB DEFAULT '[]';
+    `);
+
+    // Add new columns to existing providers table
+    await client.query(`
+      ALTER TABLE providers 
+      ADD COLUMN IF NOT EXISTS hourly_rate DECIMAL(10, 2),
+      ADD COLUMN IF NOT EXISTS service_types TEXT;
     `);
 
     // Make password nullable for OAuth users
@@ -119,6 +138,8 @@ const initializeDbSchema = async () => {
         provider_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         user_id UUID NOT NULL UNIQUE REFERENCES users(user_id) ON DELETE CASCADE,
         bio TEXT,
+        hourly_rate DECIMAL(10, 2),
+        service_types TEXT,
         rating DECIMAL CHECK (rating >= 0 AND rating <= 5),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

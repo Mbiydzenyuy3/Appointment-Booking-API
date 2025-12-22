@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate, Link } from "react-router-dom";
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import { Formik, Form, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import api from "../services/api.js";
+import PasswordInput from "../components/Common/PasswordInput.jsx";
 
 const ResetPasswordSchema = Yup.object().shape({
   password: Yup.string()
@@ -169,44 +170,35 @@ export default function ResetPassword() {
           {({ isSubmitting }) => (
             <Form className='space-y-6'>
               <div>
-                <label
-                  htmlFor='password'
-                  className='block text-sm font-medium text-gray-700 mb-2'
-                >
-                  New Password
-                </label>
-                <Field
+                <PasswordInput
                   name='password'
-                  type='password'
+                  label='New Password'
                   placeholder='Enter new password'
-                  className='input-field w-full touch-target text-gray-700'
                   autoComplete='new-password'
-                />
-                <ErrorMessage
-                  name='password'
-                  component='p'
-                  className='text-sm text-red-600 mt-1'
+                  showPasswordRequirements={true}
+                  error={
+                    <ErrorMessage
+                      name='password'
+                      component='p'
+                      className='text-sm text-red-600 mt-1'
+                    />
+                  }
                 />
               </div>
 
               <div>
-                <label
-                  htmlFor='confirmPassword'
-                  className='block text-sm font-medium text-gray-700 mb-2'
-                >
-                  Confirm New Password
-                </label>
-                <Field
+                <PasswordInput
                   name='confirmPassword'
-                  type='password'
+                  label='Confirm New Password'
                   placeholder='Confirm new password'
-                  className='input-field w-full touch-target text-gray-700'
                   autoComplete='new-password'
-                />
-                <ErrorMessage
-                  name='confirmPassword'
-                  component='p'
-                  className='text-sm text-red-600 mt-1'
+                  error={
+                    <ErrorMessage
+                      name='confirmPassword'
+                      component='p'
+                      className='text-sm text-red-600 mt-1'
+                    />
+                  }
                 />
               </div>
 
