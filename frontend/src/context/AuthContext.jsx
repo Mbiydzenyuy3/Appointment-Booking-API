@@ -46,11 +46,16 @@ export const Provider = ({ children }) => {
           user_type: userData.user_type,
           provider_id: userData.provider_id,
           name: userData.name,
-          profile_picture: userData.profile_picture
+          profile_picture: userData.profile_picture,
+          is_new_user: userData.is_new_user || false
         };
 
         setUser(decoded);
-        return { success: true, user_type: userData.user_type };
+        return {
+          success: true,
+          user_type: userData.user_type,
+          is_new_user: userData.is_new_user || false
+        };
       } else {
         // Handle regular email/password login
         const response = await api.post("/auth/login", { email, password });

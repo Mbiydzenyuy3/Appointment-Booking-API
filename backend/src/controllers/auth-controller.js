@@ -274,6 +274,91 @@ export async function resetPassword(req, res, next) {
   }
 }
 
+// Controller function to update user type (for new Google users)
+export async function updateUserType(req, res, next) {
+  const userId = req.user.sub;
+  const { user_type } = req.body;
+
+  if (!user_type || !["client", "provider"].includes(user_type)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid user type. Must be 'client' or 'provider'."
+    });
+  }
+
+  const client = await query("BEGIN");
+
+  try {
+    // Update user type
+    await query(
+      "UPDATE users SET user_type = $1, updated_at = CURRENT_TIMESTAMP WHERE user_id = $2",
+      [user_type, userId]
+    );
+
+    let providerId = null;
+
+    // Create provider record if user is becoming a provider
+    if (user_type === "provider") {
+      // Check if provider record already exists
+      const existingProvider = await query(
+        "SELECT provider_id FROM providers WHERE user_id = $1",
+        [userId]
+      );
+
+      if (existingProvider.rowCount === 0) {
+        const providerInsertResult = await query(
+          `INSERT INTO providers (user_id, bio)
+           VALUES ($1, $2)
+           RETURNING provider_id`,
+          [userId, ""]
+        );
+        providerId = providerInsertResult.rows[0].provider_id;
+      } else {
+        providerId = existingProvider.rows[0].provider_id;
+      }
+    }
+
+    await query("COMMIT");
+
+    logInfo(`User type updated to ${user_type} for user ID: ${userId}`);
+
+    // Generate new token with updated user type
+    const user = await query(
+      "SELECT email, name FROM users WHERE user_id = $1",
+      [userId]
+    );
+    const userData = user.rows[0];
+
+    const tokenPayload = {
+      sub: userId,
+      email: userData.email,
+      user_type: user_type,
+      provider_id: providerId
+    };
+
+    const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRES_IN
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "User type updated successfully",
+      token,
+      data: {
+        user_id: userId,
+        provider_id: providerId,
+        email: userData.email,
+        user_type: user_type,
+        name: userData.name
+      }
+    });
+  } catch (err) {
+    await query("ROLLBACK");
+    logError("Error updating user type", err);
+    next(err);
+  }
+}
+
 // Controller function for Google OAuth callback
 export async function googleAuthCallback(req, res, next) {
   try {
@@ -308,6 +393,7 @@ export async function googleAuthCallback(req, res, next) {
 
     // Check if user exists by Google ID
     let user = await AuthService.getUserByGoogleId(googleId);
+    let isNewUser = false;
 
     if (!user) {
       // Check if user exists by email (linking Google account to existing user)
@@ -334,6 +420,7 @@ export async function googleAuthCallback(req, res, next) {
         };
 
         user = await AuthService.createGoogleUser(userData);
+        isNewUser = true;
         logInfo(`Created new Google user: ${email}`);
       }
     }
@@ -365,7 +452,8 @@ export async function googleAuthCallback(req, res, next) {
         email: user.email,
         user_type: user.user_type,
         name: user.name,
-        profile_picture: user.profile_picture
+        profile_picture: user.profile_picture,
+        is_new_user: isNewUser
       }
     });
   } catch (err) {
