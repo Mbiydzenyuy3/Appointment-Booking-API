@@ -87,7 +87,6 @@ router.post("/register", validate(registerSchema), AuthController.register);
 
 router.post("/login", validate(loginSchema), AuthController.login);
 
-// Password reset routes
 router.post("/forgot-password", AuthController.forgotPassword);
 router.post("/reset-password", AuthController.resetPassword);
 
