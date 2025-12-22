@@ -1,7 +1,6 @@
-//controller/auth-controller.js
-import bcrypt from "bcryptjs"; // To hash and compare passwords securely
-import jwt from "jsonwebtoken"; // To generate JWT tokens
-import crypto from "crypto"; // For generating secure tokens
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import * as AuthService from "../services/auth-service.js";
 import { logError, logInfo } from "../utils/logger.js";
 import { query } from "../config/db.js";
@@ -204,8 +203,6 @@ export async function forgotPassword(req, res, next) {
       [resetToken, resetTokenExpiry, email]
     );
 
-    // TODO: Send email with reset link
-    // For now, we'll log the reset link
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
     logInfo(`Password reset link for ${email}: ${resetUrl}`);
 
@@ -305,7 +302,7 @@ export async function googleAuthCallback(req, res, next) {
     });
 
     const payload = ticket.getPayload();
-    const { email, name, picture, sub: googleId } = payload;
+    const { email, name, picture, sub: googleId, email_verified } = payload;
 
     logInfo(`Google OAuth callback for email: ${email}`);
 
@@ -321,7 +318,7 @@ export async function googleAuthCallback(req, res, next) {
         user = await AuthService.updateUserWithGoogleId(
           existingUser.user_id,
           googleId,
-          { picture }
+          { picture, email_verified }
         );
         logInfo(`Linked Google account to existing user: ${email}`);
       } else {
@@ -329,11 +326,11 @@ export async function googleAuthCallback(req, res, next) {
         const userData = {
           name,
           email,
-          password: null, // No password for OAuth users
-          user_type: "client", // Default to client, can be changed later
+          password: null,
+          user_type: "client",
           google_id: googleId,
           profile_picture: picture,
-          email_verified: true
+          email_verified: email_verified || true
         };
 
         user = await AuthService.createGoogleUser(userData);
@@ -386,6 +383,13 @@ export async function googleAuthCallback(req, res, next) {
       return res.status(401).json({
         success: false,
         message: "Google token has expired."
+      });
+    }
+
+    if (err.message && err.message.includes("Wrong number of segments")) {
+      return res.status(401).json({
+        success: false,
+        message: "Malformed Google token."
       });
     }
 
