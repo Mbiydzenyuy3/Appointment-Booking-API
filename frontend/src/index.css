@@ -88,6 +88,10 @@ body {
   margin-right: auto;
 }
 
+.save-button {
+  background-color: green;
+}
+
 @media (min-width: 640px) {
   .container-mobile {
     max-width: 640px;

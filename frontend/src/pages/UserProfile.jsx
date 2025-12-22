@@ -270,7 +270,7 @@ export default function UserProfile() {
                   name='name'
                   value={profileData.name}
                   onChange={handleInputChange}
-                  className='mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm'
+                  className='mt-1 block w-full text-gray-600 border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm'
                   placeholder='Enter your full name'
                 />
               </div>
@@ -284,7 +284,7 @@ export default function UserProfile() {
                   name='email'
                   value={profileData.email}
                   disabled
-                  className='mt-1 block w-full border-gray-300 rounded-md shadow-sm bg-gray-50 sm:text-sm'
+                  className='mt-1 block w-full text-gray-600 border-gray-300 rounded-md shadow-sm bg-gray-50 sm:text-sm'
                 />
                 <p className='mt-1 text-xs text-gray-500'>
                   Email cannot be changed. Contact support if needed.
@@ -300,7 +300,7 @@ export default function UserProfile() {
                   name='phone'
                   value={profileData.phone}
                   onChange={handleInputChange}
-                  className='mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm'
+                  className='mt-1 block w-full  text-gray-600 border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm'
                   placeholder='Enter your phone number'
                 />
               </div>
@@ -327,7 +327,7 @@ export default function UserProfile() {
                 rows={3}
                 value={profileData.address}
                 onChange={handleInputChange}
-                className='mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm'
+                className='mt-1 block w-full text-gray-600 border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm'
                 placeholder='Enter your address'
               />
             </div>
@@ -341,7 +341,7 @@ export default function UserProfile() {
                 rows={4}
                 value={profileData.bio}
                 onChange={handleInputChange}
-                className='mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm'
+                className='mt-1 block w-full  text-gray-600 border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm'
                 placeholder='Tell us about yourself...'
               />
             </div>
@@ -355,7 +355,7 @@ export default function UserProfile() {
                 name='profile_picture'
                 value={profileData.profile_picture}
                 onChange={handleInputChange}
-                className='mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm'
+                className='mt-1 block w-full  text-gray-600 border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm'
                 placeholder='https://example.com/profile-picture.jpg'
               />
               {profileData.profile_picture && (
@@ -376,7 +376,7 @@ export default function UserProfile() {
               <button
                 type='submit'
                 disabled={isSaving}
-                className='ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50'
+                className='ml-3 save-button inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50'
               >
                 {isSaving ? (
                   <div className='flex items-center'>
@@ -413,7 +413,7 @@ export default function UserProfile() {
                     rows={4}
                     value={profileData.provider_info.bio || ""}
                     onChange={handleProviderInfoChange}
-                    className='mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm'
+                    className='mt-1 block w-full  border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm text-gray-600'
                     placeholder='Describe your services...'
                   />
                 </div>
