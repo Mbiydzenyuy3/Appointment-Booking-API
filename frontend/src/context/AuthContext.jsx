@@ -80,8 +80,17 @@ export const Provider = ({ children }) => {
 
   const register = async (userData) => {
     try {
-      await api.post("/auth/register", userData);
-      return { success: true };
+      const response = await api.post("/auth/register", userData);
+      const { token } = response.data;
+
+      if (token && token.split(".").length === 3) {
+        localStorage.setItem("token", token);
+        const decoded = jwtDecode(token);
+        setUser(decoded);
+        return { success: true, user_type: decoded.user_type };
+      } else {
+        return { success: false, message: "Invalid token received" };
+      }
     } catch (error) {
       return {
         success: false,

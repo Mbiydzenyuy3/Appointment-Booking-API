@@ -27,6 +27,7 @@ import SlotPage from "./pages/Slots.jsx";
 import Unauthorized from "./pages/Unauthorized.jsx";
 import UserTypeSelection from "./components/Common/UserTypeSelection.jsx";
 import PrivateRoute from "./routes/PrivateRoute.jsx";
+import GoogleAuthDebug from "./components/Providers/GoogleAuthDebug.jsx";
 
 // Layout component for authenticated client pages
 function ClientAuthLayout({ children }) {
@@ -200,6 +201,16 @@ function App() {
                         <UserTypeSelection />
                       </PublicLayout>
                     </PrivateRoute>
+                  }
+                />
+
+                {/* Debug Routes */}
+                <Route
+                  path='/debug-google-auth'
+                  element={
+                    <PublicLayout>
+                      <GoogleAuthDebug />
+                    </PublicLayout>
                   }
                 />
 

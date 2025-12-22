@@ -1,11 +1,7 @@
 import { useState } from "react";
-import { useAuth } from "../context/AuthContext.jsx";
-import { useNavigate } from "react-router-dom";
 import api from "../services/api.js";
 
-export function useGoogleAuth() {
-  const { login } = useAuth();
-  const navigate = useNavigate();
+export function useGoogleAuthDebug() {
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [sdkLoaded, setSdkLoaded] = useState(false);
@@ -28,12 +24,6 @@ export function useGoogleAuth() {
           setSdkLoaded(true);
           resolve();
         } else if (attempts >= maxAttempts) {
-          console.error(
-            "Google SDK failed to load after",
-            maxAttempts,
-            "attempts"
-          );
-
           reject(new Error("Google SDK failed to load"));
         } else {
           setTimeout(checkGoogle, 100);
@@ -70,7 +60,6 @@ export function useGoogleAuth() {
 
       setIsInitialized(true);
     } catch (error) {
-      console.error("Failed to initialize Google OAuth:", error);
       setSdkLoaded(false);
       throw error; // Re-throw to handle in calling function
     }
@@ -111,7 +100,6 @@ export function useGoogleAuth() {
 
       window.google.accounts.id.prompt();
     } catch (error) {
-      console.error("Google sign-in error:", error);
       setIsLoading(false);
 
       // Show user-friendly error message
@@ -138,47 +126,24 @@ export function useGoogleAuth() {
         throw new Error("No credential received from Google");
       }
 
-      // Send token to backend
-      const backendResponse = await api.post("/auth/google-auth", {
+      const backendResponse = await api.post("/debug-auth/google-auth-debug", {
         tokenId: response.credential
       });
 
       if (backendResponse.data.success) {
-        // Store token in localStorage
-        localStorage.setItem("token", backendResponse.data.token);
-
-        // Trigger login in auth context
-        const userData = backendResponse.data.data;
-        const loginResult = await login(userData.email, null, true, userData);
-
-        // Handle routing based on user type and whether they're new
-        if (loginResult.success) {
-          if (userData.is_new_user || !userData.user_type) {
-            // New user or user without user_type needs to select user type
-            navigate("/select-user-type");
-          } else {
-            // Existing user with user_type - redirect to appropriate dashboard
-            if (userData.user_type === "provider") {
-              navigate("/provider/dashboard");
-            } else {
-              navigate("/dashboard");
-            }
-          }
-        }
+        alert(`Debug Success! Check console for details.`);
       } else {
         throw new Error(
-          backendResponse.data.message || "Authentication failed"
+          backendResponse.data.message || "Debug authentication failed"
         );
       }
     } catch (error) {
-      console.error("Google authentication error:", error);
-
-      // Show user-friendly error message
       const errorMessage =
         error.response?.data?.message ||
         error.message ||
-        "Google authentication failed. Please try again.";
-      alert(errorMessage);
+        "Debug Google authentication failed. Please try again.";
+
+      alert(`Debug Error: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }
@@ -186,7 +151,6 @@ export function useGoogleAuth() {
 
   const renderGoogleButton = (elementId = "google-signin-button") => {
     if (!window.google || !isInitialized) {
-      console.warn("Google SDK not loaded yet");
       return null;
     }
 
