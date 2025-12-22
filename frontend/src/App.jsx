@@ -25,6 +25,7 @@ import ProviderDashboardHeader from "./components/Navigation/ProviderDashboardHe
 import AppointmentsPage from "./pages/Appointments.jsx";
 import SlotPage from "./pages/Slots.jsx";
 import Unauthorized from "./pages/Unauthorized.jsx";
+import UserTypeSelection from "./components/Common/UserTypeSelection.jsx";
 import PrivateRoute from "./routes/PrivateRoute.jsx";
 
 // Layout component for authenticated client pages
@@ -189,6 +190,16 @@ function App() {
                     <PublicLayout>
                       <Unauthorized />
                     </PublicLayout>
+                  }
+                />
+                <Route
+                  path='/select-user-type'
+                  element={
+                    <PrivateRoute>
+                      <PublicLayout>
+                        <UserTypeSelection />
+                      </PublicLayout>
+                    </PrivateRoute>
                   }
                 />
 

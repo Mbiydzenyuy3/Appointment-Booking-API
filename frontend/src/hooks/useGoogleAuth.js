@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
+import { useNavigate } from "react-router-dom";
 import api from "../services/api.js";
 
 export function useGoogleAuth() {
   const { login } = useAuth();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [sdkLoaded, setSdkLoaded] = useState(false);
@@ -171,9 +173,24 @@ export function useGoogleAuth() {
 
         // Trigger login in auth context
         const userData = backendResponse.data.data;
-        await login(userData.email, null, true, userData);
+        const loginResult = await login(userData.email, null, true, userData);
 
         console.log("User logged in via Google:", userData);
+
+        // Handle routing based on user type and whether they're new
+        if (loginResult.success) {
+          if (userData.is_new_user) {
+            // New user needs to select user type
+            navigate("/select-user-type");
+          } else {
+            // Existing user - redirect to appropriate dashboard
+            if (userData.user_type === "provider") {
+              navigate("/provider/dashboard");
+            } else {
+              navigate("/dashboard");
+            }
+          }
+        }
       } else {
         throw new Error(
           backendResponse.data.message || "Authentication failed"
