@@ -17,7 +17,7 @@ import { initializeRedis } from "./src/config/redis.js";
 import cacheService from "./src/services/cache-service.js";
 // Route Imports
 import indexRouter from "./src/routes/index.js";
-import authRouter from "./src/routes/auth.js";
+import authRouter from "./src/routes/mock-auth.js"; // Using mock auth for testing
 import appointmentRouter from "./src/routes/appointment.js";
 import slotRouter from "./src/routes/slot.js";
 import providerRouter from "./src/routes/provider.js";

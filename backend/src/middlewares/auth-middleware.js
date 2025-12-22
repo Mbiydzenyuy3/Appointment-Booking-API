@@ -45,15 +45,15 @@ const authMiddleware = async (req, res, next) => {
     }
 
     req.user = {
+      sub: decoded.sub,
       provider_id: result.rows[0].provider_id,
       user_type: result.rows[0].user_type,
-      user_id: decoded.sub,
+      user_id: decoded.sub
     };
 
-   logDebug(
-     `Auth middleware: Token verified for user ID ${req.user.user_id} with role ${req.user.user_type}`
-   );
-
+    logDebug(
+      `Auth middleware: Token verified for user ID ${req.user.user_id} with role ${req.user.user_type}`
+    );
 
     next();
   } catch (error) {
@@ -68,7 +68,7 @@ const authMiddleware = async (req, res, next) => {
     }
 
     return res.status(error.status || 500).json({
-      message: error.message || "Server error during token verification.",
+      message: error.message || "Server error during token verification."
     });
   }
 };
