@@ -40,7 +40,6 @@ export default function ClientDashboardHeader() {
             </Link>
           </nav>
 
-          {/* Right Side - Currency Selector & User Menu */}
           <div className='flex items-center space-x-3'>
             {/* Currency Selector */}
             <CurrencySelector />
