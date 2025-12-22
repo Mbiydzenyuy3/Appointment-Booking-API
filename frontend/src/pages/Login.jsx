@@ -5,6 +5,7 @@ import * as Yup from "yup";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useGoogleAuth } from "../hooks/useGoogleAuth.js";
+// import GoogleAuthDebugger from "../components/Providers/GoogleAuthDebugger.jsx";
 
 const LoginSchema = Yup.object().shape({
   email: Yup.string()
@@ -194,7 +195,6 @@ export default function Login() {
                   )}
                 </button>
 
-                {/* Google button container */}
                 <div id='google-signin-button' className='w-full'></div>
               </div>
 
@@ -253,6 +253,11 @@ export default function Login() {
           </p>
         </div>
       </main>
+
+      {/* Debug Section - Remove in production */}
+      {/* <div className='max-w-md mx-auto mt-6'>
+        <GoogleAuthDebugger />
+      </div> */}
     </div>
   );
 }
