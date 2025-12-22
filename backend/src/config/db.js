@@ -80,11 +80,37 @@ const initializeDbSchema = async () => {
         user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         name VARCHAR(50) NOT NULL,
         email VARCHAR(100) UNIQUE NOT NULL,
-        password VARCHAR(255) NOT NULL,
+        password VARCHAR(255),
         user_type VARCHAR(50) CHECK(user_type IN ('client', 'provider')) NOT NULL,
+        google_id VARCHAR(255) UNIQUE,
+        profile_picture TEXT,
+        email_verified BOOLEAN DEFAULT FALSE,
+        phone VARCHAR(20),
+        address TEXT,
+        bio TEXT,
+        reset_token VARCHAR(255),
+        reset_token_expiry TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+    `);
+
+    // Add new columns to existing users table
+    await client.query(`
+      ALTER TABLE users 
+      ADD COLUMN IF NOT EXISTS google_id VARCHAR(255) UNIQUE,
+      ADD COLUMN IF NOT EXISTS profile_picture TEXT,
+      ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE,
+      ADD COLUMN IF NOT EXISTS phone VARCHAR(20),
+      ADD COLUMN IF NOT EXISTS address TEXT,
+      ADD COLUMN IF NOT EXISTS bio TEXT,
+      ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255),
+      ADD COLUMN IF NOT EXISTS reset_token_expiry TIMESTAMP;
+    `);
+
+    // Make password nullable for OAuth users
+    await client.query(`
+      ALTER TABLE users ALTER COLUMN password DROP NOT NULL;
     `);
 
     // SERVICE PROVIDER TABLE
@@ -146,6 +172,10 @@ const initializeDbSchema = async () => {
     // INDEXES
     await client.query(
       "CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)"
+    );
+
+    await client.query(
+      "CREATE INDEX IF NOT EXISTS idx_users_google_id ON users(google_id)"
     );
 
     await client.query(

@@ -14,7 +14,7 @@ import cacheService from "../src/services/cache-service.js";
  * Get port from environment and store in Express
  */
 
-const PORT = normalizePort(process.env.PORT || "3000");
+const PORT = normalizePort(process.env.PORT || "4000");
 
 /**
  * Create HTTP server
