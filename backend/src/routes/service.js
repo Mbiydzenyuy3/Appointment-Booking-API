@@ -1,10 +1,10 @@
-import express from 'express'
-import * as ServiceController from '../controllers/service-controller.js'
-import { validate } from '../middlewares/validate-middleware.js'
-import authMiddleware from '../middlewares/auth-middleware.js'
-import { serviceSchema } from '../validators/service-validator.js'
+import express from "express";
+import * as ServiceController from "../controllers/service-controller.js";
+import { validate } from "../middlewares/validate-middleware.js";
+import authMiddleware from "../middlewares/auth-middleware.js";
+import { serviceSchema } from "../validators/service-validator.js";
 
-const router = express.Router()
+const router = express.Router();
 
 /**
  * @swagger
@@ -13,11 +13,11 @@ const router = express.Router()
  *     summary: Create a new service
  */
 router.post(
-  '/create',
+  "/create",
   authMiddleware,
   validate(serviceSchema),
   ServiceController.create
-)
+);
 
 /**
  * @swagger
@@ -25,7 +25,15 @@ router.post(
  *   get:
  *     summary: List all services for the authenticated provider
  */
-router.get('/', authMiddleware, ServiceController.list)
+router.get("/", authMiddleware, ServiceController.list);
+
+/**
+ * @swagger
+ * /services/search:
+ *   get:
+ *     summary: Search services by name or provider name
+ */
+router.get("/search", authMiddleware, ServiceController.search);
 
 /**
  * @swagger
@@ -34,10 +42,10 @@ router.get('/', authMiddleware, ServiceController.list)
  *     summary: List services by provider ID
  */
 router.get(
-  '/provider/:providerId',
+  "/provider/:providerId",
   authMiddleware,
   ServiceController.listByProvider
-)
+);
 
 /**
  * @swagger
@@ -46,11 +54,11 @@ router.get(
  *     summary: Update a service by ID
  */
 router.put(
-  '/:serviceId',
+  "/:serviceId",
   authMiddleware,
   validate(serviceSchema),
   ServiceController.update
-)
+);
 
 /**
  * @swagger
@@ -58,6 +66,6 @@ router.put(
  *   delete:
  *     summary: Delete a service by ID
  */
-router.delete('/:serviceId', authMiddleware, ServiceController.remove)
+router.delete("/:serviceId", authMiddleware, ServiceController.remove);
 
-export default router
+export default router;

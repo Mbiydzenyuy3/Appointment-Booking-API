@@ -7,7 +7,7 @@ export async function createService({
   name,
   description,
   price,
-  durationMinutes,
+  durationMinutes
 }) {
   try {
     const { rows } = await query(
@@ -24,11 +24,34 @@ export async function createService({
 
 export async function findAllServices() {
   try {
-    const { rows } = await query(`SELECT * FROM services`);
+    const { rows } = await query(
+      `SELECT s.*, u.name as provider_name
+       FROM services s
+       JOIN providers p ON s.provider_id = p.provider_id
+       JOIN users u ON p.user_id = u.user_id`
+    );
     return rows;
   } catch (err) {
     logError("DB Error (find all services):", err);
     throw new Error("Failed to query all services");
+  }
+}
+
+export async function searchServices(query) {
+  try {
+    const { rows } = await query(
+      `SELECT s.*, u.name as provider_name
+       FROM services s
+       JOIN providers p ON s.provider_id = p.provider_id
+       JOIN users u ON p.user_id = u.user_id
+       WHERE LOWER(s.service_name) LIKE LOWER($1)
+          OR LOWER(u.name) LIKE LOWER($1)`,
+      [`%${query}%`]
+    );
+    return rows;
+  } catch (err) {
+    logError("DB Error (search services):", err);
+    throw new Error("Failed to search services");
   }
 }
 

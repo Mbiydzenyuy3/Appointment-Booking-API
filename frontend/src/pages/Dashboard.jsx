@@ -14,6 +14,7 @@ const UserDashboard = () => {
   const [services, setServices] = useState([]);
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [rescheduleModal, setRescheduleModal] = useState({
     open: false,
@@ -59,6 +60,25 @@ const UserDashboard = () => {
     }
   };
 
+  const fetchServices = async (query = "") => {
+    try {
+      const endpoint = query
+        ? `/services/search?q=${encodeURIComponent(query)}`
+        : "/services";
+      const servicesRes = await api.get(endpoint);
+      const servicesWithProvider = (
+        Array.isArray(servicesRes.data.data) ? servicesRes.data.data : []
+      ).map((s) => ({
+        ...s,
+        providerId: s.provider_id || "default-provider-id"
+      }));
+      setServices(servicesWithProvider);
+    } catch (error) {
+      console.error("Fetch services error:", error);
+      toast.error("Failed to load services");
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       const token = localStorage.getItem("token");
@@ -69,17 +89,8 @@ const UserDashboard = () => {
       }
 
       try {
-        const servicesRes = await api.get("/services");
+        await fetchServices();
         const appointmentsRes = await api.get("/appointments/list");
-
-        const servicesWithProvider = (
-          Array.isArray(servicesRes.data.data) ? servicesRes.data.data : []
-        ).map((s) => ({
-          ...s,
-          providerId: s.providerId || "default-provider-id"
-        }));
-
-        setServices(servicesWithProvider);
         setAppointments(
           Array.isArray(appointmentsRes.data.data)
             ? appointmentsRes.data.data
@@ -95,6 +106,14 @@ const UserDashboard = () => {
 
     fetchData();
   }, []);
+
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      fetchServices(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(debounceTimer);
+  }, [searchQuery]);
 
   if (loading) {
     return (
@@ -130,6 +149,32 @@ const UserDashboard = () => {
           </span>
         </div>
 
+        {/* Search Input */}
+        <div className='mb-4 sm:mb-6'>
+          <div className='relative flex items-center justify-between'>
+            <input
+              type='text'
+              placeholder='Search by service name or provider name...'
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className='w-full px-4 py-2 pl-10 border text-gray-800 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent'
+            />
+            <svg
+              className='absolute right-8 top-4 h-5 w-5 text-gray-400'
+              fill='none'
+              stroke='currentColor'
+              viewBox='0 0 24 24'
+            >
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeWidth={2}
+                d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'
+              />
+            </svg>
+          </div>
+        </div>
+
         {services.length === 0 ? (
           <div className='text-center py-12 bg-white rounded-xl shadow-sm border border-gray-100'>
             <div className='text-4xl mb-4'>🔍</div>
@@ -154,6 +199,10 @@ const UserDashboard = () => {
                       {formatPrice(service.price)}
                     </div>
                   </div>
+
+                  <p className='text-sm text-gray-500 mb-2'>
+                    Provider: {service.provider_name}
+                  </p>
 
                   <p
                     className='text-gray-600 mb-4 overflow-hidden'
@@ -329,7 +378,7 @@ const UserDashboard = () => {
 
             <div className='p-4 sm:p-6'>
               <BookAppointmentForm
-                providerId={bookingModal.service?.provider_id}
+                providerId={bookingModal.service?.providerId}
               />
             </div>
           </div>

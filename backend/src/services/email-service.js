@@ -1,30 +1,21 @@
 // services/email-service.js
-import nodemailer from "nodemailer";
+import sgMail from "@sendgrid/mail";
 import { logError, logInfo } from "../utils/logger.js";
 
-// Create transporter
-const createTransporter = () => {
-  return nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 587,
-    secure: false, // true for 465, false for other ports
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS
-    }
-  });
-};
+// Set SendGrid API key
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 // Send password reset email
 export const sendPasswordResetEmail = async (email, resetToken) => {
   try {
-    const transporter = createTransporter();
-
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
 
-    const mailOptions = {
-      from: `"BOOKEasy Support" <${process.env.EMAIL_USER}>`,
+    const msg = {
       to: email,
+      from: {
+        email: process.env.EMAIL_USER || "support@bookeasy.com",
+        name: "BOOKEasy Support"
+      },
       subject: "Password Reset Request - BOOKEasy",
       html: `
         <!DOCTYPE html>
@@ -96,10 +87,10 @@ export const sendPasswordResetEmail = async (email, resetToken) => {
       `
     };
 
-    const info = await transporter.sendMail(mailOptions);
-    logInfo(`Password reset email sent to ${email}: ${info.messageId}`);
+    const result = await sgMail.send(msg);
+    logInfo(`Password reset email sent to ${email}`);
 
-    return { success: true, messageId: info.messageId };
+    return { success: true, messageId: result[0]?.headers?.["x-message-id"] };
   } catch (error) {
     logError("Error sending password reset email", error);
     throw new Error("Failed to send password reset email");
@@ -109,9 +100,12 @@ export const sendPasswordResetEmail = async (email, resetToken) => {
 // Test email connection
 export const testEmailConnection = async () => {
   try {
-    const transporter = createTransporter();
-    await transporter.verify();
-    logInfo("Email service connection successful");
+    // SendGrid doesn't have a direct verify method, but we can try sending a test email or check API key
+    // For now, just check if API key is set
+    if (!process.env.SENDGRID_API_KEY) {
+      throw new Error("SendGrid API key not configured");
+    }
+    logInfo("SendGrid API key configured");
     return { success: true };
   } catch (error) {
     logError("Email service connection failed", error);
