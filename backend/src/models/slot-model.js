@@ -69,7 +69,7 @@ export async function getSlotsByProviderId(providerId) {
 
   try {
     const result = await client.query(
-      `SELECT ts.*, s.service_name, s.description as service_description, s.price as service_price, s.duration_minutes as service_duration
+      `SELECT ts.*, s.name, s.description as service_description, s.price as service_price, s.duration as service_duration
        FROM time_slots ts
        LEFT JOIN services s ON ts.service_id = s.service_id
        WHERE ts.provider_id = $1
@@ -164,7 +164,7 @@ export async function searchAvailableSlots({
   offset = 0
 }) {
   let query = `
-    SELECT ts.*, s.service_name
+    SELECT ts.*, s.name
     FROM time_slots ts
     JOIN services s ON ts.service_id = s.service_id
     WHERE ts.is_available = true AND ts.is_booked = false

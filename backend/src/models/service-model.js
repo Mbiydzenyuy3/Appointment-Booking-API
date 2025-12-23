@@ -11,7 +11,7 @@ export async function createService({
 }) {
   try {
     const { rows } = await query(
-      `INSERT INTO services (provider_id, service_name, description, price, duration_minutes)
+      `INSERT INTO services (provider_id, name, description, price, duration)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING *`,
       [providerId, name, description, price, durationMinutes]
@@ -44,7 +44,7 @@ export async function searchServices(query) {
        FROM services s
        JOIN providers p ON s.provider_id = p.provider_id
        JOIN users u ON p.user_id = u.user_id
-       WHERE LOWER(s.service_name) LIKE LOWER($1)
+       WHERE LOWER(s.name) LIKE LOWER($1)
           OR LOWER(u.name) LIKE LOWER($1)`,
       [`%${query}%`]
     );
@@ -98,10 +98,10 @@ export async function updateById(
       `
       UPDATE services
       SET provider_id = $1,
-          service_name = $2,
+          name = $2,
           description = $3,
           price = $4,
-          duration_minutes = $5
+          duration = $5
       WHERE service_id = $6
       RETURNING *;
       `,

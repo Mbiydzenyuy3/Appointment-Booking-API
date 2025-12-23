@@ -64,8 +64,8 @@ class DatabaseOptimizer {
         // Services table - for provider lookups
         {
           name: "idx_services_provider_name",
-          sql: `CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_services_provider_name 
-                ON services(provider_id, service_name)`
+          sql: `CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_services_provider_name
+                ON services(provider_id, name)`
         },
 
         // Users table - for authentication and lookups
@@ -149,7 +149,7 @@ class DatabaseOptimizer {
         {
           name: "upcoming_appointments",
           sql: `CREATE OR REPLACE VIEW upcoming_appointments AS
-                SELECT 
+                SELECT
                   a.appointment_id,
                   a.appointment_date,
                   a.appointment_time,
@@ -157,8 +157,8 @@ class DatabaseOptimizer {
                   u.name as client_name,
                   u.email as client_email,
                   p.bio as provider_bio,
-                  s.service_name,
-                  s.duration_minutes,
+                  s.name,
+                  s.duration,
                   s.price
                 FROM appointments a
                 JOIN users u ON a.user_id = u.user_id
@@ -171,20 +171,20 @@ class DatabaseOptimizer {
         {
           name: "available_slots_view",
           sql: `CREATE OR REPLACE VIEW available_slots_view AS
-                SELECT 
+                SELECT
                   ts.timeslot_id,
                   ts.day,
                   ts.start_time,
                   ts.end_time,
                   ts.is_available,
                   p.bio as provider_bio,
-                  s.service_name,
-                  s.duration_minutes,
+                  s.name,
+                  s.duration,
                   s.price
                 FROM time_slots ts
                 JOIN providers p ON ts.provider_id = p.provider_id
                 JOIN services s ON ts.service_id = s.service_id
-                WHERE ts.is_available = true 
+                WHERE ts.is_available = true
                   AND ts.is_booked = false
                   AND ts.day >= CURRENT_DATE
                 ORDER BY ts.day, ts.start_time`

@@ -5,34 +5,34 @@ export default function ServiceList({ services = [], onDelete }) {
   const { selectedCurrency, formatPrice } = useCurrency();
 
   // Get service icon based on service name
-  const getServiceIcon = (serviceName) => {
-    const name = serviceName?.toLowerCase() || "";
-    if (
-      name.includes("hair") ||
-      name.includes("cut") ||
-      name.includes("style")
-    ) {
-      return "✂️";
-    } else if (name.includes("massage") || name.includes("spa")) {
-      return "💆";
-    } else if (name.includes("facial") || name.includes("skin")) {
-      return "✨";
-    } else if (
-      name.includes("manicure") ||
-      name.includes("pedicure") ||
-      name.includes("nail")
-    ) {
-      return "💅";
-    } else if (name.includes("consultation") || name.includes("advice")) {
-      return "💬";
-    } else if (name.includes("training") || name.includes("class")) {
-      return "🎓";
-    } else if (name.includes("therapy") || name.includes("treatment")) {
-      return "🩺";
-    } else {
-      return "⭐";
-    }
-  };
+  // const getServiceIcon = (serviceName) => {
+  //   const name = serviceName?.toLowerCase() || "";
+  //   if (
+  //     name.includes("hair") ||
+  //     name.includes("cut") ||
+  //     name.includes("style")
+  //   ) {
+  //     return "";
+  //   } else if (name.includes("massage") || name.includes("spa")) {
+  //     return "";
+  //   } else if (name.includes("facial") || name.includes("skin")) {
+  //     return "";
+  //   } else if (
+  //     name.includes("manicure") ||
+  //     name.includes("pedicure") ||
+  //     name.includes("nail")
+  //   ) {
+  //     return "";
+  //   } else if (name.includes("consultation") || name.includes("advice")) {
+  //     return "";
+  //   } else if (name.includes("training") || name.includes("class")) {
+  //     return "";
+  //   } else if (name.includes("therapy") || name.includes("treatment")) {
+  //     return "";
+  //   } else {
+  //     return "";
+  //   }
+  // };
 
   if (!services || services.length === 0) {
     return (
@@ -59,13 +59,13 @@ export default function ServiceList({ services = [], onDelete }) {
               <div className='flex items-start justify-between mb-3'>
                 <div className='flex items-start gap-3'>
                   {/* Service Icon */}
-                  <div className='flex-shrink-0 w-12 h-12 bg-green-100 text-green-700 rounded-full flex items-center justify-center text-xl'>
-                    {getServiceIcon(service.service_name)}
-                  </div>
+                  {/* <div className='flex-shrink-0 w-12 h-12 bg-green-100 text-green-700 rounded-full flex items-center justify-center text-xl'>
+                    {getServiceIcon(service.name)}
+                  </div> */}
 
                   <div>
                     <h3 className='text-lg font-semibold text-gray-900'>
-                      {service.service_name}
+                      {service.name}
                     </h3>
                     <p className='text-sm text-gray-500 mt-1'>
                       Service ID: {service.service_id || "N/A"}
@@ -101,7 +101,7 @@ export default function ServiceList({ services = [], onDelete }) {
                     />
                   </svg>
                   <span className='font-medium'>Duration:</span>
-                  <span>{service.duration_minutes || "N/A"} minutes</span>
+                  <span>{service.duration || "N/A"} minutes</span>
                 </div>
 
                 {service.category && (
@@ -179,7 +179,7 @@ export default function ServiceList({ services = [], onDelete }) {
               <button
                 onClick={() => onDelete(service.service_id)}
                 className='flex-1 sm:flex-none btn btn-secondary text-sm px-4 py-2 touch-target hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all duration-200'
-                aria-label={`Delete service ${service.service_name}`}
+                aria-label={`Delete service ${service.name}`}
               >
                 <svg
                   className='w-4 h-4 mr-1'
