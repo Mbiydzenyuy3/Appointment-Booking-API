@@ -12,11 +12,26 @@ const api = axios.create({
 // Added a request interceptor to include the token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    } else {
-      console.warn("No token found in localStorage for request:", config.url);
+    // Skip adding token for public auth endpoints
+    const publicAuthEndpoints = [
+      "/auth/login",
+      "/auth/register",
+      "/auth/forgot-password",
+      "/auth/reset-password",
+      "/auth/google-auth"
+    ];
+
+    const isPublicAuthEndpoint = publicAuthEndpoints.some((endpoint) =>
+      config.url.includes(endpoint)
+    );
+
+    if (!isPublicAuthEndpoint) {
+      const token = localStorage.getItem("token");
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      } else {
+        console.warn("No token found in localStorage for request:", config.url);
+      }
     }
     return config;
   },

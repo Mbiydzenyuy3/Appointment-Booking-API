@@ -205,21 +205,32 @@ export async function forgotPassword(req, res, next) {
     );
 
     // Send password reset email
+    let emailSent = false;
     try {
       await sendPasswordResetEmail(email, resetToken);
       logInfo(`Password reset email sent successfully to ${email}`);
+      emailSent = true;
     } catch (emailError) {
       logError("Failed to send password reset email", emailError);
-      // Don't fail the request, but log the error
-      // In production, you might want to implement a retry mechanism or queue
+      // In development, fail the request so we know email isn't working
+      if (process.env.NODE_ENV === "development") {
+        return res.status(500).json({
+          success: false,
+          message:
+            "Failed to send password reset email. Check email configuration.",
+          error: emailError.message
+        });
+      }
+      // In production, don't fail the request for security
     }
 
     res.status(200).json({
       success: true,
-      message:
-        "If an account with that email exists, we've sent a password reset link.",
+      message: emailSent
+        ? "Password reset email sent successfully."
+        : "If an account with that email exists, we've sent a password reset link.",
       // In development, you might want to include the token for testing
-      ...(process.env.NODE_ENV === "development" && { resetToken })
+      ...(process.env.NODE_ENV === "development" && { resetToken, emailSent })
     });
   } catch (err) {
     logError("Error in forgot password", err);
