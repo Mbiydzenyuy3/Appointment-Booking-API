@@ -70,6 +70,8 @@ const UserDashboard = () => {
         Array.isArray(servicesRes.data.data) ? servicesRes.data.data : []
       ).map((s) => ({
         ...s,
+        service_name: s.name,
+        duration_minutes: s.duration,
         providerId: s.provider_id || "default-provider-id"
       }));
       setServices(servicesWithProvider);

@@ -552,9 +552,7 @@ const PerformanceDashboard = () => {
                       key={index}
                       className='flex items-center justify-between'
                     >
-                      <span className='text-gray-700'>
-                        {service.service_name}
-                      </span>
+                      <span className='text-gray-700'>{service.name}</span>
                       <span className='bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm'>
                         {service.appointment_count} appointments
                       </span>

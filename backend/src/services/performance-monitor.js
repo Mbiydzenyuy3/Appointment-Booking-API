@@ -311,13 +311,13 @@ class PerformanceMonitor {
 
       // Popular services
       const popularServices = await query(`
-        SELECT 
-          s.service_name,
+        SELECT
+          s.name,
           COUNT(a.appointment_id) as appointment_count
         FROM services s
         JOIN appointments a ON s.service_id = a.service_id
         WHERE a.created_at > NOW() - INTERVAL '7 days'
-        GROUP BY s.service_id, s.service_name
+        GROUP BY s.service_id, s.name
         ORDER BY appointment_count DESC
         LIMIT 5
       `);
