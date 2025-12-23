@@ -50,6 +50,16 @@ export async function listAllServices() {
   }
 }
 
+// Search services
+export async function searchServices(query) {
+  try {
+    return await ServiceModel.searchServices(query);
+  } catch (err) {
+    logError("searchServices: failed", err);
+    throw err;
+  }
+}
+
 // Delete a service by ID
 export async function deleteService(serviceId) {
   try {

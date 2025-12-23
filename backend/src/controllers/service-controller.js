@@ -86,6 +86,21 @@ export async function listByProvider(req, res, next) {
   }
 }
 
+// Search services
+export async function search(req, res, next) {
+  try {
+    const { q } = req.query;
+    if (!q || q.trim() === "") {
+      return res.status(400).json({ message: "Search query is required" });
+    }
+    const services = await ServiceService.searchServices(q.trim());
+    return res.status(200).json({ success: true, data: services });
+  } catch (err) {
+    logError("search controller error", err);
+    next(err);
+  }
+}
+
 // Update a service by ID
 export async function update(req, res, next) {
   try {

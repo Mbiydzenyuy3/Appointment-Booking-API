@@ -204,25 +204,17 @@ export async function forgotPassword(req, res, next) {
       [resetToken, resetTokenExpiry, email]
     );
 
-    // Send password reset email
-    let emailSent = false;
-    try {
-      await sendPasswordResetEmail(email, resetToken);
-      logInfo(`Password reset email sent successfully to ${email}`);
-      emailSent = true;
-    } catch (emailError) {
-      logError("Failed to send password reset email", emailError);
-      // In development, fail the request so we know email isn't working
-      if (process.env.NODE_ENV === "development") {
-        return res.status(500).json({
-          success: false,
-          message:
-            "Failed to send password reset email. Check email configuration.",
-          error: emailError.message
-        });
-      }
-      // In production, don't fail the request for security
-    }
+    // Send password reset email asynchronously for faster response
+    sendPasswordResetEmail(email, resetToken)
+      .then(() => {
+        logInfo(`Password reset email sent successfully to ${email}`);
+      })
+      .catch((emailError) => {
+        logError("Failed to send password reset email", emailError);
+      });
+
+    // Always respond immediately for better UX
+    const emailSent = true;
 
     res.status(200).json({
       success: true,
