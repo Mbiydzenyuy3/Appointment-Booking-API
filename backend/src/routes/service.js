@@ -33,7 +33,7 @@ router.get("/", authMiddleware, ServiceController.list);
  *   get:
  *     summary: Search services by name or provider name
  */
-router.get("/search", authMiddleware, ServiceController.search);
+router.get("/search", ServiceController.search);
 
 /**
  * @swagger
