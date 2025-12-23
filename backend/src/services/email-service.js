@@ -13,7 +13,7 @@ export const sendPasswordResetEmail = async (email, resetToken) => {
     const msg = {
       to: email,
       from: {
-        email: process.env.EMAIL_USER || "support@bookeasy.com",
+        email: process.env.SENDGRID_FROM_EMAIL || "support@bookeasy.com",
         name: "BOOKEasy Support"
       },
       subject: "Password Reset Request - BOOKEasy",
