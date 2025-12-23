@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import * as AuthService from "../services/auth-service.js";
+import { sendPasswordResetEmail } from "../services/email-service.js";
 import { logError, logInfo } from "../utils/logger.js";
 import { query } from "../config/db.js";
 
@@ -203,8 +204,15 @@ export async function forgotPassword(req, res, next) {
       [resetToken, resetTokenExpiry, email]
     );
 
-    const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
-    logInfo(`Password reset link for ${email}: ${resetUrl}`);
+    // Send password reset email
+    try {
+      await sendPasswordResetEmail(email, resetToken);
+      logInfo(`Password reset email sent successfully to ${email}`);
+    } catch (emailError) {
+      logError("Failed to send password reset email", emailError);
+      // Don't fail the request, but log the error
+      // In production, you might want to implement a retry mechanism or queue
+    }
 
     res.status(200).json({
       success: true,
