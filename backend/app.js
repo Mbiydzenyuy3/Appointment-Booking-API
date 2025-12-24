@@ -15,6 +15,8 @@ import swaggerSpec from "./swaggerConfig.js";
 
 import { initializeRedis } from "./src/config/redis.js";
 import cacheService from "./src/services/cache-service.js";
+import cron from "node-cron";
+import * as SlotService from "./src/services/slot-service.js";
 // Route Imports
 import indexRouter from "./src/routes/index.js";
 import authRouter from "./src/routes/auth.js"; // Using real auth for production
@@ -56,6 +58,16 @@ app.use("/providers", providerRouter);
 app.use("/services", serviceRoutes);
 app.use("/api/ai-scheduler", aiSchedulerRouter);
 app.use("/api/performance", performanceRouter);
+
+// Schedule daily slot advancement at 00:01 UTC
+cron.schedule("1 0 * * *", async () => {
+  try {
+    await SlotService.advanceSlotsService();
+    console.log("Slots advanced successfully");
+  } catch (err) {
+    console.error("Error advancing slots:", err);
+  }
+});
 
 // Swagger Documentation
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));

@@ -195,3 +195,45 @@ export async function searchAvailableSlots({
   const result = await pool.query(query, params);
   return result.rows;
 }
+
+export const advanceSlots = async () => {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    // Get current date in YYYY-MM-DD
+    const today = new Date().toISOString().split("T")[0];
+
+    // Get all available slots where day < today
+    const { rows: slots } = await client.query(
+      `SELECT timeslot_id, day FROM time_slots WHERE day < $1 AND is_available = true AND is_booked = false`,
+      [today]
+    );
+
+    for (const slot of slots) {
+      let currentDay = slot.day;
+      while (currentDay < today) {
+        let d = new Date(currentDay);
+        d.setDate(d.getDate() + 1);
+        if (d.getDay() === 0) {
+          // Sunday
+          d.setDate(d.getDate() + 1);
+        }
+        currentDay = d.toISOString().split("T")[0];
+      }
+      // Update the slot
+      await client.query(
+        `UPDATE time_slots SET day = $1 WHERE timeslot_id = $2`,
+        [currentDay, slot.timeslot_id]
+      );
+    }
+
+    await client.query("COMMIT");
+    return { updated: slots.length };
+  } catch (err) {
+    await client.query("ROLLBACK");
+    throw err;
+  } finally {
+    client.release();
+  }
+};
