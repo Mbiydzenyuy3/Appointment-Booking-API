@@ -51,27 +51,32 @@ CREATE TABLE services (
 
 -- Time slots table
 CREATE TABLE time_slots (
-    slot_id SERIAL PRIMARY KEY,
-    provider_id INTEGER REFERENCES providers(provider_id) ON DELETE CASCADE,
-    start_time TIMESTAMP NOT NULL,
-    end_time TIMESTAMP NOT NULL,
-    is_available BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+     timeslot_id SERIAL PRIMARY KEY,
+     provider_id INTEGER REFERENCES providers(provider_id) ON DELETE CASCADE,
+     service_id INTEGER REFERENCES services(service_id) ON DELETE CASCADE,
+     day DATE,
+     start_time TIME NOT NULL,
+     end_time TIME NOT NULL,
+     is_booked BOOLEAN DEFAULT FALSE,
+     is_available BOOLEAN DEFAULT TRUE,
+     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+ );
 
 -- Appointments table
 CREATE TABLE appointments (
-    appointment_id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
-    provider_id INTEGER REFERENCES providers(provider_id) ON DELETE CASCADE,
-    service_id INTEGER REFERENCES services(service_id) ON DELETE SET NULL,
-    slot_id INTEGER REFERENCES time_slots(slot_id) ON DELETE SET NULL,
-    status VARCHAR(50) DEFAULT 'booked' CHECK (status IN ('booked', 'confirmed', 'completed', 'cancelled', 'rescheduled')),
-    notes TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+     appointment_id SERIAL PRIMARY KEY,
+     user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
+     provider_id INTEGER REFERENCES providers(provider_id) ON DELETE CASCADE,
+     service_id INTEGER REFERENCES services(service_id) ON DELETE SET NULL,
+     timeslot_id INTEGER REFERENCES time_slots(timeslot_id) ON DELETE SET NULL,
+     appointment_date DATE,
+     appointment_time TIME,
+     status VARCHAR(50) DEFAULT 'booked' CHECK (status IN ('booked', 'confirmed', 'completed', 'cancelled', 'rescheduled')),
+     notes TEXT,
+     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+ );
 
 -- Create indexes for better performance
 CREATE INDEX idx_users_email ON users(email);
@@ -79,7 +84,9 @@ CREATE INDEX idx_users_google_id ON users(google_id);
 CREATE INDEX idx_providers_user_id ON providers(user_id);
 CREATE INDEX idx_services_provider_id ON services(provider_id);
 CREATE INDEX idx_time_slots_provider_id ON time_slots(provider_id);
+CREATE INDEX idx_time_slots_timeslot_id ON time_slots(timeslot_id);
 CREATE INDEX idx_time_slots_start_time ON time_slots(start_time);
 CREATE INDEX idx_appointments_user_id ON appointments(user_id);
 CREATE INDEX idx_appointments_provider_id ON appointments(provider_id);
+CREATE INDEX idx_appointments_timeslot_id ON appointments(timeslot_id);
 CREATE INDEX idx_appointments_status ON appointments(status);
