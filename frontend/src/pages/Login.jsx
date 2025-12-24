@@ -42,6 +42,17 @@ export default function Login() {
           });
           setGoogleButtonRendered(true);
           console.log("Google button rendered successfully");
+          setTimeout(() => {
+            const button =
+              buttonContainer.querySelector('div[role="button"]') ||
+              buttonContainer.querySelector("button");
+            if (button) {
+              button.style.backgroundColor = "#1d4ed8";
+              button.style.color = "white";
+              button.style.border = "none";
+              button.style.borderRadius = "0.5rem";
+            }
+          }, 100);
         } catch (error) {
           console.error("Error rendering Google button:", error);
         }
@@ -122,7 +133,7 @@ export default function Login() {
                   name='email'
                   type='email'
                   placeholder='Enter your email'
-                  className='input-field w-full touch-target text-gray-700'
+                  className='input-field field w-full touch-target text-gray-700'
                   autoComplete='email'
                 />
                 <ErrorMessage
@@ -148,21 +159,6 @@ export default function Login() {
                 />
               </div>
 
-              {/* Google OAuth Button */}
-              <div className='w-full'>
-                <div id='google-signin-button' className='w-full'></div>
-              </div>
-
-              {/* Divider */}
-              <div className='relative'>
-                <div className='absolute inset-0 flex items-center'>
-                  <div className='w-full border-t border-gray-300' />
-                </div>
-                <div className='relative flex justify-center text-sm'>
-                  <span className='px-2 bg-white text-gray-500'>Or</span>
-                </div>
-              </div>
-
               {/* Email/Password Login Button */}
               <button
                 type='submit'
@@ -178,6 +174,24 @@ export default function Login() {
                   "Sign In with Email"
                 )}
               </button>
+
+              {/* Divider */}
+              <div className='relative'>
+                <div className='absolute inset-0 flex items-center'>
+                  <div className='w-full border-t border-gray-300' />
+                </div>
+                <div className='relative flex justify-center text-sm'>
+                  <span className='px-2 bg-white text-gray-500'>Or</span>
+                </div>
+              </div>
+
+              {/* Google OAuth Button */}
+              <div className='w-full'>
+                <div
+                  id='google-signin-button'
+                  className='w-full bg-blue-700 text-white rounded-lg'
+                ></div>
+              </div>
 
               <div className='text-center space-y-3'>
                 <p className='text-sm text-gray-600'>

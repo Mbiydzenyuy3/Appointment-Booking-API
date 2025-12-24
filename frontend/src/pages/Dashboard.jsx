@@ -14,7 +14,7 @@ const UserDashboard = () => {
   const [services, setServices] = useState([]);
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
+  // const [searchQuery, setSearchQuery] = useState("");
 
   const [rescheduleModal, setRescheduleModal] = useState({
     open: false,
@@ -109,13 +109,13 @@ const UserDashboard = () => {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    const debounceTimer = setTimeout(() => {
-      fetchServices(searchQuery);
-    }, 300);
+  // useEffect(() => {
+  //   const debounceTimer = setTimeout(() => {
+  //     fetchServices(searchQuery);
+  //   }, 300);
 
-    return () => clearTimeout(debounceTimer);
-  }, [searchQuery]);
+  //   return () => clearTimeout(debounceTimer);
+  // }, [searchQuery]);
 
   if (loading) {
     return (
@@ -152,7 +152,7 @@ const UserDashboard = () => {
         </div>
 
         {/* Search Input */}
-        <div className='mb-4 sm:mb-6'>
+        {/* <div className='mb-4 sm:mb-6'>
           <div className='relative flex items-center justify-between'>
             <input
               type='text'
@@ -175,7 +175,7 @@ const UserDashboard = () => {
               />
             </svg>
           </div>
-        </div>
+        </div> */}
 
         {services.length === 0 ? (
           <div className='text-center py-12 bg-white rounded-xl shadow-sm border border-gray-100'>

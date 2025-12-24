@@ -1,10 +1,6 @@
 import React, { useState } from "react";
 import { Field } from "formik";
 
-/**
- * PasswordInput component with visibility toggle functionality
- * Integrates with Formik's Field component for form handling
- */
 export default function PasswordInput({
   name,
   label,
@@ -32,7 +28,7 @@ export default function PasswordInput({
         {required && <span className='text-red-500 ml-1'>*</span>}
       </label>
 
-      <div className='relative'>
+      <div className='relative flex items-center justify-between border border-gray-300 rounded-lg'>
         <Field
           name={name}
           type={showPassword ? "text" : "password"}
@@ -46,7 +42,7 @@ export default function PasswordInput({
         <button
           type='button'
           onClick={togglePasswordVisibility}
-          className='absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none focus:text-gray-600 transition-colors'
+          className='absolute inset-y-0 right-1 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none focus:text-gray-600 transition-colors'
           aria-label={showPassword ? "Hide password" : "Show password"}
           aria-pressed={showPassword}
           tabIndex={0}

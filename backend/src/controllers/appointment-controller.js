@@ -62,16 +62,16 @@ export async function cancelAppointment(req, res, next) {
   try {
     const { appointmentId } = req.params;
     const userId = req.user?.user_id;
-    const result = await appointmentService.cancel(appointmentId, userId);
+    const userType = req.user?.user_type;
+    const result = await appointmentService.cancel(
+      appointmentId,
+      userId,
+      userType
+    );
     if (!result) {
       return res.status(404).json({ message: "Appointment not found" });
     }
 
-    if (result.user_id !== userId) {
-      return res
-        .status(403)
-        .json({ message: "Not authorized to cancel this appointment" });
-    }
     return res.json({ message: "Appointment cancelled", data: result });
   } catch (err) {
     if (err.message === "Not authorized") {
@@ -79,12 +79,14 @@ export async function cancelAppointment(req, res, next) {
         .status(403)
         .json({ message: "Not authorized to cancel this appointment" });
     }
+    next(err);
   }
 }
 
 export async function listAppointments(req, res, next) {
   try {
     const userId = req.user?.user_id;
+    const userType = req.user?.user_type;
     const { status, startDate, endDate, page = 1, limit = 10 } = req.query;
     const offset = (page - 1) * limit;
 
@@ -96,7 +98,11 @@ export async function listAppointments(req, res, next) {
       offset
     };
 
-    const appointments = await appointmentService.list(userId, filters);
+    const appointments = await appointmentService.list(
+      userId,
+      userType,
+      filters
+    );
 
     return res.json({
       success: true,
