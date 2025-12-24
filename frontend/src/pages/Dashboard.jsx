@@ -31,15 +31,17 @@ const UserDashboard = () => {
     if (!appt) return;
 
     try {
-      await api.delete(`/appointments/${appt._id}`);
+      await api.delete(`/appointments/${appt.appointment_id}`);
       const res = await api.post("/appointments/book", {
-        serviceId: appt.serviceId,
-        providerId: appt.providerId,
+        serviceId: appt.service_id,
+        providerId: appt.provider_id,
         date: newDate
       });
       toast.success("Appointment rescheduled");
       setAppointments((prev) =>
-        prev.map((a) => (a._id === appt._id ? res.data : a))
+        prev.map((a) =>
+          a.appointment_id === appt.appointment_id ? res.data : a
+        )
       );
     } catch (error) {
       console.error("Reschedule error:", error);
@@ -51,7 +53,7 @@ const UserDashboard = () => {
     try {
       await api.delete(`/appointments/${appointmentId}`);
       setAppointments((prev) =>
-        prev.filter((appt) => appt._id !== appointmentId)
+        prev.filter((appt) => appt.appointment_id !== appointmentId)
       );
       toast.success("Appointment cancelled");
     } catch (error) {
@@ -278,7 +280,7 @@ const UserDashboard = () => {
                 <div className='flex flex-col sm:flex-row sm:items-center gap-4'>
                   <div className='flex-1 min-w-0'>
                     <h3 className='text-lg font-semibold text-gray-900 truncate'>
-                      {appt.serviceName}
+                      {appt.service_name}
                     </h3>
                     <div className='mt-2 space-y-1 text-sm text-gray-600'>
                       <p className='flex items-center'>
@@ -293,7 +295,7 @@ const UserDashboard = () => {
                             clipRule='evenodd'
                           />
                         </svg>
-                        {new Date(appt.date).toLocaleString("en-US", {
+                        {new Date(appt.created_at).toLocaleString("en-US", {
                           weekday: "short",
                           month: "short",
                           day: "numeric",
@@ -392,7 +394,7 @@ const UserDashboard = () => {
         isOpen={rescheduleModal.open}
         onClose={() => setRescheduleModal({ open: false, appointment: null })}
         onSubmit={handleReschedule}
-        initialDate={rescheduleModal.appointment?.date}
+        initialDate={rescheduleModal.appointment?.created_at}
       />
     </div>
   );

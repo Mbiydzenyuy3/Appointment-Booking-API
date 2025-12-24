@@ -44,12 +44,11 @@ export async function cancel(appointmentId, userId, userType) {
     // Get appointment with service and provider info
     const apptRes = await client.query(
       `
-      SELECT a.*, s.provider_id, u.name as client_name, u.email as client_email, p.name as provider_name, p.email as provider_email
+      SELECT a.*, s.name as service_name, u.name as client_name, u.email as client_email, p.name as provider_name, p.email as provider_email
       FROM appointments a
-      JOIN time_slots ts ON a.timeslot_id = ts.timeslot_id
-      JOIN services s ON ts.service_id = s.service_id
+      JOIN services s ON a.service_id = s.service_id
       JOIN users u ON a.user_id = u.user_id
-      JOIN users p ON s.provider_id = p.user_id
+      JOIN users p ON a.provider_id = p.user_id
       WHERE a.appointment_id = $1 FOR UPDATE
     `,
       [appointmentId]
@@ -72,8 +71,8 @@ export async function cancel(appointmentId, userId, userType) {
       appointmentId
     ]);
     await client.query(
-      "UPDATE time_slots SET is_booked = false, is_available = true WHERE timeslot_id = $1",
-      [appointment.timeslot_id]
+      "UPDATE time_slots SET is_booked = false, is_available = true WHERE slot_id = $1",
+      [appointment.slot_id]
     );
 
     await client.query("COMMIT");
@@ -124,36 +123,34 @@ export async function list(
   if (userType === "provider") {
     // For providers, list appointments for their services
     query = `
-      SELECT
-        a.*,
-        s.service_name,
-        s.price,
-        s.duration_minutes,
-        u.name as client_name,
-        u.email as client_email
-      FROM appointments a
-      JOIN time_slots ts ON a.timeslot_id = ts.timeslot_id
-      JOIN services s ON ts.service_id = s.service_id
-      JOIN users u ON a.user_id = u.user_id
-      WHERE s.provider_id = $1
-    `;
+       SELECT
+         a.*,
+         s.name as service_name,
+         s.price,
+         s.duration as duration_minutes,
+         u.name as client_name,
+         u.email as client_email
+       FROM appointments a
+       JOIN services s ON a.service_id = s.service_id
+       JOIN users u ON a.user_id = u.user_id
+       WHERE a.provider_id = $1
+     `;
     params.push(userId);
   } else {
     // For clients, list their booked appointments
     query = `
-      SELECT
-        a.*,
-        s.service_name,
-        s.price,
-        s.duration_minutes,
-        u.name as provider_name,
-        u.email as provider_email
-      FROM appointments a
-      JOIN time_slots ts ON a.timeslot_id = ts.timeslot_id
-      JOIN services s ON ts.service_id = s.service_id
-      JOIN users u ON s.provider_id = u.user_id
-      WHERE a.user_id = $1
-    `;
+       SELECT
+         a.*,
+         s.name as service_name,
+         s.price,
+         s.duration as duration_minutes,
+         u.name as provider_name,
+         u.email as provider_email
+       FROM appointments a
+       JOIN services s ON a.service_id = s.service_id
+       JOIN users u ON a.provider_id = u.user_id
+       WHERE a.user_id = $1
+     `;
     params.push(userId);
   }
 
@@ -162,17 +159,18 @@ export async function list(
     params.push(status);
   }
 
-  if (startDate) {
-    query += ` AND a.appointment_date >= $${paramIndex++}`;
-    params.push(startDate);
-  }
+  // Note: Date filters commented out as appointment_date may not exist in deployed DB
+  // if (startDate) {
+  //   query += ` AND a.appointment_date >= $${paramIndex++}`;
+  //   params.push(startDate);
+  // }
 
-  if (endDate) {
-    query += ` AND a.appointment_date <= $${paramIndex++}`;
-    params.push(endDate);
-  }
+  // if (endDate) {
+  //   query += ` AND a.appointment_date <= $${paramIndex++}`;
+  //   params.push(endDate);
+  // }
 
-  query += ` ORDER BY a.appointment_date DESC, a.appointment_time DESC LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
+  query += ` ORDER BY a.created_at DESC LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
   params.push(limit, offset);
 
   const result = await pool.query(query, params);
