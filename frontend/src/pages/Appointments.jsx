@@ -15,11 +15,9 @@ export default function AppointmentPage() {
   const [isClientView, setIsClientView] = useState(false);
 
   useEffect(() => {
-    // Determine if this is a client view based on the path
     setIsClientView(location.pathname === "/my-appointments");
   }, [location.pathname]);
 
-  // Authorization check - ensure user has access
   useEffect(() => {
     if (!user) {
       toast.error("Please log in to view appointments");
@@ -30,10 +28,9 @@ export default function AppointmentPage() {
 
   useEffect(() => {
     async function fetchAppointments() {
-      if (!user) return; // Don't fetch if no user
+      if (!user) return;
 
       try {
-        // Fetch appointments - backend now handles differentiation based on user type
         const response = await api.get("/appointments/list");
         setAppointments(response.data.data || []);
       } catch (error) {
@@ -68,7 +65,6 @@ export default function AppointmentPage() {
     try {
       await api.delete(`/appointments/${appointmentId}`);
       toast.success("Appointment cancelled successfully");
-      // Refresh appointments
       const response = await api.get("/appointments/list");
       setAppointments(response.data.data || []);
     } catch (error) {
@@ -92,7 +88,6 @@ export default function AppointmentPage() {
 
   return (
     <div className='max-w-7xl mx-auto'>
-      {/* Page title section */}
       <div className='mb-6 sm:mb-8'>
         <h1 className='text-2xl sm:text-3xl font-bold text-gray-900'>
           {isClientView ? "My Appointments" : "Appointment Requests"}

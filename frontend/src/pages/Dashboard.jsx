@@ -342,54 +342,13 @@ const UserDashboard = () => {
         )}
       </section>
 
-      {/* Booking Modal - Mobile Optimized */}
-      {bookingModal.open && (
-        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 safe-area-bottom'>
-          <div className='bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto'>
-            <div className='p-4 sm:p-6 border-b border-gray-100'>
-              <div className='flex items-center justify-between'>
-                <h3 className='text-xl font-bold text-gray-900'>
-                  Book Appointment
-                </h3>
-                <button
-                  onClick={() =>
-                    setBookingModal({ open: false, service: null })
-                  }
-                  className='p-2 hover:bg-gray-100 rounded-lg touch-target'
-                  aria-label='Close modal'
-                >
-                  <svg
-                    className='w-5 h-5'
-                    fill='none'
-                    stroke='currentColor'
-                    viewBox='0 0 24 24'
-                  >
-                    <path
-                      strokeLinecap='round'
-                      strokeLinejoin='round'
-                      strokeWidth={2}
-                      d='M6 18L18 6M6 6l12 12'
-                    />
-                  </svg>
-                </button>
-              </div>
-              {bookingModal.service && (
-                <p className='text-gray-600 mt-1'>
-                  {bookingModal.service.service_name}
-                </p>
-              )}
-            </div>
+      <BookAppointmentForm
+        providerId={bookingModal.service?.providerId}
+        isOpen={bookingModal.open}
+        onClose={() => setBookingModal({ open: false, service: null })}
+        service={bookingModal.service}
+      />
 
-            <div className='p-4 sm:p-6'>
-              <BookAppointmentForm
-                providerId={bookingModal.service?.providerId}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Reschedule Modal */}
       <RescheduleModal
         isOpen={rescheduleModal.open}
         onClose={() => setRescheduleModal({ open: false, appointment: null })}

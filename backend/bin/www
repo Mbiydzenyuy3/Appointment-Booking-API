@@ -86,8 +86,7 @@ async function startServer() {
   try {
     logInfo(`Attempting to start server on port ${PORT}`);
     await connectToDb();
-    // Skip schema initialization for mock testing
-    // await initializeDbSchema(); // optional, depending on your use case
+    await initializeDbSchema(); // Ensure schema is initialized
     await initializeRedis(); // Initialize Redis cache
     server.listen(PORT);
     server.on("error", onError);

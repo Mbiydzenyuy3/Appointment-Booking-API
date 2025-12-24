@@ -71,8 +71,8 @@ export async function cancel(appointmentId, userId, userType) {
       appointmentId
     ]);
     await client.query(
-      "UPDATE time_slots SET is_booked = false, is_available = true WHERE slot_id = $1",
-      [appointment.slot_id]
+      "UPDATE time_slots SET is_booked = false, is_available = true WHERE timeslot_id = $1",
+      [appointment.timeslot_id]
     );
 
     await client.query("COMMIT");
@@ -173,7 +173,12 @@ export async function list(
   query += ` ORDER BY a.created_at DESC LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
   params.push(limit, offset);
 
+  logInfo(`Executing query for ${userType} ${userId}:`, query, params);
   const result = await pool.query(query, params);
-  logInfo(`Appointments fetched for ${userType}:`, userId);
+  logInfo(
+    `Appointments fetched for ${userType}:`,
+    userId,
+    `Count: ${result.rows.length}`
+  );
   return result.rows;
 }
