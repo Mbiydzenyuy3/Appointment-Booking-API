@@ -5,6 +5,7 @@ import {
   searchAvailableSlots,
   updateSlot,
   deleteSlot,
+  advanceSlots
 } from "../models/slot-model.js";
 
 import { logError, logInfo } from "../utils/logger.js";
@@ -14,7 +15,7 @@ export async function create({
   startTime,
   endTime,
   serviceId,
-  providerId,
+  providerId
 }) {
   try {
     const slot = await createSlot({
@@ -22,7 +23,7 @@ export async function create({
       startTime,
       endTime,
       serviceId,
-      providerId,
+      providerId
     });
 
     logInfo("Slot created", slot.timeslot_id);
@@ -71,5 +72,16 @@ export async function search(filters) {
   } catch (err) {
     logError("Failed to search available slots", err);
     throw new Error("Unable to fetch available slots");
+  }
+}
+
+export async function advanceSlotsService() {
+  try {
+    const result = await advanceSlots();
+    logInfo(`Advanced ${result.updated} slots`);
+    return result;
+  } catch (err) {
+    logError("Failed to advance slots", err);
+    throw new Error("Unable to advance slots");
   }
 }

@@ -9,7 +9,6 @@ import {
 import { sendAppointmentCancellationEmail } from "./email-service.js";
 import { logError, logInfo } from "../utils/logger.js";
 
-// Book a new appointment
 export async function book({
   userId,
   timeslotId,
