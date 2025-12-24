@@ -27,6 +27,8 @@ import SlotPage from "./pages/Slots.jsx";
 import Unauthorized from "./pages/Unauthorized.jsx";
 import UserTypeSelection from "./components/Common/UserTypeSelection.jsx";
 import PrivateRoute from "./routes/PrivateRoute.jsx";
+import LandingRoute from "./routes/LandingRoute.jsx";
+import AuthRoute from "./routes/AuthRoute.jsx";
 import GoogleAuthDebug from "./components/Providers/GoogleAuthDebug.jsx";
 
 // Layout component for authenticated client pages
@@ -66,25 +68,31 @@ function App() {
                 <Route
                   path='/'
                   element={
-                    <PublicLayout>
-                      <HomePage />
-                    </PublicLayout>
+                    <LandingRoute>
+                      <PublicLayout>
+                        <HomePage />
+                      </PublicLayout>
+                    </LandingRoute>
                   }
                 />
                 <Route
                   path='/login'
                   element={
-                    <PublicLayout>
-                      <LoginPage />
-                    </PublicLayout>
+                    <AuthRoute>
+                      <PublicLayout>
+                        <LoginPage />
+                      </PublicLayout>
+                    </AuthRoute>
                   }
                 />
                 <Route
                   path='/register'
                   element={
-                    <PublicLayout>
-                      <RegisterPage />
-                    </PublicLayout>
+                    <AuthRoute>
+                      <PublicLayout>
+                        <RegisterPage />
+                      </PublicLayout>
+                    </AuthRoute>
                   }
                 />
                 <Route

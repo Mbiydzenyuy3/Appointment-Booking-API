@@ -97,6 +97,112 @@ export const sendPasswordResetEmail = async (email, resetToken) => {
   }
 };
 
+// Send appointment cancellation notification
+export const sendAppointmentCancellationEmail = async (
+  clientEmail,
+  clientName,
+  providerName,
+  serviceName,
+  appointmentDate,
+  appointmentTime
+) => {
+  try {
+    const msg = {
+      to: clientEmail,
+      from: {
+        email: process.env.SENDGRID_FROM_EMAIL || "support@bookeasy.com",
+        name: "BOOKEasy Support"
+      },
+      subject: "Appointment Cancelled - BOOKEasy",
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Appointment Cancelled - BOOKEasy</title>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; padding: 30px 20px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: white; padding: 30px 20px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px; }
+            .button { display: inline-block; background: #10b981; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 20px 0; }
+            .footer { text-align: center; margin-top: 30px; color: #6b7280; font-size: 14px; }
+            .appointment-details { background: #f9fafb; padding: 20px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #ef4444; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1 style="margin: 0; font-size: 24px;">📅 BOOKEasy</h1>
+            <p style="margin: 10px 0 0 0;">Appointment Cancellation Notice</p>
+          </div>
+
+          <div class="content">
+            <h2>Hello ${clientName}!</h2>
+
+            <p>We're writing to inform you that your appointment has been cancelled by the service provider. We apologize for any inconvenience this may cause.</p>
+
+            <div class="appointment-details">
+              <h3 style="margin-top: 0; color: #dc2626;">Cancelled Appointment Details:</h3>
+              <p><strong>Service:</strong> ${serviceName}</p>
+              <p><strong>Provider:</strong> ${providerName}</p>
+              <p><strong>Date:</strong> ${appointmentDate}</p>
+              <p><strong>Time:</strong> ${appointmentTime}</p>
+            </div>
+
+            <p>We understand this cancellation may disrupt your plans. Please feel free to book another appointment with ${providerName} or explore other available services on our platform.</p>
+
+            <div style="text-align: center;">
+              <a href="${process.env.FRONTEND_URL}/dashboard" class="button">Book New Appointment</a>
+            </div>
+
+            <p>If you have any questions or need assistance, please don't hesitate to contact our support team or the service provider directly.</p>
+
+            <p>We appreciate your understanding and hope to serve you again soon.</p>
+
+            <p>Best regards,<br>The BOOKEasy Team</p>
+          </div>
+
+          <div class="footer">
+            <p>This email was sent to you because you had a booked appointment on BOOKEasy.</p>
+            <p>If you no longer wish to receive these emails, you can update your account settings.</p>
+          </div>
+        </body>
+        </html>
+      `,
+      text: `
+        BOOKEasy - Appointment Cancellation Notice
+
+        Hello ${clientName}!
+
+        We're writing to inform you that your appointment has been cancelled by the service provider. We apologize for any inconvenience this may cause.
+
+        Cancelled Appointment Details:
+        Service: ${serviceName}
+        Provider: ${providerName}
+        Date: ${appointmentDate}
+        Time: ${appointmentTime}
+
+        We understand this cancellation may disrupt your plans. Please feel free to book another appointment with ${providerName} or explore other available services on our platform.
+
+        Book new appointment: ${process.env.FRONTEND_URL}/dashboard
+
+        If you have any questions, please contact our support team.
+
+        Best regards,
+        The BOOKEasy Team
+      `
+    };
+
+    const result = await sgMail.send(msg);
+    logInfo(`Appointment cancellation email sent to ${clientEmail}`);
+
+    return { success: true, messageId: result[0]?.headers?.["x-message-id"] };
+  } catch (error) {
+    logError("Error sending appointment cancellation email", error);
+    throw new Error("Failed to send appointment cancellation email");
+  }
+};
+
 // Test email connection
 export const testEmailConnection = async () => {
   try {

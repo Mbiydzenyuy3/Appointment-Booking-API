@@ -199,14 +199,12 @@ body {
   }
 }
 
-/* Focus Styles for Accessibility */
 .focus-ring:focus {
   outline: 2px solid var(--primary-500);
   outline-offset: 2px;
   border-radius: 0.25rem;
 }
 
-/* Mobile-optimized focus styles */
 .focus-ring-mobile:focus {
   outline: 2px solid var(--primary-500);
   outline-offset: 2px;
@@ -214,7 +212,6 @@ body {
   transform: scale(1.02);
 }
 
-/* High Contrast Mode Support */
 @media (prefers-contrast: high) {
   :root {
     --primary-500: #0f5a0f;
@@ -223,7 +220,6 @@ body {
   }
 }
 
-/* Reduced Motion Support */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -234,7 +230,6 @@ body {
   }
 }
 
-/* Dark Theme Support */
 @media (prefers-color-scheme: dark) {
   :root {
     --text-primary: #f0f9f0;
@@ -244,7 +239,6 @@ body {
   }
 }
 
-/* Mobile-first responsive typography */
 @media (max-width: 640px) {
   html {
     font-size: 14px;
@@ -266,7 +260,6 @@ body {
   }
 }
 
-/* Touch-friendly interactive elements */
 button,
 .btn,
 [role="button"],
@@ -274,9 +267,7 @@ button,
   /* Ensure minimum touch target size */
   min-height: var(--touch-target-min);
   min-width: var(--touch-target-min);
-  /* Improve touch feedback */
   touch-action: manipulation;
-  /* Better mobile interactions */
   -webkit-appearance: none;
   appearance: none;
   border: none;
@@ -284,25 +275,26 @@ button,
   cursor: pointer;
 }
 
-/* Touch-friendly links */
 a {
-  /* Ensure links are easily tappable */
   min-height: var(--touch-target-min);
   display: inline-flex;
   align-items: center;
   touch-action: manipulation;
 }
 
-/* Mobile-optimized form elements */
 input,
 textarea,
 select {
-  font-size: 16px; /* Prevents zoom on iOS */
+  font-size: 16px;
   min-height: var(--touch-target-min);
   padding: 12px 16px;
   border-radius: 8px;
-  border: 1px solid var(--border-default);
+  /* border: 1px solid var(--border-default); */
   transition: all 0.2s ease;
+}
+
+.field {
+  border: 1px solid var(--border-default);
 }
 
 input:focus,
@@ -313,12 +305,10 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(54, 153, 54, 0.1);
 }
 
-/* Mobile-first button styles */
 .btn-primary {
   @apply bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2;
 }
 
-/* Ensure form buttons are always visible */
 form button {
   position: relative !important;
   z-index: 1000 !important;
@@ -330,7 +320,6 @@ form button {
   pointer-events: auto !important;
 }
 
-/* Fix for ServiceForm and TimeSlotForm buttons */
 .bg-white form button[type="submit"] {
   position: relative !important;
   z-index: 1001 !important;
@@ -343,7 +332,6 @@ form button {
   min-height: 48px !important;
 }
 
-/* Enhanced button visibility for form submit buttons */
 .form-submit-button {
   position: relative !important;
   z-index: 9999 !important;
@@ -383,7 +371,6 @@ form button {
     0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
 }
 
-/* Force visibility for any potentially hidden form elements */
 form .form-submit-button {
   visibility: visible !important;
   opacity: 1 !important;
@@ -392,18 +379,15 @@ form .form-submit-button {
   z-index: 9999 !important;
 }
 
-/* Ensure form containers don't hide their buttons */
 .relative.bg-white form {
   position: relative !important;
   z-index: 1 !important;
 }
 
-/* Prevent any parent elements from hiding buttons */
 .bg-white {
   position: relative !important;
 }
 
-/* Force button rendering on all devices and browsers */
 .form-submit-button,
 button.form-submit-button {
   -webkit-appearance: none !important;
@@ -434,14 +418,13 @@ button.form-submit-button {
 
 /* Mobile-optimized input styles */
 .input-field {
-  @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200;
+  @apply w-full px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200;
 }
 
 .input-field:focus {
   outline: none;
 }
 
-/* Mobile-friendly modal styles */
 @media (max-width: 768px) {
   .modal {
     margin: 1rem;
@@ -454,7 +437,6 @@ button.form-submit-button {
   }
 }
 
-/* Mobile navigation styles */
 .mobile-nav {
   position: fixed;
   top: 0;
@@ -471,7 +453,6 @@ button.form-submit-button {
   transform: translateX(0);
 }
 
-/* Safe area support for devices with notches */
 .safe-area-top {
   padding-top: var(--safe-area-inset-top);
 }
@@ -488,7 +469,6 @@ button.form-submit-button {
   padding-right: var(--safe-area-inset-right);
 }
 
-/* Mobile-optimized card layouts */
 @media (max-width: 640px) {
   .card-mobile {
     margin: 0.5rem;
@@ -501,12 +481,10 @@ button.form-submit-button {
   }
 }
 
-/* Loading States */
 .loading-spinner {
   @apply inline-block w-4 h-4 border-2 border-green-200 border-t-green-600 rounded-full animate-spin;
 }
 
-/* Mobile-optimized grid layouts */
 @media (max-width: 640px) {
   .grid-mobile {
     display: grid;
@@ -523,7 +501,6 @@ button.form-submit-button {
   }
 }
 
-/* Accessibility Utilities */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -536,13 +513,11 @@ button.form-submit-button {
   border: 0;
 }
 
-/* Focus improvements for better accessibility */
 .focus-visible:focus {
   outline: 2px solid var(--primary-500);
   outline-offset: 2px;
 }
 
-/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -560,7 +535,6 @@ button.form-submit-button {
   background: var(--primary-500);
 }
 
-/* Mobile-optimized animations */
 @media (max-width: 640px) {
   .fade-in {
     animation: fadeIn 0.3s ease-in-out;
@@ -575,7 +549,6 @@ button.form-submit-button {
   }
 }
 
-/* Additional Animation Classes for Landing Page */
 .fade-in-up {
   animation: fadeInUp 0.8s ease-out;
 }
@@ -592,7 +565,6 @@ button.form-submit-button {
   animation: scaleIn 0.6s ease-out;
 }
 
-/* Interactive Elements */
 .hover-lift {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -602,7 +574,6 @@ button.form-submit-button {
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
 }
 
-/* Mobile-optimized hover effects */
 @media (hover: none) and (pointer: coarse) {
   .hover-lift:hover {
     transform: none;
@@ -615,7 +586,6 @@ button.form-submit-button {
   }
 }
 
-/* Gradient Text */
 .gradient-text {
   background: linear-gradient(135deg, var(--primary-600), var(--primary-800));
   -webkit-background-clip: text;
@@ -631,7 +601,6 @@ button.form-submit-button {
   background-color: black;
 }
 
-/* Hero section overlay for better text accessibility */
 .hero-overlay {
   position: relative;
 }

@@ -33,14 +33,8 @@ export default function AppointmentPage() {
       if (!user) return; // Don't fetch if no user
 
       try {
-        let response;
-        if (isClientView) {
-          // Fetch client appointments
-          response = await api.get("/appointments/client/list");
-        } else {
-          // Fetch provider appointments (existing functionality)
-          response = await api.get("/appointments/provider/list");
-        }
+        // Fetch appointments - backend now handles differentiation based on user type
+        const response = await api.get("/appointments/list");
         setAppointments(response.data.data || []);
       } catch (error) {
         console.error("Failed to fetch appointments:", error);
@@ -64,6 +58,24 @@ export default function AppointmentPage() {
         return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const handleCancel = async (appointmentId) => {
+    if (!window.confirm("Are you sure you want to cancel this appointment?"))
+      return;
+
+    try {
+      await api.delete(`/appointments/${appointmentId}`);
+      toast.success("Appointment cancelled successfully");
+      // Refresh appointments
+      const response = await api.get("/appointments/list");
+      setAppointments(response.data.data || []);
+    } catch (error) {
+      console.error("Failed to cancel appointment:", error);
+      toast.error(
+        error.response?.data?.message || "Failed to cancel appointment"
+      );
     }
   };
 
@@ -115,8 +127,7 @@ export default function AppointmentPage() {
                 <div className='flex-1 min-w-0'>
                   <div className='flex items-start justify-between mb-3'>
                     <h3 className='text-lg font-semibold text-gray-900 truncate'>
-                      {appointment.serviceName ||
-                        appointment.service?.service_name}
+                      {appointment.service_name}
                     </h3>
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
@@ -164,10 +175,7 @@ export default function AppointmentPage() {
                             clipRule='evenodd'
                           />
                         </svg>
-                        Client:{" "}
-                        {appointment.client?.name ||
-                          appointment.clientName ||
-                          "N/A"}
+                        Client: {appointment.client_name || "N/A"}
                       </div>
                     )}
 
@@ -184,7 +192,7 @@ export default function AppointmentPage() {
                             clipRule='evenodd'
                           />
                         </svg>
-                        Provider: {appointment.provider?.name || "N/A"}
+                        Provider: {appointment.provider_name || "N/A"}
                       </div>
                     )}
 
@@ -250,9 +258,30 @@ export default function AppointmentPage() {
                     </button>
                   )}
                   {isClientView && appointment.status === "confirmed" && (
-                    <button className='flex-1 lg:flex-none btn btn-outline text-sm px-4 py-2 touch-target'>
-                      Reschedule
-                    </button>
+                    <>
+                      <button className='flex-1 lg:flex-none btn btn-outline text-sm px-4 py-2 touch-target'>
+                        Reschedule
+                      </button>
+                      <button
+                        onClick={() => handleCancel(appointment.appointment_id)}
+                        className='flex-1 lg:flex-none btn btn-secondary text-sm px-4 py-2 touch-target'
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  )}
+                  {!isClientView && appointment.status === "confirmed" && (
+                    <>
+                      <button className='flex-1 lg:flex-none btn btn-outline text-sm px-4 py-2 touch-target'>
+                        Reschedule
+                      </button>
+                      <button
+                        onClick={() => handleCancel(appointment.appointment_id)}
+                        className='flex-1 lg:flex-none btn btn-secondary text-sm px-4 py-2 touch-target'
+                      >
+                        Cancel
+                      </button>
+                    </>
                   )}
                 </div>
               </div>

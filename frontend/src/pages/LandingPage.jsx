@@ -1,9 +1,28 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import LandingHeader from "../components/Navigation/LandingHeader.jsx";
 import Footer from "../components/Footer.jsx";
+import CalendarImage from "../assets/Calendar.jpg";
+import { useAuth } from "../context/AuthContext";
 
 export default function HomePage() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleBookNow = () => {
+    if (user) {
+      if (user.user_type === "client") {
+        navigate("/dashboard");
+      } else if (user.user_type === "provider") {
+        navigate("/provider-dashboard");
+      } else {
+        navigate("/dashboard");
+      }
+    } else {
+      navigate("/login");
+    }
+  };
+
   return (
     <div className='min-h-screen bg-gray-50 flex flex-col'>
       {/* Mobile responsive header */}
@@ -49,23 +68,64 @@ export default function HomePage() {
           </p>
           <div className='grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-5 gap-4 sm:gap-8 md:gap-16 opacity-50 grayscale hover:grayscale-0 transition-all duration-500'>
             <span className='text-sm sm:text-base font-bold text-gray-600 text-center'>
-              SalonLuxe
+              HealthClinic
             </span>
             <span className='text-sm sm:text-base font-bold text-gray-600 text-center'>
-              UrbanSpa
+              ConsultPro
             </span>
             <span className='text-sm sm:text-base font-bold text-gray-600 text-center'>
-              BarberCo
+              FitCenter
             </span>
             <span className='text-sm sm:text-base font-bold text-gray-600 text-center'>
-              WellnessFlow
+              TechSupport
             </span>
             <span className='text-sm sm:text-base font-bold text-gray-600 text-center hidden xs:block'>
-              StyleStudio
+              LegalAid
             </span>
           </div>
         </div>
       </div>
+
+      {/* --- ABOUT US --- */}
+      <section className='py-12 sm:py-20 bg-white'>
+        <div className='container-mobile text-left'>
+          <h2 className='text-2xl sm:text-3xl lg:text-4xl text-center font-bold text-gray-900 mb-4 sm:mb-6'>
+            About BookEasy
+          </h2>
+          <p className='text-base sm:text-lg text-center text-gray-600 mb-8 sm:mb-12 max-w-4xl mx-auto leading-relaxed'>
+            BookEasy is revolutionizing the way clients and service providers
+            connect. Our platform empowers businesses to streamline appointment
+            management with efficient scheduling tools, real-time notifications,
+            and secure payments. For clients, it offers a hassle-free booking
+            experience, ensuring they find the right service at the perfect
+            time. Join a community where efficiency meets excellence, and let us
+            help you grow your business or access top-notch services
+            effortlessly.
+          </p>
+          <div className='grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto'>
+            <div className='bg-green-50 p-6 rounded-xl'>
+              <h3 className='text-lg sm:text-xl font-bold text-green-800 mb-3'>
+                For Service Providers
+              </h3>
+              <p className='text-gray-600 text-sm sm:text-base'>
+                Manage your schedule, attract more clients, and optimize your
+                operations with our comprehensive tools designed to boost your
+                productivity and revenue.
+              </p>
+            </div>
+            <div className='bg-green-50 p-6 rounded-xl'>
+              <h3 className='text-lg sm:text-xl font-bold text-green-800 mb-3'>
+                For Clients
+              </h3>
+              <p className='text-gray-600 text-sm sm:text-base'>
+                Discover and book services with ease. Enjoy instant
+                confirmations, reminders, and a seamless experience tailored to
+                your needs.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <section id='features' className='bg-white py-12 sm:py-16'>
         <div className='container-mobile'>
@@ -174,7 +234,7 @@ export default function HomePage() {
       </section>
 
       <section className='py-12 sm:py-20 bg-white overflow-hidden'>
-        <div className='container-mobile space-y-12 sm:space-y-24'>
+        <div className='container-mobile'>
           <div className='flex flex-col md:flex-row items-center gap-8 md:gap-12'>
             <div className='md:w-1/2 order-2 md:order-1'>
               <span className='text-green-600 font-bold uppercase tracking-wider text-xs sm:text-sm'>
@@ -185,8 +245,8 @@ export default function HomePage() {
               </h3>
               <p className='text-base sm:text-lg text-gray-600 mb-4 sm:mb-6 leading-relaxed'>
                 Stop playing phone tag. Open your schedule and let clients find
-                the perfect time slot. Over 50% of beauty appointments are
-                booked outside of business hours. Don't miss out.
+                the perfect time slot. Over 50% of appointments are booked
+                outside of business hours. Don't miss out.
               </p>
               <Link
                 to='/register'
@@ -195,74 +255,12 @@ export default function HomePage() {
                 Start saving time &rarr;
               </Link>
             </div>
-            <div className='md:w-1/2 order-1 md:order-2 bg-gray-100 rounded-2xl h-48 sm:h-64 md:h-80 lg:h-96 w-full flex items-center justify-center text-gray-300'>
-              <div className='text-center'>
-                <span className='text-4xl sm:text-6xl'>📅</span>
-                <p className='mt-2 sm:mt-4 font-medium text-sm sm:text-base'>
-                  Calendar UI Preview
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className='flex flex-col md:flex-row-reverse items-center gap-8 md:gap-12'>
-            <div className='md:w-1/2'>
-              <span className='text-green-600 font-bold uppercase tracking-wider text-xs sm:text-sm'>
-                Fill Cancellations
-              </span>
-              <h3 className='text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mt-2 mb-4 sm:mb-6'>
-                Smart Waitlists that work for you.
-              </h3>
-              <p className='text-base sm:text-lg text-gray-600 mb-4 sm:mb-6 leading-relaxed'>
-                Last minute cancellation? No problem. Our automated waitlist
-                system instantly notifies interested clients to fill the gap,
-                ensuring your revenue stays protected.
-              </p>
-              <Link
-                to='/register'
-                className='text-green-700 font-bold hover:underline inline-flex items-center touch-target'
-              >
-                Learn about Waitlists &rarr;
-              </Link>
-            </div>
-            <div className='md:w-1/2 bg-gray-100 rounded-2xl h-48 sm:h-64 md:h-80 lg:h-96 w-full flex items-center justify-center text-gray-300'>
-              {/* Placeholder for Image */}
-              <div className='text-center'>
-                <span className='text-4xl sm:text-6xl'>🔔</span>
-                <p className='mt-2 sm:mt-4 font-medium text-sm sm:text-base'>
-                  Notification UI Preview
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className='flex flex-col md:flex-row items-center gap-8 md:gap-12'>
-            <div className='md:w-1/2 order-2 md:order-1'>
-              <span className='text-green-600 font-bold uppercase tracking-wider text-xs sm:text-sm'>
-                Grow Reputation
-              </span>
-              <h3 className='text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mt-2 mb-4 sm:mb-6'>
-                Turn 5-star reviews into new clients.
-              </h3>
-              <p className='text-base sm:text-lg text-gray-600 mb-4 sm:mb-6 leading-relaxed'>
-                Automatically redirect happy clients to leave reviews on Google.
-                Build your online presence and rank higher in local search
-                results effortlessly.
-              </p>
-              <Link
-                to='/register'
-                className='text-green-700 font-bold hover:underline inline-flex items-center touch-target'
-              >
-                Boost your reviews &rarr;
-              </Link>
-            </div>
-            <div className='md:w-1/2 order-1 md:order-2 bg-gray-100 rounded-2xl h-48 sm:h-64 md:h-80 lg:h-96 w-full flex items-center justify-center text-gray-300'>
-              <div className='text-center'>
-                <span className='text-4xl sm:text-6xl'>⭐</span>
-                <p className='mt-2 sm:mt-4 font-medium text-sm sm:text-base'>
-                  Reviews Widget Preview
-                </p>
-              </div>
+            <div className='md:w-1/2 order-1 md:order-2 bg-gray-100 rounded-2xl h-48 sm:h-64 md:h-80 lg:h-96 w-full overflow-hidden'>
+              <img
+                src={CalendarImage}
+                alt='Calendar Preview'
+                className='w-full h-full object-cover rounded-2xl'
+              />
             </div>
           </div>
         </div>
@@ -272,7 +270,7 @@ export default function HomePage() {
       <section id='testimonials' className='py-12 sm:py-20 bg-green-100'>
         <div className='container-mobile text-center'>
           <h2 className='text-2xl sm:text-3xl lg:text-4xl font-bold mb-8 sm:mb-12 text-green-900'>
-            What Professionals Say
+            What Our Users Say
           </h2>
           <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8'>
             <div className='card-mobile bg-green-800 p-6 sm:p-8 rounded-xl text-left'>
@@ -280,13 +278,16 @@ export default function HomePage() {
                 ★★★★★
               </div>
               <p className='mb-4 sm:mb-6 italic text-green-100 text-sm sm:text-base'>
-                "My revenue increased by 30% just by enabling online bookings.
-                Clients love how easy it is to use."
+                "As a busy professional, this app makes scheduling consultations
+                effortless. My clients can book anytime, and I get real-time
+                notifications. It's boosted my productivity tremendously."
               </p>
               <div>
-                <p className='font-bold text-sm sm:text-base'>Sarah Jenkins</p>
+                <p className='font-bold text-sm sm:text-base'>
+                  Dr. Emily Carter
+                </p>
                 <p className='text-xs sm:text-sm text-green-300'>
-                  Owner, Glow Studio
+                  Physician, HealthFirst Clinic
                 </p>
               </div>
             </div>
@@ -295,13 +296,15 @@ export default function HomePage() {
                 ★★★★★
               </div>
               <p className='mb-4 sm:mb-6 italic text-green-100 text-sm sm:text-base'>
-                "The no-show protection is a lifesaver. Deposits are
-                automatically handled and I sleep better at night."
+                "The real-time notifications and slot management features have
+                transformed my practice. I can easily handle multiple clients
+                without overlaps, and the instant updates keep everyone
+                informed. Essential for modern service providers."
               </p>
               <div>
-                <p className='font-bold text-sm sm:text-base'>David Chen</p>
+                <p className='font-bold text-sm sm:text-base'>Michael Torres</p>
                 <p className='text-xs sm:text-sm text-green-300'>
-                  Barber, The Cut
+                  Consultant, BizSolutions
                 </p>
               </div>
             </div>
@@ -310,15 +313,14 @@ export default function HomePage() {
                 ★★★★★
               </div>
               <p className='mb-4 sm:mb-6 italic text-green-100 text-sm sm:text-base'>
-                "Finally, a system that manages my staff and my inventory in one
-                place. Best decision for my spa."
+                "From a client's perspective, booking sessions has never been
+                easier. The calendar is intuitive, and I get instant
+                confirmations. It saves me time and hassle."
               </p>
               <div>
-                <p className='font-bold text-sm sm:text-base'>
-                  Elena Rodriguez
-                </p>
+                <p className='font-bold text-sm sm:text-base'>Lisa Nguyen</p>
                 <p className='text-xs sm:text-sm text-green-300'>
-                  Manager, Pure Wellness
+                  Client, FitnessPro
                 </p>
               </div>
             </div>
@@ -342,12 +344,12 @@ export default function HomePage() {
             >
               Start Free Trial
             </Link>
-            <Link
-              to='/contact'
+            <button
+              onClick={handleBookNow}
               className='btn btn-outline w-full sm:w-auto px-8 sm:px-10 py-3 sm:py-4 rounded-full border-2 border-green-200 hover:border-green-700 hover:text-green-700 text-base sm:text-lg font-semibold touch-target'
             >
               Book Us Now
-            </Link>
+            </button>
           </div>
         </div>
       </section>

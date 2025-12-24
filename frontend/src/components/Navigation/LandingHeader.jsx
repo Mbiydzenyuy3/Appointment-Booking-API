@@ -1,8 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 export default function LandingHeader() {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+
+  const [activeSection, setActiveSection] = useState(null);
+
+  const [clickedSection, setClickedSection] = useState(null);
 
   const toggleMobileNav = () => {
     setIsMobileNavOpen(!isMobileNavOpen);
@@ -13,6 +17,7 @@ export default function LandingHeader() {
   };
 
   const scrollToSection = (sectionId) => {
+    setClickedSection(sectionId);
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({ behavior: "smooth" });
@@ -20,9 +25,34 @@ export default function LandingHeader() {
     closeMobileNav();
   };
 
+  useEffect(() => {
+    const sections = ["hero", "features", "testimonials"];
+    const observer = new IntersectionObserver(
+      (entries) => {
+        let newActive = null;
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && entry.target.id === clickedSection) {
+            newActive = entry.target.id;
+          }
+        });
+        setActiveSection(newActive);
+      },
+      { threshold: 0.5 }
+    );
+    sections.forEach((section) => {
+      const element = document.getElementById(section);
+      if (element) observer.observe(element);
+    });
+    return () => observer.disconnect();
+  }, [clickedSection]);
+
   return (
     <>
-      <header className='bg-green-white shadow-sm border-b border-green-700 sticky top-0 z-30 safe-area-top'>
+      <header
+        className={`bg-green-white shadow-sm border-b ${
+          activeSection ? "border-green-800" : "border-green-700"
+        } sticky top-0 z-30 safe-area-top`}
+      >
         <div className='container-mobile bg-white'>
           <div className='flex items-center justify-between h-16'>
             {/* Logo */}
@@ -44,31 +74,41 @@ export default function LandingHeader() {
             >
               <button
                 onClick={() => scrollToSection("hero")}
-                className='text-sm font-medium px-3 py-2 transition-all duration-200 touch-target text-green-800 hover:text-white hover:bg-green-700 rounded'
+                className={`text-sm font-medium px-3 py-2 transition-all duration-200 touch-target text-green-900 hover:text-green-600 hover:bg-green-700 rounded ${
+                  activeSection === "hero" ? "border-b-2 border-green-800" : ""
+                }`}
               >
                 Home
               </button>
 
               <button
                 onClick={() => scrollToSection("features")}
-                className='text-sm font-medium px-3 py-2 transition-all duration-200 touch-target text-green-800 hover:text-white hover:bg-green-700 rounded'
+                className={`text-sm font-medium px-3 py-2 transition-all duration-200 touch-target text-green-900 hover:text-green-600 hover:bg-green-700 rounded ${
+                  activeSection === "features"
+                    ? "border-b-2 border-green-800"
+                    : ""
+                }`}
               >
                 Features
               </button>
 
               <button
                 onClick={() => scrollToSection("testimonials")}
-                className='text-sm font-medium px-3 py-2 transition-all duration-200 touch-target text-green-800 hover:text-white hover:bg-green-700 rounded'
+                className={`text-sm font-medium px-3 py-2 transition-all duration-200 touch-target text-green-900 hover:text-green-600 hover:bg-green-700 rounded ${
+                  activeSection === "testimonials"
+                    ? "border-b-2 border-green-800"
+                    : ""
+                }`}
               >
                 Testimonials
               </button>
 
-              <Link
+              {/* <Link
                 to='/book-appointment'
-                className='text-sm font-medium px-3 py-2 rounded-lg transition-all duration-200 touch-target text-green-800 hover:text-white hover:bg-green-700'
+                className='text-sm font-medium px-3 py-2 rounded-lg transition-all duration-200 touch-target text-green-800 hover:text-green-700 hover:bg-green-700'
               >
                 Book Now
-              </Link>
+              </Link> */}
             </nav>
 
             {/* Desktop Auth Buttons */}
@@ -128,19 +168,29 @@ export default function LandingHeader() {
             <div className='px-4 py-4 space-y-2'>
               <button
                 onClick={() => scrollToSection("hero")}
-                className='block w-full text-left px-3 py-2 text-green-800 hover:text-white hover:bg-green-700 rounded transition-all duration-200 touch-target'
+                className={`block w-full text-left px-3 py-2 text-green-800 hover:text-white hover:bg-green-700 rounded transition-all duration-200 touch-target ${
+                  activeSection === "hero" ? "border-b-2 border-green-800" : ""
+                }`}
               >
                 Home
               </button>
               <button
                 onClick={() => scrollToSection("features")}
-                className='block w-full text-left px-3 py-2 text-green-800 hover:text-white hover:bg-green-700 rounded transition-all duration-200 touch-target'
+                className={`block w-full text-left px-3 py-2 text-green-800 hover:text-white hover:bg-green-700 rounded transition-all duration-200 touch-target ${
+                  activeSection === "features"
+                    ? "border-b-2 border-green-800"
+                    : ""
+                }`}
               >
                 Features
               </button>
               <button
                 onClick={() => scrollToSection("testimonials")}
-                className='block w-full text-left px-3 py-2 text-green-800 hover:text-white hover:bg-green-700 rounded transition-all duration-200 touch-target'
+                className={`block w-full text-left px-3 py-2 text-green-800 hover:text-white hover:bg-green-700 rounded transition-all duration-200 touch-target ${
+                  activeSection === "testimonials"
+                    ? "border-b-2 border-green-800"
+                    : ""
+                }`}
               >
                 Testimonials
               </button>

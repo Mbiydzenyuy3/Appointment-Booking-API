@@ -47,6 +47,17 @@ export default function Register() {
           });
           setGoogleButtonRendered(true);
           console.log("Google button rendered successfully");
+          setTimeout(() => {
+            const button =
+              buttonContainer.querySelector('div[role="button"]') ||
+              buttonContainer.querySelector("button");
+            if (button) {
+              button.style.backgroundColor = "#1d4ed8";
+              button.style.color = "white";
+              button.style.border = "none";
+              button.style.borderRadius = "0.5rem";
+            }
+          }, 100);
         } catch (error) {
           console.error("Error rendering Google button:", error);
         }
@@ -138,7 +149,7 @@ export default function Register() {
                   name='name'
                   type='text'
                   placeholder='Enter your full name'
-                  className='input-field w-full touch-target text-gray-700'
+                  className='input-field field w-full touch-target text-gray-700'
                   autoComplete='name'
                 />
                 <ErrorMessage
@@ -159,7 +170,7 @@ export default function Register() {
                   name='email'
                   type='email'
                   placeholder='Enter your email'
-                  className='input-field w-full touch-target text-gray-700'
+                  className='input-field field w-full touch-target text-gray-700'
                   autoComplete='email'
                 />
                 <ErrorMessage
@@ -196,7 +207,7 @@ export default function Register() {
                 <Field
                   as='select'
                   name='user_type'
-                  className='input-field w-full touch-target text-gray-700'
+                  className='input-field field w-full touch-target text-gray-700'
                 >
                   <option value='client'>Client - Book appointments</option>
                   <option value='provider'>Provider - Manage services</option>
@@ -207,23 +218,6 @@ export default function Register() {
                   className='text-sm text-red-600 mt-1'
                 />
               </div>
-
-              {/* Google OAuth Button */}
-              <div className='w-full'>
-                {/* Google button container */}
-                <div id='google-signin-button' className='w-full'></div>
-              </div>
-
-              {/* Divider */}
-              <div className='relative'>
-                <div className='absolute inset-0 flex items-center'>
-                  <div className='w-full border-t border-gray-300' />
-                </div>
-                <div className='relative flex justify-center text-sm'>
-                  <span className='px-2 bg-white text-gray-500'>Or</span>
-                </div>
-              </div>
-
               {/* Email/Password Registration Button */}
               <button
                 type='submit'
@@ -250,6 +244,21 @@ export default function Register() {
                     Sign In
                   </Link>
                 </p>
+              </div>
+              {/* Divider */}
+              <div className='relative'>
+                <div className='absolute inset-0 flex items-center'>
+                  <div className='w-full border-t border-gray-300' />
+                </div>
+                <div className='relative flex justify-center text-sm'>
+                  <span className='px-2 bg-white text-gray-500'>Or</span>
+                </div>
+              </div>
+
+              {/* Google OAuth Button */}
+              <div className='w-full bg-blue-600 text-white rounded-lg'>
+                {/* Google button container */}
+                <div id='google-signin-button' className='w-full'></div>
               </div>
             </Form>
           )}
