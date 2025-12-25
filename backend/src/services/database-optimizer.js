@@ -65,7 +65,7 @@ class DatabaseOptimizer {
         {
           name: "idx_services_provider_name",
           sql: `CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_services_provider_name
-                ON services(provider_id, name)`
+                ON services(provider_id, service_name)`
         },
 
         // Users table - for authentication and lookups
@@ -157,8 +157,8 @@ class DatabaseOptimizer {
                   u.name as client_name,
                   u.email as client_email,
                   p.bio as provider_bio,
-                  s.name,
-                  s.duration,
+                  s.service_name as name,
+                  s.duration_minutes as duration,
                   s.price
                 FROM appointments a
                 JOIN users u ON a.user_id = u.user_id
@@ -178,8 +178,8 @@ class DatabaseOptimizer {
                   ts.end_time,
                   ts.is_available,
                   p.bio as provider_bio,
-                  s.name,
-                  s.duration,
+                  s.service_name as name,
+                  s.duration_minutes as duration,
                   s.price
                 FROM time_slots ts
                 JOIN providers p ON ts.provider_id = p.provider_id

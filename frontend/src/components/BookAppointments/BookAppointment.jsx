@@ -220,7 +220,7 @@ export default function BookAppointmentForm({
                                   {formatTime(slot.end_time)}
                                 </span>
                                 <span className='text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded-full'>
-                                  {slot.provider_name}
+                                  {slot.name}
                                 </span>
                               </div>
                             </div>

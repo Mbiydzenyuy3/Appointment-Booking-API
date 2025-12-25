@@ -69,11 +69,11 @@ export async function getSlotsByProviderId(providerId) {
 
   try {
     const result = await client.query(
-      `SELECT ts.*, s.name, s.description as service_description, s.price as service_price, s.duration as service_duration
+      `SELECT ts.*, s.service_name as name, s.description as service_description, s.price as service_price, s.duration_minutes as service_duration
        FROM time_slots ts
-       LEFT JOIN services s ON ts.service_id = s.service_id
-       WHERE ts.provider_id = $1
-       ORDER BY ts.day, ts.start_time`,
+        LEFT JOIN services s ON ts.service_id = s.service_id
+        WHERE ts.provider_id = $1
+        ORDER BY ts.day, ts.start_time`,
       [providerId]
     );
     return result.rows;
@@ -161,10 +161,10 @@ export async function getSlotById(slotId) {
 
   try {
     const result = await client.query(
-      `SELECT ts.*, s.name, s.description as service_description, s.price as service_price, s.duration as service_duration
-       FROM time_slots ts
-       LEFT JOIN services s ON ts.service_id = s.service_id
-       WHERE ts.timeslot_id = $1`,
+      `SELECT ts.*, s.service_name as name, s.description as service_description, s.price as service_price, s.duration_minutes as service_duration
+        FROM time_slots ts
+        LEFT JOIN services s ON ts.service_id = s.service_id
+        WHERE ts.timeslot_id = $1`,
       [slotId]
     );
     return result.rows[0];
@@ -184,7 +184,7 @@ export async function searchAvailableSlots({
   offset = 0
 }) {
   let query = `
-    SELECT ts.*, s.name
+    SELECT ts.*, s.service_name as name
     FROM time_slots ts
     JOIN services s ON ts.service_id = s.service_id
     WHERE ts.is_available = true AND ts.is_booked = false
