@@ -44,11 +44,27 @@ export async function cancel(appointmentId, userId, userType) {
     // Get appointment with service and provider info
     const apptRes = await client.query(
       `
-      SELECT a.*, s.name as service_name, u.name as client_name, u.email as client_email, p.name as provider_name, p.email as provider_email
+      SELECT
+        a.appointment_id,
+        a.user_id,
+        a.provider_id,
+        a.service_id,
+        a.timeslot_id,
+        a.appointment_date,
+        a.appointment_time,
+        a.status,
+        a.notes,
+        a.created_at,
+        a.updated_at,
+        s.name as service_name,
+        u.name as client_name,
+        u.email as client_email,
+        p.name as provider_name,
+        p.email as provider_email
       FROM appointments a
-      JOIN services s ON a.service_id = s.service_id
-      JOIN users u ON a.user_id = u.user_id
-      JOIN users p ON a.provider_id = p.user_id
+      LEFT JOIN services s ON a.service_id = s.service_id
+      LEFT JOIN users u ON a.user_id = u.user_id
+      LEFT JOIN users p ON a.provider_id = p.user_id
       WHERE a.appointment_id = $1 FOR UPDATE
     `,
       [appointmentId]
@@ -124,15 +140,25 @@ export async function list(
     // For providers, list appointments for their services
     query = `
        SELECT
-         a.*,
+         a.appointment_id,
+         a.user_id,
+         a.provider_id,
+         a.service_id,
+         a.timeslot_id,
+         a.appointment_date as date,
+         a.appointment_time,
+         a.status,
+         a.notes,
+         a.created_at,
+         a.updated_at,
          s.name as service_name,
          s.price,
-         s.duration as duration_minutes,
+         COALESCE(s.duration, s.duration_minutes) as duration_minutes,
          u.name as client_name,
          u.email as client_email
        FROM appointments a
-       JOIN services s ON a.service_id = s.service_id
-       JOIN users u ON a.user_id = u.user_id
+       LEFT JOIN services s ON a.service_id = s.service_id
+       LEFT JOIN users u ON a.user_id = u.user_id
        WHERE a.provider_id = $1
      `;
     params.push(userId);
@@ -140,15 +166,25 @@ export async function list(
     // For clients, list their booked appointments
     query = `
        SELECT
-         a.*,
+         a.appointment_id,
+         a.user_id,
+         a.provider_id,
+         a.service_id,
+         a.timeslot_id,
+         a.appointment_date as date,
+         a.appointment_time,
+         a.status,
+         a.notes,
+         a.created_at,
+         a.updated_at,
          s.name as service_name,
          s.price,
-         s.duration as duration_minutes,
+         COALESCE(s.duration, s.duration_minutes) as duration_minutes,
          u.name as provider_name,
          u.email as provider_email
        FROM appointments a
-       JOIN services s ON a.service_id = s.service_id
-       JOIN users u ON a.provider_id = u.user_id
+       LEFT JOIN services s ON a.service_id = s.service_id
+       LEFT JOIN users u ON a.provider_id = u.user_id
        WHERE a.user_id = $1
      `;
     params.push(userId);
