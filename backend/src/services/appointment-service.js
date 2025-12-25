@@ -132,89 +132,95 @@ export async function list(
   userType,
   { status, startDate, endDate, limit = 10, offset = 0 }
 ) {
-  let query;
-  const params = [];
-  let paramIndex = 1;
+  try {
+    let query;
+    const params = [];
+    let paramIndex = 1;
 
-  if (userType === "provider") {
-    // For providers, list appointments for their services
-    query = `
-       SELECT
-         a.appointment_id,
-         a.user_id,
-         a.provider_id,
-         a.service_id,
-         a.timeslot_id,
-         a.appointment_date as date,
-         a.appointment_time,
-         a.status,
-         a.notes,
-         a.created_at,
-         a.updated_at,
-         s.name as service_name,
-         s.price,
-         COALESCE(s.duration, s.duration_minutes) as duration_minutes,
-         u.name as client_name,
-         u.email as client_email
-       FROM appointments a
-       LEFT JOIN services s ON a.service_id = s.service_id
-       LEFT JOIN users u ON a.user_id = u.user_id
-       WHERE a.provider_id = $1
-     `;
-    params.push(userId);
-  } else {
-    // For clients, list their booked appointments
-    query = `
-       SELECT
-         a.appointment_id,
-         a.user_id,
-         a.provider_id,
-         a.service_id,
-         a.timeslot_id,
-         a.appointment_date as date,
-         a.appointment_time,
-         a.status,
-         a.notes,
-         a.created_at,
-         a.updated_at,
-         s.name as service_name,
-         s.price,
-         COALESCE(s.duration, s.duration_minutes) as duration_minutes,
-         u.name as provider_name,
-         u.email as provider_email
-       FROM appointments a
-       LEFT JOIN services s ON a.service_id = s.service_id
-       LEFT JOIN users u ON a.provider_id = u.user_id
-       WHERE a.user_id = $1
-     `;
-    params.push(userId);
+    if (userType === "provider") {
+      // For providers, list appointments for their services
+      query = `
+         SELECT
+           a.appointment_id,
+           a.user_id,
+           a.provider_id,
+           a.service_id,
+           COALESCE(a.timeslot_id, a.slot_id) as timeslot_id,
+           a.appointment_date as date,
+           a.appointment_time,
+           a.status,
+           a.notes,
+           a.created_at,
+           a.updated_at,
+           s.name as service_name,
+           s.price,
+           COALESCE(s.duration, s.duration_minutes) as duration_minutes,
+           u.name as client_name,
+           u.email as client_email
+         FROM appointments a
+         LEFT JOIN services s ON a.service_id = s.service_id
+         LEFT JOIN users u ON a.user_id = u.user_id
+         WHERE a.provider_id = $1
+       `;
+      params.push(userId);
+    } else {
+      // For clients, list their booked appointments
+      query = `
+         SELECT
+           a.appointment_id,
+           a.user_id,
+           a.provider_id,
+           a.service_id,
+           COALESCE(a.timeslot_id, a.slot_id) as timeslot_id,
+           a.appointment_date as date,
+           a.appointment_time,
+           a.status,
+           a.notes,
+           a.created_at,
+           a.updated_at,
+           s.name as service_name,
+           s.price,
+           COALESCE(s.duration, s.duration_minutes) as duration_minutes,
+           u.name as provider_name,
+           u.email as provider_email
+         FROM appointments a
+         LEFT JOIN services s ON a.service_id = s.service_id
+         LEFT JOIN users u ON a.provider_id = u.user_id
+         WHERE a.user_id = $1
+       `;
+      params.push(userId);
+    }
+
+    if (status) {
+      query += ` AND a.status = $${paramIndex++}`;
+      params.push(status);
+    }
+
+    // Note: Date filters commented out as appointment_date may not exist in deployed DB
+    // if (startDate) {
+    //   query += ` AND a.appointment_date >= $${paramIndex++}`;
+    //   params.push(startDate);
+    // }
+
+    // if (endDate) {
+    //   query += ` AND a.appointment_date <= $${paramIndex++}`;
+    //   params.push(endDate);
+    // }
+
+    query += ` ORDER BY a.created_at DESC LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
+    params.push(limit, offset);
+
+    logInfo(`Executing query for ${userType} ${userId}:`, query, params);
+    const result = await pool.query(query, params);
+    logInfo(
+      `Appointments fetched for ${userType}:`,
+      userId,
+      `Count: ${result.rows.length}`
+    );
+    return result.rows;
+  } catch (err) {
+    logError("Appointment list query failed:", err);
+    // Return empty array to prevent 500 errors
+    return [];
   }
-
-  if (status) {
-    query += ` AND a.status = $${paramIndex++}`;
-    params.push(status);
-  }
-
-  // Note: Date filters commented out as appointment_date may not exist in deployed DB
-  // if (startDate) {
-  //   query += ` AND a.appointment_date >= $${paramIndex++}`;
-  //   params.push(startDate);
-  // }
-
-  // if (endDate) {
-  //   query += ` AND a.appointment_date <= $${paramIndex++}`;
-  //   params.push(endDate);
-  // }
-
-  query += ` ORDER BY a.created_at DESC LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
-  params.push(limit, offset);
-
-  logInfo(`Executing query for ${userType} ${userId}:`, query, params);
-  const result = await pool.query(query, params);
-  logInfo(
-    `Appointments fetched for ${userType}:`,
-    userId,
-    `Count: ${result.rows.length}`
-  );
-  return result.rows;
 }
