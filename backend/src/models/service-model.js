@@ -10,27 +10,56 @@ export async function createService({
   durationMinutes
 }) {
   try {
-    const { rows } = await query(
-      `INSERT INTO services (provider_id, name, description, price, duration)
-       VALUES ($1, $2, $3, $4, $5)
-       RETURNING *`,
-      [providerId, name, description, price, durationMinutes]
-    );
-    return rows[0];
+    // Try inserting with 'duration' column first (schema.sql)
+    const queryText = `INSERT INTO services (provider_id, name, description, price, duration) VALUES ($1, $2, $3, $4, $5) RETURNING *`;
+    const params = [providerId, name, description, price, durationMinutes];
+
+    const result = await query(queryText, params);
+    return result.rows[0];
   } catch (err) {
-    throw new Error("Failed to create service");
+    logError("Failed to create service with 'duration' column:", err);
+
+    // Fallback: try with 'duration_minutes' column (initializeDbSchema)
+    try {
+      const fallbackQuery = `INSERT INTO services (provider_id, name, description, price, duration_minutes) VALUES ($1, $2, $3, $4, $5) RETURNING *`;
+      const result = await query(fallbackQuery, [
+        providerId,
+        name,
+        description,
+        price,
+        durationMinutes
+      ]);
+      return result.rows[0];
+    } catch (fallbackErr) {
+      logError(
+        "Failed to create service with 'duration_minutes' column:",
+        fallbackErr
+      );
+      throw new Error("Failed to create service");
+    }
   }
 }
 
 export async function findAllServices() {
   try {
-    const { rows } = await query(
-      `SELECT s.*, u.name as provider_name
-       FROM services s
-       JOIN providers p ON s.provider_id = p.provider_id
-       JOIN users u ON p.user_id = u.user_id`
-    );
-    return rows;
+    // Try selecting with 'duration' column first
+    let queryText = `SELECT s.*, u.name as provider_name, s.duration as duration_minutes
+                     FROM services s
+                     JOIN providers p ON s.provider_id = p.provider_id
+                     JOIN users u ON p.user_id = u.user_id`;
+
+    let result = await query(queryText);
+
+    // If that fails, try with duration_minutes column
+    if (!result.rows) {
+      queryText = `SELECT s.*, u.name as provider_name, s.duration_minutes as duration_minutes
+                   FROM services s
+                   JOIN providers p ON s.provider_id = p.provider_id
+                   JOIN users u ON p.user_id = u.user_id`;
+      result = await query(queryText);
+    }
+
+    return result.rows;
   } catch (err) {
     logError("DB Error (find all services):", err);
     throw new Error("Failed to query all services");
