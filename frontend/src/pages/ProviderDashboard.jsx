@@ -42,7 +42,6 @@ export default function ProviderDashboard() {
     console.log("Creating service with data:", newService);
     console.log("Current user:", user);
 
-    // Check if user is authenticated
     const token = localStorage.getItem("token");
     if (!token) {
       toast.error("You are not logged in. Please log in again.");
@@ -56,18 +55,15 @@ export default function ProviderDashboard() {
     } catch (error) {
       console.error("Create service error:", error);
 
-      // More specific error handling
       if (error.response?.status === 401) {
         toast.error("Authentication failed. Please log in again.");
-        // Optionally redirect to login or trigger logout
-        // window.location.href = "/login";
+       
       } else if (error.response?.status === 403) {
         toast.error("You don't have permission to create services.");
       } else if (
         error.response?.status === 400 &&
         error.response?.data?.errors
       ) {
-        // Handle validation errors
         const validationErrors = error.response.data.errors;
         if (validationErrors.length > 0) {
           toast.error(`Validation error: ${validationErrors.join(", ")}`);
@@ -136,7 +132,6 @@ export default function ProviderDashboard() {
 
   return (
     <div className='min-h-screen max-w-7xl mx-auto'>
-      {/* Page title section */}
       <div className='mb-6 sm:mb-8'>
         <h1 className='text-2xl sm:text-3xl font-bold text-gray-900'>
           Provider Dashboard
@@ -156,10 +151,7 @@ export default function ProviderDashboard() {
         </div>
       ) : (
         <>
-          {/* Authentication Debugger - Remove in production */}
           <AuthDebugger />
-
-          {/* Mobile Tab Navigation */}
           <div className='mb-6 sm:hidden'>
             <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-2'>
               <div className='flex space-x-2'>
@@ -209,10 +201,8 @@ export default function ProviderDashboard() {
             </div>
           </div>
 
-          {/* Desktop Layout */}
           <div className='hidden sm:block'>
             <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
-              {/* Services Section */}
               <div className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden'>
                 <div className='p-4 sm:p-6 border-b border-gray-100'>
                   <div className='flex items-center justify-between'>
@@ -250,7 +240,6 @@ export default function ProviderDashboard() {
                 </div>
               </div>
 
-              {/* Timeslots Section */}
               <div className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden'>
                 <div className='p-4 sm:p-6 border-b border-gray-100'>
                   <div className='flex items-center justify-between'>

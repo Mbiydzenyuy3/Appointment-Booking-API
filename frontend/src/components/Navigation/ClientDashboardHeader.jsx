@@ -51,33 +51,28 @@ export default function ClientDashboardHeader() {
             >
               <span>Dashboard</span>
             </Link>
-            <Link
+            {/* <Link
               to='/my-appointments'
               className='flex items-center space-x-1 text-sm font-medium text-gray-700 hover:text-green-800 transition-colors duration-200 touch-target'
             >
               <span>My Appointments</span>
-            </Link>
+            </Link> */}
           </nav>
 
           <div className='flex items-center space-x-3'>
-            {/* Currency Selector */}
             <CurrencySelector />
 
-            {/* User Profile Dropdown */}
             <div className='relative' ref={profileRef}>
-              {/* Always visible profile placeholder */}
               <div
                 className='flex items-center space-x-2 p-2 cursor-pointer'
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
               >
-                {/* User Avatar - Always visible */}
                 <div className='w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium hover:bg-blue-600 transition-colors'>
                   {user?.name
                     ? user.name.charAt(0).toUpperCase()
                     : user?.email?.charAt(0).toUpperCase()}
                 </div>
 
-                {/* Dropdown Arrow - Always visible */}
                 <svg
                   className={`w-4 h-4 text-gray-500 transition-transform duration-200 hover:text-gray-700 ${
                     isProfileOpen ? "rotate-180" : ""
@@ -99,7 +94,6 @@ export default function ClientDashboardHeader() {
               {isProfileOpen && (
                 <div className='absolute top-20 right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-50'>
                   <div className='py-2'>
-                    {/* User Info Header */}
                     <div className='px-4 py-3 border-b border-gray-100'>
                       {/* <div className='text-sm font-medium text-gray-900'>
                         {user?.name || "User"}
@@ -112,7 +106,6 @@ export default function ClientDashboardHeader() {
                       </div>
                     </div>
 
-                    {/* Menu Items */}
                     <Link
                       to='/profile'
                       onClick={() => setIsProfileOpen(false)}
@@ -134,7 +127,7 @@ export default function ClientDashboardHeader() {
                       My Profile
                     </Link>
 
-                    <Link
+                    {/* <Link
                       to='/my-appointments'
                       onClick={() => setIsProfileOpen(false)}
                       className='flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors'
@@ -153,7 +146,7 @@ export default function ClientDashboardHeader() {
                         />
                       </svg>
                       My Appointments
-                    </Link>
+                    </Link> */}
 
                     <div className='border-t border-gray-100 mt-2 pt-2'>
                       <button

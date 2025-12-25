@@ -22,7 +22,6 @@ export default function TimeslotForm({ onCreate, services = [] }) {
       serviceId: timeslot.serviceId
     });
 
-    // Reset form
     setTimeslot({ day: "", startTime: "", endTime: "", serviceId: "" });
   };
 
@@ -47,7 +46,7 @@ export default function TimeslotForm({ onCreate, services = [] }) {
             htmlFor='serviceId'
             className='block text-sm font-semibold text-gray-700 mb-2'
           >
-            Service *
+            Service
           </label>
           <select
             id='serviceId'
@@ -75,7 +74,7 @@ export default function TimeslotForm({ onCreate, services = [] }) {
             htmlFor='day'
             className='block text-sm font-semibold text-gray-700 mb-2'
           >
-            Date *
+            Date
           </label>
           <input
             id='day'
@@ -95,7 +94,7 @@ export default function TimeslotForm({ onCreate, services = [] }) {
               htmlFor='startTime'
               className='block text-sm font-semibold text-gray-700 mb-2'
             >
-              Start Time *
+              Start Time
             </label>
             <input
               id='startTime'
@@ -112,7 +111,7 @@ export default function TimeslotForm({ onCreate, services = [] }) {
               htmlFor='endTime'
               className='block text-sm font-semibold text-gray-700 mb-2'
             >
-              End Time *
+              End Time
             </label>
             <input
               id='endTime'

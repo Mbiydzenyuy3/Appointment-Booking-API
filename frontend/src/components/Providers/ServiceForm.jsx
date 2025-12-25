@@ -154,10 +154,10 @@ export default function ServiceForm({ onCreate }) {
               htmlFor='price'
               className='block text-sm font-semibold text-gray-700 mb-2'
             >
-              Price ({selectedCurrency}) *
+              Price ({selectedCurrency})
             </label>
             <div className='relative'>
-              <span className='absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium'>
+              <span className='absolute left-4 top-1/2 transform -translate-y-1/2 text-transparent font-medium'>
                 {getCurrencySymbol(selectedCurrency)}
               </span>
               <input
@@ -186,7 +186,7 @@ export default function ServiceForm({ onCreate }) {
               htmlFor='duration_minutes'
               className='block text-sm font-semibold text-gray-700 mb-2'
             >
-              Duration (minutes) *
+              Duration (minutes)
             </label>
             <input
               id='duration_minutes'
