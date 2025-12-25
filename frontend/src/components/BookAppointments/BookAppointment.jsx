@@ -17,7 +17,9 @@ export default function BookAppointmentForm({
     if (!providerId) return;
 
     try {
-      const response = await api.get(`/slots/${providerId}`);
+      const response = await api.get(
+        `/slots/search/available?providerId=${providerId}`
+      );
       const data = response.data.data;
       setTimeslots(Array.isArray(data) ? data : []);
       console.log("Fetched timeslots:", data);

@@ -156,6 +156,26 @@ export const deleteSlot = async (slotId, providerId) => {
   }
 };
 
+export async function getSlotById(slotId) {
+  const client = await pool.connect();
+
+  try {
+    const result = await client.query(
+      `SELECT ts.*, s.name, s.description as service_description, s.price as service_price, s.duration as service_duration
+       FROM time_slots ts
+       LEFT JOIN services s ON ts.service_id = s.service_id
+       WHERE ts.timeslot_id = $1`,
+      [slotId]
+    );
+    return result.rows[0];
+  } catch (err) {
+    console.error("Error fetching slot by id:", err);
+    throw new Error("Failed to fetch slot");
+  } finally {
+    client.release();
+  }
+}
+
 export async function searchAvailableSlots({
   providerId,
   serviceId,

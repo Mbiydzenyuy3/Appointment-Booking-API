@@ -2,6 +2,7 @@
 import {
   createSlot,
   getSlotsByProviderId,
+  getSlotById,
   searchAvailableSlots,
   updateSlot,
   deleteSlot,
@@ -41,6 +42,19 @@ export async function getSlotsByProvider(providerId) {
   } catch (err) {
     logError("Failed to fetch provider's slots", err);
     throw new Error("Unable to fetch slots");
+  }
+}
+
+export async function get(slotId) {
+  try {
+    const slot = await getSlotById(slotId);
+    if (!slot) {
+      throw new Error("Slot not found");
+    }
+    return slot;
+  } catch (err) {
+    logError("Failed to fetch slot", err);
+    throw new Error("Unable to fetch slot");
   }
 }
 

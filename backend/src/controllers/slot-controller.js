@@ -12,13 +12,13 @@ export async function create(req, res, next) {
       startTime,
       endTime,
       serviceId,
-      providerId,
+      providerId
     });
 
     return res.status(201).json({
       success: true,
       message: "Slot created successfully",
-      data: slot,
+      data: slot
     });
   } catch (err) {
     logError("Error creating slot", err);
@@ -36,7 +36,7 @@ export async function list(req, res, next) {
     return res.status(200).json({
       success: true,
       message: "Slots fetched successfully",
-      data: slots,
+      data: slots
     });
   } catch (err) {
     logError("Error fetching slots", err);
@@ -55,7 +55,7 @@ export async function update(req, res, next) {
     if (err.message === "Slot overlaps with an existing slot") {
       return res.status(409).json({
         success: false,
-        message: err.message,
+        message: err.message
       });
     }
     next(err);
@@ -75,6 +75,28 @@ export async function remove(req, res, next) {
   }
 }
 
+export async function get(req, res, next) {
+  try {
+    const { slotId } = req.params;
+    const slot = await SlotService.get(slotId);
+
+    return res.status(200).json({
+      success: true,
+      message: "Slot fetched successfully",
+      data: slot
+    });
+  } catch (err) {
+    if (err.message === "Slot not found") {
+      return res.status(404).json({
+        success: false,
+        message: err.message
+      });
+    }
+    logError("Error fetching slot", err);
+    next(err);
+  }
+}
+
 export async function search(req, res, next) {
   try {
     const filters = {
@@ -82,7 +104,7 @@ export async function search(req, res, next) {
       serviceId: req.query.serviceId,
       day: req.query.day, // expected as 'YYYY-MM-DD'
       limit: parseInt(req.query.limit, 10) || 10,
-      offset: parseInt(req.query.offset, 10) || 0,
+      offset: parseInt(req.query.offset, 10) || 0
     };
 
     const slots = await SlotService.search(filters);
@@ -90,7 +112,7 @@ export async function search(req, res, next) {
     return res.status(200).json({
       success: true,
       message: "Available slots fetched successfully",
-      data: slots,
+      data: slots
     });
   } catch (err) {
     logError("Error searching slots", err);

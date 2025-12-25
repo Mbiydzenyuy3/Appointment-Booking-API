@@ -22,7 +22,7 @@ export default function ProviderDashboard() {
       try {
         const [servicesRes, slotsRes] = await Promise.all([
           api.get(`/services/provider/${providerId}`),
-          api.get(`/slots/${providerId}`)
+          api.get(`/slots/provider/${providerId}`)
         ]);
 
         setServices(servicesRes.data.data);

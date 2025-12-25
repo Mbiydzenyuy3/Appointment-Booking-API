@@ -41,7 +41,7 @@ router.post(
 
 /**
  * @swagger
- * /slots/{providerId}:
+ * /slots/provider/{providerId}:
  *   get:
  *     summary: Get all time slots for a provider
  *     tags: [Slots]
@@ -60,7 +60,32 @@ router.post(
  *       401:
  *         description: Unauthorized
  */
-router.get("/:providerId", authMiddleware, SlotController.list);
+router.get("/provider/:providerId", authMiddleware, SlotController.list);
+
+/**
+ * @swagger
+ * /slots/{slotId}:
+ *   get:
+ *     summary: Get a single time slot by ID
+ *     tags: [Slots]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: slotId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the slot to retrieve
+ *     responses:
+ *       200:
+ *         description: Slot details
+ *       404:
+ *         description: Slot not found
+ *       401:
+ *         description: Unauthorized
+ */
+router.get("/:slotId", authMiddleware, SlotController.get);
 
 /**
  * @swagger
@@ -175,6 +200,7 @@ router.delete(
  */
 router.get(
   "/search/available",
+  authMiddleware,
   validate(slotSearchSchema, "query"),
   SlotController.search
 );
