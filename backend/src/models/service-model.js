@@ -10,55 +10,25 @@ export async function createService({
   durationMinutes
 }) {
   try {
-    // Try inserting with 'duration' column first (schema.sql)
-    const queryText = `INSERT INTO services (provider_id, name, description, price, duration) VALUES ($1, $2, $3, $4, $5) RETURNING *`;
+    const queryText = `INSERT INTO services (provider_id, service_name, description, price, duration_minutes) VALUES ($1, $2, $3, $4, $5) RETURNING *`;
     const params = [providerId, name, description, price, durationMinutes];
 
     const result = await query(queryText, params);
     return result.rows[0];
   } catch (err) {
-    logError("Failed to create service with 'duration' column:", err);
-
-    // Fallback: try with 'duration_minutes' column (initializeDbSchema)
-    try {
-      const fallbackQuery = `INSERT INTO services (provider_id, name, description, price, duration_minutes) VALUES ($1, $2, $3, $4, $5) RETURNING *`;
-      const result = await query(fallbackQuery, [
-        providerId,
-        name,
-        description,
-        price,
-        durationMinutes
-      ]);
-      return result.rows[0];
-    } catch (fallbackErr) {
-      logError(
-        "Failed to create service with 'duration_minutes' column:",
-        fallbackErr
-      );
-      throw new Error("Failed to create service");
-    }
+    logError("Failed to create service:", err);
+    throw new Error("Failed to create service");
   }
 }
 
 export async function findAllServices() {
   try {
-    // Try selecting with 'duration' column first
-    let queryText = `SELECT s.*, u.name as provider_name, s.duration as duration_minutes
-                     FROM services s
-                     JOIN providers p ON s.provider_id = p.provider_id
-                     JOIN users u ON p.user_id = u.user_id`;
+    const queryText = `SELECT s.service_id, s.provider_id, s.service_name as name, s.description, s.price, s.duration_minutes as duration, u.name as provider_name
+                       FROM services s
+                       JOIN providers p ON s.provider_id = p.provider_id
+                       JOIN users u ON p.user_id = u.user_id`;
 
-    let result = await query(queryText);
-
-    // If that fails, try with duration_minutes column
-    if (!result.rows) {
-      queryText = `SELECT s.*, u.name as provider_name, s.duration_minutes as duration_minutes
-                   FROM services s
-                   JOIN providers p ON s.provider_id = p.provider_id
-                   JOIN users u ON p.user_id = u.user_id`;
-      result = await query(queryText);
-    }
-
+    const result = await query(queryText);
     return result.rows;
   } catch (err) {
     logError("DB Error (find all services):", err);
@@ -69,12 +39,12 @@ export async function findAllServices() {
 export async function searchServices(query) {
   try {
     const { rows } = await query(
-      `SELECT s.*, u.name as provider_name
-       FROM services s
-       JOIN providers p ON s.provider_id = p.provider_id
-       JOIN users u ON p.user_id = u.user_id
-       WHERE LOWER(s.name) LIKE LOWER($1)
-          OR LOWER(u.name) LIKE LOWER($1)`,
+      `SELECT s.service_id, s.provider_id, s.service_name as name, s.description, s.price, s.duration_minutes as duration, u.name as provider_name
+        FROM services s
+        JOIN providers p ON s.provider_id = p.provider_id
+        JOIN users u ON p.user_id = u.user_id
+        WHERE LOWER(s.service_name) LIKE LOWER($1)
+           OR LOWER(u.name) LIKE LOWER($1)`,
       [`%${query}%`]
     );
     return rows;
@@ -87,7 +57,7 @@ export async function searchServices(query) {
 export async function findById(serviceId) {
   try {
     const { rows } = await query(
-      `SELECT * FROM services WHERE service_id = $1`,
+      `SELECT service_id, provider_id, service_name as name, description, price, duration_minutes as duration FROM services WHERE service_id = $1`,
       [serviceId]
     );
     return rows[0];
@@ -100,7 +70,7 @@ export async function findById(serviceId) {
 export async function findByProviderId(providerId) {
   try {
     const { rows } = await query(
-      `SELECT * FROM services WHERE provider_id = $1`,
+      `SELECT service_id, provider_id, service_name as name, description, price, duration_minutes as duration FROM services WHERE provider_id = $1`,
       [providerId]
     );
     return rows;
@@ -127,10 +97,10 @@ export async function updateById(
       `
       UPDATE services
       SET provider_id = $1,
-          name = $2,
+          service_name = $2,
           description = $3,
           price = $4,
-          duration = $5
+          duration_minutes = $5
       WHERE service_id = $6
       RETURNING *;
       `,

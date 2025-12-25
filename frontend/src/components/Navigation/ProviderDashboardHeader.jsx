@@ -58,13 +58,6 @@ export default function ProviderDashboardHeader() {
             >
               Appointments
             </Link>
-
-            <Link
-              to='/timeslots'
-              className='text-sm font-medium px-3 py-2 transition-all duration-200 touch-target text-gray-800 hover:text-green-600 hover:bg-green-50 rounded'
-            >
-              Time Slots
-            </Link>
           </nav>
 
           {/* Right Side - Currency Selector & User Menu */}
