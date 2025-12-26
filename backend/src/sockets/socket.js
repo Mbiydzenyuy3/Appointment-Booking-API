@@ -9,6 +9,7 @@ export const initSocket = (server) => {
   io = new Server(server, {
     cors: {
       origin: process.env.CORS_ORIGINS?.split(",") || [
+        "https://appointment-booking-api-1-7zro.onrender.com",
         "http://localhost:5173",
         "http://localhost:5174"
       ]
