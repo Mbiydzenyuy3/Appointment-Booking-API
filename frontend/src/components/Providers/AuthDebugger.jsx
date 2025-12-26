@@ -53,9 +53,7 @@ export default function AuthDebugger() {
 
   return (
     <div className='bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4'>
-      <h3 className='font-semibold text-yellow-800 mb-2'>
-        🔧 Authentication Debugger
-      </h3>
+      <h3 className='font-semibold text-yellow-800 mb-2'>System Monitor </h3>
 
       <div className='space-y-2 text-sm text-gray-700'>
         <div>
