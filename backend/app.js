@@ -39,7 +39,7 @@ app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 app.use(
   cors({
     origin: [
-      "https://appointment-booking-api-1-7zro.onrender.com/",
+      "https://appointment-booking-api-1-7zro.onrender.com",
       "http://localhost:5173",
       "http://localhost:5174"
     ],
