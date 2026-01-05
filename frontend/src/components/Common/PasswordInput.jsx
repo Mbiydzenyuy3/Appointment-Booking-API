@@ -95,7 +95,7 @@ export default function PasswordInput({
       {/* Password requirements helper text */}
       {showPasswordRequirements && (
         <p className='text-xs text-gray-500 mt-1'>
-          Password must be at least 6 characters long
+          Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character.
         </p>
       )}
     </div>

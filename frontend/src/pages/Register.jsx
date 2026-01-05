@@ -13,7 +13,10 @@ const RegisterSchema = Yup.object().shape({
     .email("Invalid email")
     .required("email input field is required"),
   password: Yup.string()
-    .min(6, "Minimum 6 characters")
+    .matches(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+      "Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character."
+    )
     .required("password input field is required"),
   user_type: Yup.string()
     .oneOf(["client", "provider"], "Invalid role")
