@@ -44,7 +44,7 @@ export async function create(req, res, next) {
   }
 }
 
-// List services (all for clients, own for providers)
+// List services (all for clients/public, own for providers)
 export async function list(req, res, next) {
   try {
     const userType = req.user?.user_type;
@@ -63,7 +63,7 @@ export async function list(req, res, next) {
         provider.provider_id
       );
     } else {
-      // Clients see all services from all providers
+      // Clients and public users see all services from all providers
       services = await ServiceService.listAllServices();
     }
 

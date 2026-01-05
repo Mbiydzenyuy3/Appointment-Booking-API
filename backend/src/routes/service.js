@@ -23,9 +23,9 @@ router.post(
  * @swagger
  * /services:
  *   get:
- *     summary: List all services for the authenticated provider
+ *     summary: List all services (public for clients, own for providers)
  */
-router.get("/", authMiddleware, ServiceController.list);
+router.get("/", ServiceController.list);
 
 /**
  * @swagger

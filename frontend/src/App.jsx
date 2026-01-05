@@ -20,6 +20,7 @@ import UserProfile from "./pages/UserProfile.jsx";
 import DashboardPage from "./pages/Dashboard.jsx";
 import ProviderDashboard from "./pages/ProviderDashboard.jsx";
 import TimeSlotsPage from "./pages/TimeSlotPage.jsx";
+import ExplorePage from "./pages/Explore.jsx";
 import ClientDashboardHeader from "./components/Navigation/ClientDashboardHeader.jsx";
 import ProviderDashboardHeader from "./components/Navigation/ProviderDashboardHeader.jsx";
 import AppointmentsPage from "./pages/Appointments.jsx";
@@ -73,6 +74,14 @@ function App() {
                         <HomePage />
                       </PublicLayout>
                     </LandingRoute>
+                  }
+                />
+                <Route
+                  path='/explore'
+                  element={
+                    <PublicLayout>
+                      <ExplorePage />
+                    </PublicLayout>
                   }
                 />
                 <Route
