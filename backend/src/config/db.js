@@ -77,7 +77,7 @@ const initializeDbSchema = async () => {
     // USERS TABLE
     await client.query(`
       CREATE TABLE IF NOT EXISTS users (
-        user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id SERIAL PRIMARY KEY,
         name VARCHAR(50) NOT NULL,
         email VARCHAR(100) UNIQUE NOT NULL,
         password VARCHAR(255),
@@ -135,8 +135,8 @@ const initializeDbSchema = async () => {
     // SERVICE PROVIDER TABLE
     await client.query(`
       CREATE TABLE IF NOT EXISTS providers (
-        provider_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        user_id UUID NOT NULL UNIQUE REFERENCES users(user_id) ON DELETE CASCADE,
+        provider_id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL UNIQUE REFERENCES users(user_id) ON DELETE CASCADE,
         bio TEXT,
         hourly_rate DECIMAL(10, 2),
         service_types TEXT,
@@ -148,8 +148,8 @@ const initializeDbSchema = async () => {
 
     await client.query(`
       CREATE TABLE IF NOT EXISTS services (
-        service_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        provider_id UUID NOT NULL REFERENCES providers(provider_id) ON DELETE CASCADE,
+        service_id SERIAL PRIMARY KEY,
+        provider_id INTEGER NOT NULL REFERENCES providers(provider_id) ON DELETE CASCADE,
         service_name VARCHAR(100) NOT NULL,
         description TEXT,
         price DECIMAL(10, 2) NOT NULL,
@@ -160,9 +160,9 @@ const initializeDbSchema = async () => {
     // TIME SLOT TABLE
     await client.query(`
       CREATE TABLE IF NOT EXISTS time_slots (
-        timeslot_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        provider_id UUID NOT NULL REFERENCES providers(provider_id) ON DELETE CASCADE,
-        service_id UUID NOT NULL REFERENCES services(service_id) ON DELETE CASCADE,
+        timeslot_id SERIAL PRIMARY KEY,
+        provider_id INTEGER NOT NULL REFERENCES providers(provider_id) ON DELETE CASCADE,
+        service_id INTEGER NOT NULL REFERENCES services(service_id) ON DELETE CASCADE,
         day DATE NOT NULL,
         start_time TIME NOT NULL,
         end_time TIME NOT NULL,
@@ -174,20 +174,55 @@ const initializeDbSchema = async () => {
       );
     `);
 
+    // Rename slot_id to timeslot_id if it exists (for existing tables)
+    await client.query(`
+      DO $$
+      BEGIN
+        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'time_slots' AND column_name = 'slot_id') THEN
+          ALTER TABLE time_slots RENAME COLUMN slot_id TO timeslot_id;
+        END IF;
+      END $$;
+    `);
+
+    // Add missing columns to time_slots if they don't exist (for existing tables)
+    await client.query(`
+      ALTER TABLE time_slots
+      ADD COLUMN IF NOT EXISTS service_id INTEGER REFERENCES services(service_id) ON DELETE CASCADE,
+      ADD COLUMN IF NOT EXISTS day DATE NOT NULL DEFAULT CURRENT_DATE,
+      ADD COLUMN IF NOT EXISTS is_booked BOOLEAN DEFAULT FALSE;
+    `);
+
     // APPOINTMENTS TABLE
     await client.query(`
        CREATE TABLE IF NOT EXISTS appointments (
-        appointment_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-        provider_id UUID NOT NULL REFERENCES providers(provider_id) ON DELETE CASCADE,
-        service_id UUID NOT NULL REFERENCES services(service_id) ON DELETE CASCADE,
-        timeslot_id UUID NOT NULL REFERENCES time_slots(timeslot_id) ON DELETE CASCADE,
+        appointment_id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+        provider_id INTEGER NOT NULL REFERENCES providers(provider_id) ON DELETE CASCADE,
+        service_id INTEGER NOT NULL REFERENCES services(service_id) ON DELETE CASCADE,
+        timeslot_id INTEGER NOT NULL REFERENCES time_slots(timeslot_id) ON DELETE CASCADE,
         appointment_date DATE NOT NULL,
         appointment_time TIME NOT NULL,
         status VARCHAR(20) CHECK (status IN ('booked', 'canceled', 'completed', 'no-show')) DEFAULT 'booked',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+    `);
+
+    // Rename slot_id to timeslot_id in appointments if it exists (for existing tables)
+    await client.query(`
+      DO $$
+      BEGIN
+        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'appointments' AND column_name = 'slot_id') THEN
+          ALTER TABLE appointments RENAME COLUMN slot_id TO timeslot_id;
+        END IF;
+      END $$;
+    `);
+
+    // Add missing columns to appointments if they don't exist (for existing tables)
+    await client.query(`
+      ALTER TABLE appointments
+      ADD COLUMN IF NOT EXISTS appointment_date DATE,
+      ADD COLUMN IF NOT EXISTS appointment_time TIME;
     `);
 
     // INDEXES

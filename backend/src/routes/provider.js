@@ -107,15 +107,13 @@ router.get(
  * @swagger
  * /providers:
  *   get:
- *     summary: List all providers
+ *     summary: List all providers (public)
  *     tags: [Providers]
- *     security:
- *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Array of provider profiles
  */
 
-router.get("/", authMiddleware, ProviderController.getAllProviders);
+router.get("/", ProviderController.getAllProviders);
 
 export default router;

@@ -23,7 +23,7 @@ router.post(
  * @swagger
  * /services:
  *   get:
- *     summary: List all services (public for clients, own for providers)
+ *     summary: List all services (public for all users)
  */
 router.get("/", ServiceController.list);
 

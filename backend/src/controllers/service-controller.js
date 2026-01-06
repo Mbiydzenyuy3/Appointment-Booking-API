@@ -44,28 +44,11 @@ export async function create(req, res, next) {
   }
 }
 
-// List services (all for clients/public, own for providers)
+// List services (public for all users - shows all services from all providers)
 export async function list(req, res, next) {
   try {
-    const userType = req.user?.user_type;
-    const userId = req.user?.user_id;
-
-    let services;
-
-    if (userType === "provider") {
-      const provider = await ProviderModel.findByUserId(userId);
-      if (!provider?.provider_id) {
-        return res
-          .status(403)
-          .json({ message: "You must have a provider profile first." });
-      }
-      services = await ServiceService.getServicesByProviderId(
-        provider.provider_id
-      );
-    } else {
-      // Clients and public users see all services from all providers
-      services = await ServiceService.listAllServices();
-    }
+    // Public endpoint - always return all services
+    const services = await ServiceService.listAllServices();
 
     return res.status(200).json({ success: true, data: services });
   } catch (err) {

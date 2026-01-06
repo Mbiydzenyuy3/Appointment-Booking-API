@@ -160,7 +160,7 @@ router.delete(
  * @swagger
  * /slots/search/available:
  *   get:
- *     summary: Search available time slots
+ *     summary: Search available time slots (public)
  *     tags: [Slots]
  *     parameters:
  *       - in: query
@@ -200,7 +200,6 @@ router.delete(
  */
 router.get(
   "/search/available",
-  authMiddleware,
   validate(slotSearchSchema, "query"),
   SlotController.search
 );

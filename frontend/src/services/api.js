@@ -18,7 +18,10 @@ api.interceptors.request.use(
       "/auth/register",
       "/auth/forgot-password",
       "/auth/reset-password",
-      "/auth/google-auth"
+      "/auth/google-auth",
+      "/services",
+      "/slots/search/available",
+      "/providers"
     ];
 
     const isPublicAuthEndpoint = publicAuthEndpoints.some((endpoint) =>
