@@ -13,14 +13,14 @@ export async function createProvider(req, res, next) {
       bio,
       rating,
       user_id,
-      fullUser: req.user,
+      fullUser: req.user
     });
 
     if (!user_id) {
       logError("createProvider: Missing user ID");
       return res.status(401).json({
         success: false,
-        message: "Unauthorized: user ID missing in request",
+        message: "Unauthorized: user ID missing in request"
       });
     }
 
@@ -30,14 +30,14 @@ export async function createProvider(req, res, next) {
     if (existing) {
       return res.status(409).json({
         success: false,
-        message: "Provider profile already exists",
+        message: "Provider profile already exists"
       });
     }
 
     const newProvider = await ProviderModel.create({
       user_id,
       bio,
-      rating,
+      rating
     });
 
     logDebug("createProvider: new provider created", newProvider);
@@ -45,7 +45,7 @@ export async function createProvider(req, res, next) {
     return res.status(201).json({
       success: true,
       message: "Provider profile created successfully",
-      data: newProvider,
+      data: newProvider
     });
   } catch (err) {
     logError("createProvider: unexpected error", err);
@@ -53,7 +53,7 @@ export async function createProvider(req, res, next) {
     if (!res.headersSent) {
       return res.status(500).json({
         success: false,
-        message: "Internal server error",
+        message: "Internal server error"
       });
     }
 
@@ -71,7 +71,7 @@ export async function updateProvider(req, res, next) {
     if (!user_id) {
       return res.status(401).json({
         success: false,
-        message: "Unauthorized: user ID missing in request",
+        message: "Unauthorized: user ID missing in request"
       });
     }
 
@@ -80,26 +80,26 @@ export async function updateProvider(req, res, next) {
     if (!existing) {
       return res.status(404).json({
         success: false,
-        message: "Provider profile not found",
+        message: "Provider profile not found"
       });
     }
 
     const updated = await ProviderModel.updateByUserId(user_id, {
       bio,
-      rating,
+      rating
     });
 
     return res.json({
       success: true,
       message: "Provider profile updated successfully",
-      data: updated,
+      data: updated
     });
   } catch (err) {
     logError("updateProvider: unexpected error", err);
     if (!res.headersSent) {
       return res.status(500).json({
         success: false,
-        message: "Internal server error",
+        message: "Internal server error"
       });
     }
     next(err);
@@ -143,12 +143,43 @@ export async function getAllProviders(req, res, next) {
               total,
               limit,
               offset,
-              totalPages: Math.ceil(total / limit),
+              totalPages: Math.ceil(total / limit)
             }
-          : undefined,
+          : undefined
     });
   } catch (err) {
     logError("getAllProviders error", err);
+    next(err);
+  }
+}
+
+export async function getBookingLink(req, res, next) {
+  try {
+    const { providerId } = req.params;
+
+    // Verify provider exists
+    const provider = await ProviderModel.findById(providerId);
+    if (!provider) {
+      return res.status(404).json({
+        success: false,
+        message: "Provider not found"
+      });
+    }
+
+    // Generate personal booking link
+    const baseUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    const bookingLink = `${baseUrl}/book/${providerId}`;
+
+    return res.json({
+      success: true,
+      data: {
+        booking_link: bookingLink,
+        provider_name: provider.name || "Provider",
+        provider_id: providerId
+      }
+    });
+  } catch (err) {
+    logError("getBookingLink error", err);
     next(err);
   }
 }

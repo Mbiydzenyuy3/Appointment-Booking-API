@@ -53,7 +53,7 @@ export default function TimeslotForm({ onCreate, services = [] }) {
             name='serviceId'
             value={timeslot.serviceId}
             onChange={handleChange}
-            className='block w-full p-4 border-2 border-gray-200 rounded-lg text-gray-800 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all duration-200 text-base bg-white'
+            className='block w-full p-4 border-2 border-gray-200 rounded-lg text-gray-800    transition-all duration-200 text-base bg-white'
             required
           >
             <option value=''>Select a service</option>
@@ -83,7 +83,7 @@ export default function TimeslotForm({ onCreate, services = [] }) {
             value={timeslot.day}
             onChange={handleChange}
             min={new Date().toISOString().split("T")[0]}
-            className='block w-full p-4 border-2 border-gray-200 rounded-lg text-gray-800 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all duration-200 text-base'
+            className='block w-full p-4 border-2 border-gray-200 rounded-lg text-gray-800    transition-all duration-200 text-base'
             required
           />
         </div>
@@ -102,7 +102,7 @@ export default function TimeslotForm({ onCreate, services = [] }) {
               name='startTime'
               value={timeslot.startTime}
               onChange={handleChange}
-              className='block w-full p-4 border-2 border-gray-200 rounded-lg text-gray-800 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all duration-200 text-base'
+              className='block w-full p-4 border-2 border-gray-200 rounded-lg text-gray-800    transition-all duration-200 text-base'
               required
             />
           </div>
@@ -119,7 +119,7 @@ export default function TimeslotForm({ onCreate, services = [] }) {
               name='endTime'
               value={timeslot.endTime}
               onChange={handleChange}
-              className='block w-full p-4 border-2 border-gray-200 rounded-lg text-gray-800 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all duration-200 text-base'
+              className='block w-full p-4 border-2 border-gray-200 rounded-lg text-gray-800    transition-all duration-200 text-base'
               required
             />
           </div>
@@ -129,7 +129,7 @@ export default function TimeslotForm({ onCreate, services = [] }) {
       <div className='relative'>
         <button
           type='submit'
-          className='form-submit-button w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 active:from-green-800 active:to-green-900 text-white font-bold py-5 px-8 rounded-xl transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-green-300 focus:ring-offset-2 min-h-[64px] touch-target transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl border-2 border-transparent hover:border-green-800'
+          className='form-submit-button w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 active:from-green-800 active:to-green-900 text-white font-bold py-5 px-8 rounded-xl transition-all duration-300 focus:outline-none    min-h-[64px] touch-target transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl border-2 border-transparent hover:border-green-800'
           style={{
             position: "relative",
             zIndex: 9999,

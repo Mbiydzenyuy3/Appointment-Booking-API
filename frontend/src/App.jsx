@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -11,6 +11,7 @@ import { AISchedulerProvider } from "./context/AISchedulerContext.jsx";
 import { CurrencyProvider } from "./context/CurrencyContext.jsx";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { initAnalytics } from "./services/analytics.js";
 import HomePage from "./pages/LandingPage.jsx";
 import LoginPage from "./pages/Login.jsx";
 import RegisterPage from "./pages/Register.jsx";
@@ -56,6 +57,10 @@ function PublicLayout({ children }) {
 }
 
 function App() {
+  useEffect(() => {
+    initAnalytics();
+  }, []);
+
   return (
     <CurrencyProvider>
       <Provider>

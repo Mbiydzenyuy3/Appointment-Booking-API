@@ -34,6 +34,37 @@ export async function book({
   }
 }
 
+export async function bookAsGuest({
+  timeslotId,
+  appointment_date,
+  appointment_time,
+  guest_name,
+  guest_email,
+  guest_phone
+}) {
+  try {
+    const appointment = await CreateAppointment({
+      timeslotId,
+      userId: null,
+      appointment_date,
+      appointment_time,
+      guest_name,
+      guest_email,
+      guest_phone,
+      is_guest_booking: true
+    });
+
+    // Emit targeted socket notification
+    emitAppointmentBooked(appointment);
+
+    logInfo(` Guest appointment booked:`, appointment.appointment_id);
+    return appointment;
+  } catch (err) {
+    logError(" Error booking guest appointment:", err);
+    throw new Error(err.message || "Failed to create guest appointment");
+  }
+}
+
 // Cancel appointment
 export async function cancel(appointmentId, userId, userType) {
   const client = await pool.connect();

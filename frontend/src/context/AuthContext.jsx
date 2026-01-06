@@ -2,6 +2,10 @@ import React from "react";
 import { createContext, useContext, useState, useEffect } from "react";
 import api from "../services/api.js";
 import { jwtDecode } from "jwt-decode";
+import {
+  trackLogin,
+  trackRegistrationCompleted
+} from "../services/analytics.js";
 
 const Context = createContext();
 
@@ -65,6 +69,10 @@ export const Provider = ({ children }) => {
           localStorage.setItem("token", token);
           const decoded = jwtDecode(token);
           setUser(decoded);
+
+          // Track login event
+          trackLogin(decoded.sub, decoded.user_type);
+
           return { success: true, user_type: decoded.user_type };
         } else {
           return { success: false, message: "Invalid token received" };
@@ -87,6 +95,10 @@ export const Provider = ({ children }) => {
         localStorage.setItem("token", token);
         const decoded = jwtDecode(token);
         setUser(decoded);
+
+        // Track registration completion
+        trackRegistrationCompleted(decoded.sub, decoded.user_type);
+
         return { success: true, user_type: decoded.user_type };
       } else {
         return { success: false, message: "Invalid token received" };

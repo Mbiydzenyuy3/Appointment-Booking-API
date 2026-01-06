@@ -235,7 +235,7 @@ export default function AccessibilityPreferences({ isOpen, onClose }) {
                             e.target.checked
                           )
                         }
-                        className='w-5 h-5 text-green-600 border-gray-300 rounded focus:ring-green-500 touch-target'
+                        className='w-5 h-5 text-green-600 border-gray-300 rounded  touch-target'
                       />
                     </div>
                     <div className='flex-1'>

@@ -100,7 +100,7 @@ const TutorialButton = ({
             ${settings.largeTouchTargets ? "large-touch-targets" : ""}
             bg-blue-600 hover:bg-blue-700 text-white rounded-full 
             transition-all duration-200 hover:scale-105 focus:outline-none 
-            focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+              
             shadow-lg hover:shadow-xl
             ${className}
           `}
@@ -124,7 +124,7 @@ const TutorialButton = ({
             flex items-center space-x-2 px-4 py-2 
             bg-blue-600 hover:bg-blue-700 text-white rounded-lg 
             transition-all duration-200 focus:outline-none 
-            focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+              
             ${className}
           `}
           aria-label={`${getButtonText()} - ${completionRate}% completed`}
@@ -154,7 +154,7 @@ const TutorialButton = ({
             ${settings.largeTouchTargets ? "large-touch-targets" : ""}
             fixed z-40 bg-green-600 hover:bg-green-700 text-white 
             rounded-full transition-all duration-200 hover:scale-110 
-            focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2
+            focus:outline-none   
             shadow-lg hover:shadow-xl
             ${position === "bottom-right" && "bottom-6 right-6"}
             ${position === "bottom-left" && "bottom-6 left-6"}

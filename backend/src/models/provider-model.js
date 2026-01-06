@@ -72,6 +72,27 @@ const ProviderModel = {
       throw new Error("Failed to query provider by user ID");
     }
   },
+
+  async findById(provider_id) {
+    try {
+      const { rows } = await query(
+        `
+        SELECT
+          p.*,
+          u.name,
+          u.email
+        FROM providers p
+        JOIN users u ON p.user_id = u.user_id
+        WHERE p.provider_id = $1
+        `,
+        [provider_id]
+      );
+      return rows[0];
+    } catch (err) {
+      logError("DB Error (find by provider ID):", err);
+      throw new Error("Failed to query provider by ID");
+    }
+  },
 };
 
 

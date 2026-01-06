@@ -138,6 +138,7 @@ export default function HomePage() {
                   <img
                     src={biz.img}
                     alt={biz.name}
+                    loading='lazy'
                     className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
                   />
                   <div className='absolute top-3 left-3 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-black text-green-700 tracking-tighter flex items-center gap-1 shadow-sm'>

@@ -270,7 +270,7 @@ export default function UserProfile() {
                   name='name'
                   value={profileData.name}
                   onChange={handleInputChange}
-                  className='mt-1 block w-full text-gray-600 border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm'
+                  className='mt-1 block w-full text-gray-600 border-gray-300 rounded-md shadow-sm   sm:text-sm'
                   placeholder='Enter your full name'
                 />
               </div>
@@ -300,7 +300,7 @@ export default function UserProfile() {
                   name='phone'
                   value={profileData.phone}
                   onChange={handleInputChange}
-                  className='mt-1 block w-full  text-gray-600 border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm'
+                  className='mt-1 block w-full  text-gray-600 border-gray-300 rounded-md shadow-sm   sm:text-sm'
                   placeholder='Enter your phone number'
                 />
               </div>
@@ -327,7 +327,7 @@ export default function UserProfile() {
                 rows={3}
                 value={profileData.address}
                 onChange={handleInputChange}
-                className='mt-1 block w-full text-gray-600 border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm'
+                className='mt-1 block w-full text-gray-600 border-gray-300 rounded-md shadow-sm   sm:text-sm'
                 placeholder='Enter your address'
               />
             </div>
@@ -341,7 +341,7 @@ export default function UserProfile() {
                 rows={4}
                 value={profileData.bio}
                 onChange={handleInputChange}
-                className='mt-1 block w-full  text-gray-600 border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm'
+                className='mt-1 block w-full  text-gray-600 border-gray-300 rounded-md shadow-sm   sm:text-sm'
                 placeholder='Tell us about yourself...'
               />
             </div>
@@ -355,7 +355,7 @@ export default function UserProfile() {
                 name='profile_picture'
                 value={profileData.profile_picture}
                 onChange={handleInputChange}
-                className='mt-1 block w-full  text-gray-600 border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm'
+                className='mt-1 block w-full  text-gray-600 border-gray-300 rounded-md shadow-sm   sm:text-sm'
                 placeholder='https://example.com/profile-picture.jpg'
               />
               {profileData.profile_picture && (
@@ -376,7 +376,7 @@ export default function UserProfile() {
               <button
                 type='submit'
                 disabled={isSaving}
-                className='ml-3 save-button inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50'
+                className='ml-3 save-button inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md bg-green-600 hover:bg-green-700 focus:outline-none    disabled:opacity-50'
               >
                 {isSaving ? (
                   <div className='flex items-center'>
@@ -413,7 +413,7 @@ export default function UserProfile() {
                     rows={4}
                     value={profileData.provider_info.bio || ""}
                     onChange={handleProviderInfoChange}
-                    className='mt-1 block w-full  border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm text-gray-600'
+                    className='mt-1 block w-full  border-gray-300 rounded-md shadow-sm   sm:text-sm text-gray-600'
                     placeholder='Describe your services...'
                   />
                 </div>
@@ -431,7 +431,7 @@ export default function UserProfile() {
                       name='hourly_rate'
                       value={profileData.provider_info.hourly_rate || ""}
                       onChange={handleProviderInfoChange}
-                      className='pl-7 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm'
+                      className='pl-7 block w-full border-gray-300 rounded-md shadow-sm   sm:text-sm'
                       placeholder='0.00'
                     />
                   </div>
@@ -446,7 +446,7 @@ export default function UserProfile() {
                     rows={3}
                     value={profileData.provider_info.service_types || ""}
                     onChange={handleProviderInfoChange}
-                    className='mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm'
+                    className='mt-1 block w-full border-gray-300 rounded-md shadow-sm   sm:text-sm'
                     placeholder='e.g., Haircut, Beard trim, Hair styling...'
                   />
                 </div>
@@ -455,7 +455,7 @@ export default function UserProfile() {
                   <button
                     type='submit'
                     disabled={isSaving}
-                    className='ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50'
+                    className='ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none    disabled:opacity-50'
                   >
                     Save Provider Info
                   </button>
@@ -489,7 +489,7 @@ export default function UserProfile() {
                     name='currentPassword'
                     value={passwordData.currentPassword}
                     onChange={handlePasswordChange}
-                    className='mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm'
+                    className='mt-1 block w-full border-gray-300 rounded-md shadow-sm   sm:text-sm'
                     placeholder='Enter your current password'
                   />
                 </div>
@@ -503,7 +503,7 @@ export default function UserProfile() {
                     name='newPassword'
                     value={passwordData.newPassword}
                     onChange={handlePasswordChange}
-                    className='mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm'
+                    className='mt-1 block w-full border-gray-300 rounded-md shadow-sm   sm:text-sm'
                     placeholder='Enter your new password'
                   />
                 </div>
@@ -517,7 +517,7 @@ export default function UserProfile() {
                     name='confirmPassword'
                     value={passwordData.confirmPassword}
                     onChange={handlePasswordChange}
-                    className='mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm'
+                    className='mt-1 block w-full border-gray-300 rounded-md shadow-sm   sm:text-sm'
                     placeholder='Confirm your new password'
                   />
                 </div>
@@ -526,7 +526,7 @@ export default function UserProfile() {
                   <button
                     type='submit'
                     disabled={isSaving}
-                    className='inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50'
+                    className='inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none    disabled:opacity-50'
                   >
                     {isSaving ? (
                       <div className='flex items-center'>
@@ -554,7 +554,7 @@ export default function UserProfile() {
                   Connected Accounts
                 </h4>
                 <div className='space-y-3'>
-                  <button className='inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'>
+                  <button className='inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none'>
                     <svg className='w-4 h-4 mr-2' viewBox='0 0 24 24'>
                       <path
                         fill='#4285F4'
@@ -587,7 +587,7 @@ export default function UserProfile() {
                   {!showDeleteConfirm ? (
                     <button
                       onClick={() => setShowDeleteConfirm(true)}
-                      className='inline-flex items-center px-4 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500'
+                      className='inline-flex items-center px-4 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none'
                     >
                       <svg
                         className='w-4 h-4 mr-2'
@@ -643,7 +643,7 @@ export default function UserProfile() {
                               onChange={(e) =>
                                 setDeleteConfirmation(e.target.value)
                               }
-                              className='mt-1 block w-full border-red-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 sm:text-sm'
+                              className='mt-1 block w-full border-red-300 rounded-md shadow-sm   sm:text-sm'
                               placeholder='Type DELETE here'
                             />
                           </div>
@@ -653,7 +653,7 @@ export default function UserProfile() {
                               disabled={
                                 isSaving || deleteConfirmation !== "DELETE"
                               }
-                              className='inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50'
+                              className='inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none    disabled:opacity-50'
                             >
                               {isSaving ? (
                                 <div className='flex items-center'>
@@ -669,7 +669,7 @@ export default function UserProfile() {
                                 setShowDeleteConfirm(false);
                                 setDeleteConfirmation("");
                               }}
-                              className='inline-flex items-center px-3 py-2 border border-gray-300 text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
+                              className='inline-flex items-center px-3 py-2 border border-gray-300 text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none'
                             >
                               Cancel
                             </button>

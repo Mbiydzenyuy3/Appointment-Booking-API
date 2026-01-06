@@ -1,6 +1,68 @@
 import * as appointmentService from "../services/appointment-service.js";
 import { logError } from "../utils/logger.js";
 
+export async function CreateGuestAppointment(req, res) {
+  try {
+    const {
+      timeslotId,
+      appointment_date,
+      appointment_time,
+      guest_name,
+      guest_email,
+      guest_phone
+    } = req.body;
+
+    // Validate required fields for guest booking
+    if (!timeslotId || !appointment_date || !appointment_time ||
+        !guest_name || !guest_email) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields for guest booking"
+      });
+    }
+
+    const appointment = await appointmentService.bookAsGuest({
+      timeslotId,
+      appointment_date,
+      appointment_time,
+      guest_name,
+      guest_email,
+      guest_phone
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Appointment booked successfully! Please check your email for confirmation.",
+      data: appointment
+    });
+  } catch (err) {
+    logError("Create guest appointment failed", err);
+
+    // Handle specific error cases
+    if (
+      err.message.includes("already booked") ||
+      err.message.includes("unavailable")
+    ) {
+      return res.status(409).json({
+        success: false,
+        message: "This time slot was just taken. Would you like the next available slot?"
+      });
+    }
+
+    if (err.message.includes("Slot not found")) {
+      return res.status(404).json({
+        success: false,
+        message: "Selected time slot not found."
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong. Please try again."
+    });
+  }
+}
+
 export async function CreateAppointment(req, res) {
   try {
     const { timeslotId, appointment_date, appointment_time } = req.body;

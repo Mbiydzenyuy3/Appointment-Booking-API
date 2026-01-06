@@ -161,7 +161,7 @@ const UserDashboard = () => {
               placeholder='Search by service name or provider name...'
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className='w-full px-4 py-2 pl-10 border text-gray-800 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent'
+              className='w-full px-4 py-2 pl-10 border text-gray-800 border-gray-300 rounded-lg   
             />
             <svg
               className='absolute right-8 top-4 h-5 w-5 text-gray-400'

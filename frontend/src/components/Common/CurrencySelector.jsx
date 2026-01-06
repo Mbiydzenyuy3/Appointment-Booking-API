@@ -47,7 +47,7 @@ export default function CurrencySelector() {
     <div className='relative' ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className='flex items-center gap-3 px-4 py-2.5 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 focus:ring-2 focus:ring-gray-400 focus:border-gray-400 transition-all duration-200 min-w-[140px] justify-between shadow-sm'
+        className='flex items-center gap-3 px-4 py-2.5 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300    transition-all duration-200 min-w-[140px] justify-between shadow-sm'
         aria-label={`Current currency: ${selectedCurrencyData?.name}`}
       >
         <div className='flex items-center gap-2'>
@@ -87,7 +87,7 @@ export default function CurrencySelector() {
               placeholder='Search currencies...'
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className='w-full text-gray-800 px-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-gray-400 focus:border-gray-400 transition-colors'
+              className='w-full text-gray-800 px-3 py-2.5 border border-gray-200 rounded-lg text-sm    transition-colors'
               autoFocus
             />
           </div>

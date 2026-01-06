@@ -291,7 +291,7 @@ const VideoTutorial = ({
                           onChange={(e) =>
                             changePlaybackRate(parseFloat(e.target.value))
                           }
-                          className='w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500'
+                          className='w-full p-2 border border-gray-300 rounded-lg   
                         >
                           <option value={0.5}>0.5x (Slow)</option>
                           <option value={0.75}>0.75x</option>

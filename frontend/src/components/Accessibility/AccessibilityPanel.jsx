@@ -81,7 +81,7 @@ const AccessibilityPanel = () => {
                       onChange={(e) =>
                         updateSetting("fontSize", e.target.value)
                       }
-                      className='mt-1 text-primary-600 focus:ring-primary-500'
+                      className='mt-1 text-primary-600 
                     />
                     <div>
                       <div className='font-medium text-text-primary'>
@@ -113,7 +113,7 @@ const AccessibilityPanel = () => {
                   onChange={(e) =>
                     updateSetting("highContrast", e.target.checked)
                   }
-                  className='ml-4 text-primary-600 focus:ring-primary-500'
+                  className='ml-4 text-primary-600 
                   aria-describedby='high-contrast-desc'
                 />
               </label>
@@ -136,7 +136,7 @@ const AccessibilityPanel = () => {
                   onChange={(e) =>
                     updateSetting("reducedMotion", e.target.checked)
                   }
-                  className='ml-4 text-primary-600 focus:ring-primary-500'
+                  className='ml-4 text-primary-600 
                   aria-describedby='reduced-motion-desc'
                 />
               </label>
@@ -159,7 +159,7 @@ const AccessibilityPanel = () => {
                   onChange={(e) =>
                     updateSetting("focusIndicators", e.target.checked)
                   }
-                  className='ml-4 text-primary-600 focus:ring-primary-500'
+                  className='ml-4 text-primary-600 
                   aria-describedby='focus-indicators-desc'
                 />
               </label>
@@ -182,7 +182,7 @@ const AccessibilityPanel = () => {
                   onChange={(e) =>
                     updateSetting("screenReaderMode", e.target.checked)
                   }
-                  className='ml-4 text-primary-600 focus:ring-primary-500'
+                  className='ml-4 text-primary-600 
                   aria-describedby='screen-reader-desc'
                 />
               </label>

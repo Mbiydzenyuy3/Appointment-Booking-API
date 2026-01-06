@@ -116,4 +116,22 @@ router.get(
 
 router.get("/", ProviderController.getAllProviders);
 
+/**
+ * @swagger
+ * /providers/{providerId}/booking-link:
+ *   get:
+ *     summary: Get personal booking link for a provider
+ *     tags: [Providers]
+ *     parameters:
+ *       - in: path
+ *         name: providerId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Personal booking link
+ */
+router.get("/:providerId/booking-link", ProviderController.getBookingLink);
+
 export default router;
