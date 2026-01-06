@@ -12,13 +12,14 @@ export const initAnalytics = () => {
   try {
     mixpanel.init(MIXPANEL_TOKEN, {
       debug: import.meta.env.DEV,
+      autocapture: true,
+      record_sessions_percent: 100,
       track_pageview: true,
       persistence: "localStorage",
       distinct_id:
         localStorage.getItem("mixpanel_device_id") || generateDeviceId()
     });
 
-    // Store device ID for consistency
     const deviceId = mixpanel.get_distinct_id();
     localStorage.setItem("mixpanel_device_id", deviceId);
 
@@ -37,7 +38,6 @@ const generateDeviceId = () => {
   );
 };
 
-// Track events
 export const trackEvent = (eventName, properties = {}) => {
   if (!isInitialized) {
     console.warn("Analytics not initialized");
@@ -56,7 +56,6 @@ export const trackEvent = (eventName, properties = {}) => {
   }
 };
 
-// Identify user when they log in/sign up
 export const identifyUser = (userId, userProperties = {}) => {
   if (!isInitialized) {
     console.warn("Analytics not initialized");
@@ -77,7 +76,6 @@ export const identifyUser = (userId, userProperties = {}) => {
   }
 };
 
-// Track page views
 export const trackPageView = (pageName, properties = {}) => {
   trackEvent("Page View", {
     page: pageName,
@@ -85,7 +83,6 @@ export const trackPageView = (pageName, properties = {}) => {
   });
 };
 
-// Specific tracking functions for BookEasy
 export const trackExploreView = (properties = {}) => {
   trackEvent("Explore Services Viewed", properties);
 };
@@ -169,5 +166,4 @@ export const trackLogin = (userId, userType) => {
   });
 };
 
-// Export mixpanel instance for advanced usage
 export { mixpanel };
