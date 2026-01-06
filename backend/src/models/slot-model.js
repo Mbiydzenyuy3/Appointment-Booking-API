@@ -24,7 +24,9 @@ export const createSlot = async ({
     );
 
     if (exactDuplicate.rows.length > 0) {
-      throw new Error("An identical slot already exists.");
+      throw new Error(
+        "It looks like this time slot is already scheduled. Please choose a different time."
+      );
     }
 
     // Check for overlapping slots
@@ -39,7 +41,9 @@ export const createSlot = async ({
     );
 
     if (overlapCheck.rows.length > 0) {
-      throw new Error("Slot overlaps with an existing slot.");
+      throw new Error(
+        "This time conflicts with another appointment. Let's find another available slot."
+      );
     }
 
     // Insert new slot
@@ -99,8 +103,14 @@ export const updateSlot = async (
       [slotId]
     );
     const slot = rows[0];
-    if (!slot) throw new Error(`Slot not found with ID ${slotId}`);
-    if (slot.is_booked) throw new Error("Cannot update a booked slot");
+    if (!slot)
+      throw new Error(
+        "We couldn't find that time slot. It may have been removed or booked."
+      );
+    if (slot.is_booked)
+      throw new Error(
+        "This appointment is already confirmed and can't be changed. Please contact support if needed."
+      );
     if (slot.provider_id !== providerId) throw new Error("Unauthorized");
 
     // Overlap check
@@ -139,8 +149,12 @@ export const deleteSlot = async (slotId, providerId) => {
     );
     const slot = rows[0];
     if (!slot) throw new Error("Slot not found");
-    if (slot.is_booked) throw new Error("Cannot delete a booked slot");
-    if (slot.provider_id !== providerId) throw new Error("Unauthorized");
+    if (slot.is_booked)
+      throw new Error(
+        "This appointment is already confirmed and can't be cancelled here. Please contact the provider."
+      );
+    if (slot.provider_id !== providerId)
+      throw new Error("You don't have permission to modify this slot.");
 
     await client.query(`DELETE FROM time_slots WHERE timeslot_id = $1`, [
       slotId

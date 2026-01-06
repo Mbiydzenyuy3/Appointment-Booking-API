@@ -7,6 +7,10 @@ import {
 } from "../sockets/socket.js";
 
 import { sendAppointmentCancellationEmail } from "./email-service.js";
+import {
+  sendBookingConfirmation,
+  sendProviderNotification
+} from "./whatsapp-service.js";
 import { logError, logInfo } from "../utils/logger.js";
 
 export async function book({
@@ -25,6 +29,63 @@ export async function book({
 
     // Emit targeted socket notification (assumes this function does targeting internally)
     emitAppointmentBooked(appointment);
+
+    // Send WhatsApp notifications
+    try {
+      // Get appointment details with provider and client info
+      const appointmentDetails = await pool.query(
+        `
+        SELECT
+          a.*,
+          s.name as service_name,
+          s.price,
+          u.name as client_name,
+          u.phone as client_phone,
+          p.name as provider_name,
+          prov.whatsapp_number as provider_whatsapp
+        FROM appointments a
+        LEFT JOIN services s ON a.service_id = s.service_id
+        LEFT JOIN users u ON a.user_id = u.user_id
+        LEFT JOIN users p ON a.provider_id = p.user_id
+        LEFT JOIN providers prov ON a.provider_id = prov.user_id
+        WHERE a.appointment_id = $1
+        `,
+        [appointment.appointment_id]
+      );
+
+      const details = appointmentDetails.rows[0];
+
+      // Send confirmation to client
+      if (details.client_phone) {
+        await sendBookingConfirmation(
+          details.provider_id,
+          details.client_phone,
+          {
+            date: details.appointment_date,
+            time: details.appointment_time,
+            service: details.service_name,
+            price: details.price
+          }
+        );
+      }
+
+      // Send notification to provider
+      if (details.provider_whatsapp) {
+        await sendProviderNotification(
+          details.provider_whatsapp,
+          details.client_name,
+          {
+            date: details.appointment_date,
+            time: details.appointment_time,
+            service: details.service_name,
+            price: details.price
+          }
+        );
+      }
+    } catch (whatsappError) {
+      logError("Failed to send WhatsApp notifications", whatsappError);
+      // Don't fail the booking if WhatsApp fails
+    }
 
     logInfo(` Appointment booked:`, appointment.appointment_id);
     return appointment;

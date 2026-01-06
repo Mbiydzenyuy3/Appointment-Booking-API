@@ -27,6 +27,7 @@ import serviceRoutes from "./src/routes/service.js";
 import aiSchedulerRouter from "./src/routes/ai-scheduler.js";
 import performanceRouter from "./src/routes/performance.js";
 import debugAuthRouter from "./src/routes/debug-auth.js";
+import whatsappRouter from "./src/routes/whatsapp.js";
 
 const app = express();
 
@@ -62,6 +63,7 @@ app.use("/providers", providerRouter);
 app.use("/services", serviceRoutes);
 app.use("/api/ai-scheduler", aiSchedulerRouter);
 app.use("/api/performance", performanceRouter);
+app.use("/whatsapp", whatsappRouter);
 
 // Schedule daily slot advancement at 00:01 UTC
 cron.schedule("1 0 * * *", async () => {

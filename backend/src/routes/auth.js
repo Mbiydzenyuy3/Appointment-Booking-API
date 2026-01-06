@@ -113,4 +113,7 @@ router.delete("/delete-account", authMiddleware, AuthController.deleteAccount);
 // User type update route (for new Google users)
 router.put("/update-user-type", authMiddleware, AuthController.updateUserType);
 
+// Guest conversion route (public)
+router.post("/convert-guest", AuthController.convertGuestToUser);
+
 export default router;

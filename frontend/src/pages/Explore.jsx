@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useCurrency } from "../context/CurrencyContext.jsx";
+import { useNavigate } from "react-router-dom";
 import {
   trackExploreView,
   trackServiceViewed,
@@ -13,6 +14,7 @@ import { toast } from "react-toastify";
 const ExplorePage = () => {
   const { user } = useAuth();
   const { formatPrice } = useCurrency();
+  const navigate = useNavigate();
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -33,7 +35,8 @@ const ExplorePage = () => {
         ...s,
         service_name: s.name,
         duration_minutes: s.duration,
-        providerId: s.provider_id || "default-provider-id"
+        providerId: s.provider_id || "default-provider-id",
+        booking_slug: s.booking_slug || "default-slug"
       }));
       setServices(servicesWithProvider);
     } catch (error) {
@@ -180,12 +183,22 @@ const ExplorePage = () => {
                       </span>
                     </div>
 
-                    <button
-                      onClick={() => handleBookClick(service)}
-                      className='btn btn-primary w-full touch-target text-sm sm:text-base'
-                    >
-                      Book Appointment
-                    </button>
+                    <div className='flex space-x-2'>
+                      <button
+                        onClick={() =>
+                          navigate(`/provider/${service.booking_slug}`)
+                        }
+                        className='btn btn-secondary flex-1 touch-target text-sm sm:text-base'
+                      >
+                        View Profile
+                      </button>
+                      <button
+                        onClick={() => handleBookClick(service)}
+                        className='btn btn-primary flex-1 touch-target text-sm sm:text-base'
+                      >
+                        Book Now
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}

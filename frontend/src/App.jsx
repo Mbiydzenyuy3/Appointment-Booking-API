@@ -6,6 +6,7 @@ import {
   Navigate
 } from "react-router-dom";
 import { Provider } from "./context/AuthContext.jsx";
+import { GuestProvider } from "./context/GuestContext.jsx";
 import { SocketProvider } from "./context/Socketio.jsx";
 import { AISchedulerProvider } from "./context/AISchedulerContext.jsx";
 import { CurrencyProvider } from "./context/CurrencyContext.jsx";
@@ -30,6 +31,7 @@ import PrivateRoute from "./routes/PrivateRoute.jsx";
 import LandingRoute from "./routes/LandingRoute.jsx";
 import AuthRoute from "./routes/AuthRoute.jsx";
 import GoogleAuthDebug from "./components/Providers/GoogleAuthDebug.jsx";
+import ProviderProfile from "./pages/ProviderProfile.jsx";
 
 // Layout component for authenticated client pages
 function ClientAuthLayout({ children }) {
@@ -64,172 +66,182 @@ function App() {
   return (
     <CurrencyProvider>
       <Provider>
-        <SocketProvider>
-          <AISchedulerProvider>
-            <Router>
-              <Routes>
-                {/* Public Routes */}
-                <Route
-                  path='/'
-                  element={
-                    <LandingRoute>
+        <GuestProvider>
+          <SocketProvider>
+            <AISchedulerProvider>
+              <Router>
+                <Routes>
+                  {/* Public Routes */}
+                  <Route
+                    path='/'
+                    element={
+                      <LandingRoute>
+                        <PublicLayout>
+                          <HomePage />
+                        </PublicLayout>
+                      </LandingRoute>
+                    }
+                  />
+                  <Route
+                    path='/explore'
+                    element={
                       <PublicLayout>
-                        <HomePage />
+                        <ExplorePage />
                       </PublicLayout>
-                    </LandingRoute>
-                  }
-                />
-                <Route
-                  path='/explore'
-                  element={
-                    <PublicLayout>
-                      <ExplorePage />
-                    </PublicLayout>
-                  }
-                />
-                <Route
-                  path='/login'
-                  element={
-                    <AuthRoute>
+                    }
+                  />
+                  <Route
+                    path='/provider/:bookingSlug'
+                    element={
                       <PublicLayout>
-                        <LoginPage />
+                        <ProviderProfile />
                       </PublicLayout>
-                    </AuthRoute>
-                  }
-                />
-                <Route
-                  path='/register'
-                  element={
-                    <AuthRoute>
-                      <PublicLayout>
-                        <RegisterPage />
-                      </PublicLayout>
-                    </AuthRoute>
-                  }
-                />
+                    }
+                  />
+                  <Route
+                    path='/login'
+                    element={
+                      <AuthRoute>
+                        <PublicLayout>
+                          <LoginPage />
+                        </PublicLayout>
+                      </AuthRoute>
+                    }
+                  />
+                  <Route
+                    path='/register'
+                    element={
+                      <AuthRoute>
+                        <PublicLayout>
+                          <RegisterPage />
+                        </PublicLayout>
+                      </AuthRoute>
+                    }
+                  />
 
-                {/* Protected Routes */}
-                <Route
-                  path='/dashboard'
-                  element={
-                    <PrivateRoute allowedRoles={["client"]}>
-                      <ClientAuthLayout>
-                        <DashboardPage />
-                      </ClientAuthLayout>
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path='/provider/dashboard'
-                  element={
-                    <PrivateRoute allowedRoles={["provider"]}>
-                      <ProviderAuthLayout>
-                        <ProviderDashboard />
-                      </ProviderAuthLayout>
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path='/slots'
-                  element={
-                    <PrivateRoute>
-                      <ClientAuthLayout>
-                        <SlotPage />
-                      </ClientAuthLayout>
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path='/timeslots'
-                  element={
-                    <PrivateRoute>
-                      <ProviderAuthLayout>
-                        <TimeSlotsPage />
-                      </ProviderAuthLayout>
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path='/appointments'
-                  element={
-                    <PrivateRoute allowedRoles={["provider"]}>
-                      <ProviderAuthLayout>
-                        <AppointmentsPage />
-                      </ProviderAuthLayout>
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path='/my-appointments'
-                  element={
-                    <PrivateRoute allowedRoles={["client"]}>
-                      <ClientAuthLayout>
-                        <AppointmentsPage />
-                      </ClientAuthLayout>
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path='/profile'
-                  element={
-                    <PrivateRoute>
-                      <ClientAuthLayout>
-                        <UserProfile />
-                      </ClientAuthLayout>
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path='/provider/profile'
-                  element={
-                    <PrivateRoute allowedRoles={["provider"]}>
-                      <ProviderAuthLayout>
-                        <UserProfile />
-                      </ProviderAuthLayout>
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path='/unauthorized'
-                  element={
-                    <PublicLayout>
-                      <Unauthorized />
-                    </PublicLayout>
-                  }
-                />
-                <Route
-                  path='/select-user-type'
-                  element={
-                    <PrivateRoute>
+                  {/* Protected Routes */}
+                  <Route
+                    path='/dashboard'
+                    element={
+                      <PrivateRoute allowedRoles={["client"]}>
+                        <ClientAuthLayout>
+                          <DashboardPage />
+                        </ClientAuthLayout>
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path='/provider/dashboard'
+                    element={
+                      <PrivateRoute allowedRoles={["provider"]}>
+                        <ProviderAuthLayout>
+                          <ProviderDashboard />
+                        </ProviderAuthLayout>
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path='/slots'
+                    element={
+                      <PrivateRoute>
+                        <ClientAuthLayout>
+                          <SlotPage />
+                        </ClientAuthLayout>
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path='/timeslots'
+                    element={
+                      <PrivateRoute>
+                        <ProviderAuthLayout>
+                          <TimeSlotsPage />
+                        </ProviderAuthLayout>
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path='/appointments'
+                    element={
+                      <PrivateRoute allowedRoles={["provider"]}>
+                        <ProviderAuthLayout>
+                          <AppointmentsPage />
+                        </ProviderAuthLayout>
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path='/my-appointments'
+                    element={
+                      <PrivateRoute allowedRoles={["client"]}>
+                        <ClientAuthLayout>
+                          <AppointmentsPage />
+                        </ClientAuthLayout>
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path='/profile'
+                    element={
+                      <PrivateRoute>
+                        <ClientAuthLayout>
+                          <UserProfile />
+                        </ClientAuthLayout>
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path='/provider/profile'
+                    element={
+                      <PrivateRoute allowedRoles={["provider"]}>
+                        <ProviderAuthLayout>
+                          <UserProfile />
+                        </ProviderAuthLayout>
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path='/unauthorized'
+                    element={
                       <PublicLayout>
-                        <UserTypeSelection />
+                        <Unauthorized />
                       </PublicLayout>
-                    </PrivateRoute>
-                  }
-                />
+                    }
+                  />
+                  <Route
+                    path='/select-user-type'
+                    element={
+                      <PrivateRoute>
+                        <PublicLayout>
+                          <UserTypeSelection />
+                        </PublicLayout>
+                      </PrivateRoute>
+                    }
+                  />
 
-                {/* Debug Routes */}
-                <Route
-                  path='/debug-google-auth'
-                  element={
-                    <PublicLayout>
-                      <GoogleAuthDebug />
-                    </PublicLayout>
-                  }
-                />
+                  {/* Debug Routes */}
+                  <Route
+                    path='/debug-google-auth'
+                    element={
+                      <PublicLayout>
+                        <GoogleAuthDebug />
+                      </PublicLayout>
+                    }
+                  />
 
-                {/* Fallback */}
-                <Route path='*' element={<Navigate to='/' />} />
-              </Routes>
-              <ToastContainer
-                position='bottom-right'
-                autoClose={3000}
-                className='toast-container'
-                toastClassName='toast-item'
-              />
-            </Router>
-          </AISchedulerProvider>
-        </SocketProvider>
+                  {/* Fallback */}
+                  <Route path='*' element={<Navigate to='/' />} />
+                </Routes>
+                <ToastContainer
+                  position='bottom-right'
+                  autoClose={3000}
+                  className='toast-container'
+                  toastClassName='toast-item'
+                />
+              </Router>
+            </AISchedulerProvider>
+          </SocketProvider>
+        </GuestProvider>
       </Provider>
     </CurrencyProvider>
   );

@@ -117,6 +117,8 @@ export default defineConfig({
     target: "esnext",
     minify: "terser",
     sourcemap: false,
+    cssCodeSplit: true,
+    reportCompressedSize: false, // Faster builds
     rollupOptions: {
       output: {
         manualChunks: {
@@ -124,8 +126,33 @@ export default defineConfig({
           router: ["react-router-dom"],
           forms: ["formik", "yup"],
           ui: ["react-modal", "react-datepicker", "react-hot-toast"],
-          utils: ["date-fns", "axios", "jwt-decode"]
+          utils: ["date-fns", "axios", "jwt-decode"],
+          // Mobile-first chunks
+          mobile: ["react-intersection-observer"],
+          images: ["sharp"] // If used in frontend
+        },
+        // Optimize chunk size for mobile networks
+        chunkFileNames: (chunkInfo) => {
+          const facadeModuleId = chunkInfo.facadeModuleId
+            ? chunkInfo.facadeModuleId.split("/").pop().replace(".js", "")
+            : "chunk";
+          return `js/${facadeModuleId}-[hash].js`;
+        },
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name && assetInfo.name.endsWith(".css")) {
+            return "css/[name]-[hash][extname]";
+          }
+          return "assets/[name]-[hash][extname]";
         }
+      }
+    },
+    // Optimize for mobile
+    chunkSizeWarningLimit: 600, // Lower limit for mobile
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+        pure_funcs: ["console.log", "console.info", "console.debug"]
       }
     }
   }

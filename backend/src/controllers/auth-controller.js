@@ -791,3 +791,124 @@ export async function deleteAccount(req, res, next) {
     next(err);
   }
 }
+
+// Controller function to convert guest bookings to registered user
+export async function convertGuestToUser(req, res, next) {
+  const { guest_email, name, password, user_type } = req.body;
+
+  if (!guest_email || !name || !password || !user_type) {
+    return res.status(400).json({
+      success: false,
+      message:
+        "Missing required fields: guest_email, name, password, user_type."
+    });
+  }
+
+  if (!["client", "provider"].includes(user_type)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid user_type. Must be 'client' or 'provider'."
+    });
+  }
+
+  const client = await query("BEGIN");
+
+  try {
+    // Check if email already exists as registered user
+    const existingUser = await query(
+      "SELECT user_id FROM users WHERE email = $1 AND password IS NOT NULL",
+      [guest_email]
+    );
+
+    if (existingUser.rowCount > 0) {
+      await query("ROLLBACK");
+      return res.status(400).json({
+        success: false,
+        message: "Email already registered. Please login instead."
+      });
+    }
+
+    // Check if there are guest bookings for this email
+    const guestBookings = await query(
+      "SELECT COUNT(*) as booking_count FROM appointments WHERE guest_email = $1 AND is_guest_booking = TRUE",
+      [guest_email]
+    );
+
+    if (guestBookings.rows[0].booking_count === 0) {
+      await query("ROLLBACK");
+      return res.status(400).json({
+        success: false,
+        message: "No guest bookings found for this email."
+      });
+    }
+
+    // Create the user account
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const userInsertResult = await query(
+      `INSERT INTO users (name, email, password, user_type)
+       VALUES ($1, $2, $3, $4)
+       RETURNING user_id`,
+      [name, guest_email, hashedPassword, user_type]
+    );
+
+    const userId = userInsertResult.rows[0].user_id;
+
+    let providerId = null;
+
+    if (user_type === "provider") {
+      const providerInsertResult = await query(
+        `INSERT INTO providers (user_id, bio)
+         VALUES ($1, $2)
+         RETURNING provider_id`,
+        [userId, ""]
+      );
+
+      providerId = providerInsertResult.rows[0].provider_id;
+    }
+
+    // Convert guest bookings to registered user bookings
+    await query(
+      `UPDATE appointments
+       SET user_id = $1, is_guest_booking = FALSE, guest_name = NULL, guest_email = NULL, guest_phone = NULL
+       WHERE guest_email = $2 AND is_guest_booking = TRUE`,
+      [userId, guest_email]
+    );
+
+    await query("COMMIT");
+
+    // Generate JWT token
+    const token = jwt.sign(
+      {
+        sub: userId,
+        email: guest_email,
+        user_type,
+        provider_id: providerId
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "3h" }
+    );
+
+    logInfo(
+      `Guest converted to registered user: ${guest_email}, bookings transferred: ${guestBookings.rows[0].booking_count}`
+    );
+
+    res.status(201).json({
+      success: true,
+      message:
+        "Account created successfully. Your guest bookings have been transferred.",
+      token,
+      data: {
+        user_id: userId,
+        provider_id: providerId,
+        email: guest_email,
+        user_type,
+        bookings_transferred: parseInt(guestBookings.rows[0].booking_count)
+      }
+    });
+  } catch (err) {
+    await query("ROLLBACK");
+    logError("❌ Error converting guest to user:", err);
+    next(err);
+  }
+}

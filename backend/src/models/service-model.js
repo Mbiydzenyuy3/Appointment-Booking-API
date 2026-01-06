@@ -35,7 +35,7 @@ export async function createService({
 
 export async function findAllServices() {
   try {
-    const queryText = `SELECT s.service_id, s.provider_id, s.service_name as name, s.description, s.price, s.duration_minutes as duration, s.location, s.additional_description, s.image_url, u.name as provider_name
+    const queryText = `SELECT s.service_id, s.provider_id, s.service_name as name, s.description, s.price, s.duration_minutes as duration, s.location, s.additional_description, s.image_url, u.name as provider_name, p.booking_slug
                        FROM services s
                        JOIN providers p ON s.provider_id = p.provider_id
                        JOIN users u ON p.user_id = u.user_id`;
@@ -51,7 +51,7 @@ export async function findAllServices() {
 export async function searchServices(query) {
   try {
     const { rows } = await query(
-      `SELECT s.service_id, s.provider_id, s.service_name as name, s.description, s.price, s.duration_minutes as duration, s.location, s.additional_description, s.image_url, u.name as provider_name
+      `SELECT s.service_id, s.provider_id, s.service_name as name, s.description, s.price, s.duration_minutes as duration, s.location, s.additional_description, s.image_url, u.name as provider_name, p.booking_slug
         FROM services s
         JOIN providers p ON s.provider_id = p.provider_id
         JOIN users u ON p.user_id = u.user_id

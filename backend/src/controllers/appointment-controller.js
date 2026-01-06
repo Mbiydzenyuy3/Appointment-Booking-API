@@ -13,11 +13,17 @@ export async function CreateGuestAppointment(req, res) {
     } = req.body;
 
     // Validate required fields for guest booking
-    if (!timeslotId || !appointment_date || !appointment_time ||
-        !guest_name || !guest_email) {
+    if (
+      !timeslotId ||
+      !appointment_date ||
+      !appointment_time ||
+      !guest_name ||
+      !guest_email
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Missing required fields for guest booking"
+        message:
+          "Please provide all required information to book your appointment."
       });
     }
 
@@ -32,7 +38,8 @@ export async function CreateGuestAppointment(req, res) {
 
     return res.status(201).json({
       success: true,
-      message: "Appointment booked successfully! Please check your email for confirmation.",
+      message:
+        "Appointment booked successfully! Please check your email for confirmation.",
       data: appointment
     });
   } catch (err) {
@@ -45,14 +52,16 @@ export async function CreateGuestAppointment(req, res) {
     ) {
       return res.status(409).json({
         success: false,
-        message: "This time slot was just taken. Would you like the next available slot?"
+        message:
+          "This time slot was just taken. Would you like the next available slot?"
       });
     }
 
     if (err.message.includes("Slot not found")) {
       return res.status(404).json({
         success: false,
-        message: "Selected time slot not found."
+        message:
+          "We couldn't find that time slot. It may have been booked or removed."
       });
     }
 
@@ -105,7 +114,8 @@ export async function CreateAppointment(req, res) {
     if (err.message.includes("Slot not found")) {
       return res.status(404).json({
         success: false,
-        message: "Selected time slot not found."
+        message:
+          "We couldn't find that time slot. It may have been booked or removed."
       });
     }
 
@@ -139,7 +149,9 @@ export async function cancelAppointment(req, res, next) {
     if (err.message === "Not authorized") {
       return res
         .status(403)
-        .json({ message: "Not authorized to cancel this appointment" });
+        .json({
+          message: "You don't have permission to cancel this appointment."
+        });
     }
     next(err);
   }
