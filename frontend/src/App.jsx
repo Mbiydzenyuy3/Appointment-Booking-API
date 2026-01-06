@@ -14,8 +14,6 @@ import "react-toastify/dist/ReactToastify.css";
 import HomePage from "./pages/LandingPage.jsx";
 import LoginPage from "./pages/Login.jsx";
 import RegisterPage from "./pages/Register.jsx";
-import ForgotPassword from "./pages/ForgotPassword.jsx";
-import ResetPassword from "./pages/ResetPassword.jsx";
 import UserProfile from "./pages/UserProfile.jsx";
 import DashboardPage from "./pages/Dashboard.jsx";
 import ProviderDashboard from "./pages/ProviderDashboard.jsx";
@@ -102,22 +100,6 @@ function App() {
                         <RegisterPage />
                       </PublicLayout>
                     </AuthRoute>
-                  }
-                />
-                <Route
-                  path='/forgot-password'
-                  element={
-                    <PublicLayout>
-                      <ForgotPassword />
-                    </PublicLayout>
-                  }
-                />
-                <Route
-                  path='/reset-password'
-                  element={
-                    <PublicLayout>
-                      <ResetPassword />
-                    </PublicLayout>
                   }
                 />
 

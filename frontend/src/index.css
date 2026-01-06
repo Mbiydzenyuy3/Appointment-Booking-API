@@ -1182,3 +1182,15 @@ button.form-submit-button {
   background-color: #f0fdf4 !important;
   color: #15803d !important;
 }
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.animate-fade-in {
+  animation: fade-in 0.25s ease-out;
+}

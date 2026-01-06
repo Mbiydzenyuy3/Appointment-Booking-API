@@ -7,11 +7,23 @@ export async function createService({
   name,
   description,
   price,
-  durationMinutes
+  durationMinutes,
+  location,
+  additionalDescription,
+  imageUrl
 }) {
   try {
-    const queryText = `INSERT INTO services (provider_id, service_name, description, price, duration_minutes) VALUES ($1, $2, $3, $4, $5) RETURNING *`;
-    const params = [providerId, name, description, price, durationMinutes];
+    const queryText = `INSERT INTO services (provider_id, service_name, description, price, duration_minutes, location, additional_description, image_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`;
+    const params = [
+      providerId,
+      name,
+      description,
+      price,
+      durationMinutes,
+      location,
+      additionalDescription,
+      imageUrl
+    ];
 
     const result = await query(queryText, params);
     return result.rows[0];
@@ -23,7 +35,7 @@ export async function createService({
 
 export async function findAllServices() {
   try {
-    const queryText = `SELECT s.service_id, s.provider_id, s.service_name as name, s.description, s.price, s.duration_minutes as duration, u.name as provider_name
+    const queryText = `SELECT s.service_id, s.provider_id, s.service_name as name, s.description, s.price, s.duration_minutes as duration, s.location, s.additional_description, s.image_url, u.name as provider_name
                        FROM services s
                        JOIN providers p ON s.provider_id = p.provider_id
                        JOIN users u ON p.user_id = u.user_id`;
@@ -39,7 +51,7 @@ export async function findAllServices() {
 export async function searchServices(query) {
   try {
     const { rows } = await query(
-      `SELECT s.service_id, s.provider_id, s.service_name as name, s.description, s.price, s.duration_minutes as duration, u.name as provider_name
+      `SELECT s.service_id, s.provider_id, s.service_name as name, s.description, s.price, s.duration_minutes as duration, s.location, s.additional_description, s.image_url, u.name as provider_name
         FROM services s
         JOIN providers p ON s.provider_id = p.provider_id
         JOIN users u ON p.user_id = u.user_id
@@ -57,7 +69,7 @@ export async function searchServices(query) {
 export async function findById(serviceId) {
   try {
     const { rows } = await query(
-      `SELECT service_id, provider_id, service_name as name, description, price, duration_minutes as duration FROM services WHERE service_id = $1`,
+      `SELECT service_id, provider_id, service_name as name, description, price, duration_minutes as duration, location, additional_description, image_url FROM services WHERE service_id = $1`,
       [serviceId]
     );
     return rows[0];
@@ -70,7 +82,7 @@ export async function findById(serviceId) {
 export async function findByProviderId(providerId) {
   try {
     const { rows } = await query(
-      `SELECT service_id, provider_id, service_name as name, description, price, duration_minutes as duration FROM services WHERE provider_id = $1`,
+      `SELECT service_id, provider_id, service_name as name, description, price, duration_minutes as duration, location, additional_description, image_url FROM services WHERE provider_id = $1`,
       [providerId]
     );
     return rows;
@@ -90,7 +102,16 @@ export async function deleteById(serviceId) {
 
 export async function updateById(
   serviceId,
-  { providerId, name, description, price, durationMinutes }
+  {
+    providerId,
+    name,
+    description,
+    price,
+    durationMinutes,
+    location,
+    additionalDescription,
+    imageUrl
+  }
 ) {
   try {
     const { rows } = await query(
@@ -100,11 +121,24 @@ export async function updateById(
           service_name = $2,
           description = $3,
           price = $4,
-          duration_minutes = $5
-      WHERE service_id = $6
+          duration_minutes = $5,
+          location = $6,
+          additional_description = $7,
+          image_url = $8
+      WHERE service_id = $9
       RETURNING *;
       `,
-      [providerId, name, description, price, durationMinutes, serviceId]
+      [
+        providerId,
+        name,
+        description,
+        price,
+        durationMinutes,
+        location,
+        additionalDescription,
+        imageUrl,
+        serviceId
+      ]
     );
     return rows[0];
   } catch (err) {

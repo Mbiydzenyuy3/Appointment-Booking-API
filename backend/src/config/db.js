@@ -153,8 +153,21 @@ const initializeDbSchema = async () => {
         service_name VARCHAR(100) NOT NULL,
         description TEXT,
         price DECIMAL(10, 2) NOT NULL,
-        duration_minutes INTEGER NOT NULL CHECK (duration_minutes > 0)
+        duration_minutes INTEGER NOT NULL CHECK (duration_minutes > 0),
+        location TEXT,
+        additional_description TEXT,
+        image_url TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+    `);
+
+    // Add new columns to existing services table
+    await client.query(`
+      ALTER TABLE services
+      ADD COLUMN IF NOT EXISTS location TEXT,
+      ADD COLUMN IF NOT EXISTS additional_description TEXT,
+      ADD COLUMN IF NOT EXISTS image_url TEXT;
     `);
 
     // TIME SLOT TABLE

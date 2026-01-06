@@ -1,10 +1,9 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Formik, Form, ErrorMessage, Field } from "formik";
 import * as Yup from "yup";
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
-import { useGoogleAuth } from "../hooks/useGoogleAuth.js";
 import PasswordInput from "../components/Common/PasswordInput.jsx";
 
 const RegisterSchema = Yup.object().shape({
@@ -25,75 +24,36 @@ const RegisterSchema = Yup.object().shape({
 
 export default function Register() {
   const { register } = useAuth();
-  const { initializeGoogleAuth, isInitialized } = useGoogleAuth();
   const navigate = useNavigate();
   const [formError, setFormError] = useState("");
-  const [googleButtonRendered, setGoogleButtonRendered] = useState(false);
-
-  // Initialize Google OAuth when component mounts
-  useEffect(() => {
-    initializeGoogleAuth();
-  }, [initializeGoogleAuth]);
-
-  // Render Google button when Google SDK is loaded and initialized
-  useEffect(() => {
-    if (isInitialized && !googleButtonRendered) {
-      const buttonContainer = document.getElementById("google-signin-button");
-      if (buttonContainer && window.google) {
-        try {
-          window.google.accounts.id.renderButton(buttonContainer, {
-            theme: "outline",
-            size: "large",
-            width: "100%",
-            text: "continue_with",
-            locale: "en"
-          });
-          setGoogleButtonRendered(true);
-          console.log("Google button rendered successfully");
-          setTimeout(() => {
-            const button =
-              buttonContainer.querySelector('div[role="button"]') ||
-              buttonContainer.querySelector("button");
-            if (button) {
-              button.style.backgroundColor = "#1d4ed8";
-              button.style.color = "white";
-              button.style.border = "none";
-              button.style.borderRadius = "0.5rem";
-            }
-          }, 100);
-        } catch (error) {
-          console.error("Error rendering Google button:", error);
-        }
-      }
-    }
-  }, [isInitialized, googleButtonRendered]);
+  const [success, setSuccess] = useState(false);
 
   return (
-    <div className='min-h-screen flex items-center justify-center bg-green-200 py-6 px-4 safe-area-bottom'>
+    <div className='relative flex items-center justify-center bg-green-50 py-4 px-4 safe-area-bottom'>
+      <Link
+        to='/'
+        className='absolute left-4 top-4 inline-flex items-center text-green-600 hover:text-green-700 font-medium'
+      >
+        ← Back
+      </Link>
       <main
         id='main-content'
-        className='bg-white shadow-xl rounded-2xl w-full max-w-md p-6 sm:p-8 items-center justify-center'
+        className='bg-white shadow-xl rounded-2xl w-3xl max-w-md p-6 sm:p-8 items-center justify-center'
         role='main'
         aria-labelledby='register-title'
       >
+        {success && <SuccessOverlay message='Account created successfully!' />}
         {/* Header */}
-        <div className='text-center mb-8'>
-          <Link
-            to='/'
-            className='inline-flex items-center space-x-2 text-2xl font-bold text-green-800 mb-4'
-          >
-            <span className='text-3xl'>📅</span>
-            <span>BOOKEasy</span>
-          </Link>
+        <div className='text-center mb-8 relative'>
           <h1
             className='text-2xl sm:text-3xl font-bold text-gray-900 mb-2'
             id='register-title'
           >
             Create Account
           </h1>
-          {/* <p className='text-gray-600'>
+          <p className='text-gray-600'>
             Join BOOKEasy to manage your appointments
-          </p> */}
+          </p>
         </div>
 
         <Formik
@@ -111,10 +71,14 @@ export default function Register() {
             console.log("Register response:", res);
 
             if (res.success) {
-              if (res.user_type === "provider") navigate("/provider/dashboard");
-              else navigate("/dashboard");
+              setSuccess(true);
+              setTimeout(() => {
+                if (res.user_type === "provider")
+                  navigate("/provider/dashboard");
+                else navigate("/dashboard");
+              }, 900);
             } else {
-              setFormError(res.message || "Registration failed");
+              setFormError(res.message);
             }
 
             setSubmitting(false);
@@ -247,21 +211,6 @@ export default function Register() {
                     Sign In
                   </Link>
                 </p>
-              </div>
-              {/* Divider */}
-              <div className='relative'>
-                <div className='absolute inset-0 flex items-center'>
-                  <div className='w-full border-t border-gray-300' />
-                </div>
-                <div className='relative flex justify-center text-sm'>
-                  <span className='px-2 bg-white text-gray-500'>Or</span>
-                </div>
-              </div>
-
-              {/* Google OAuth Button */}
-              <div className='w-full bg-blue-600 text-white rounded-lg'>
-                {/* Google button container */}
-                <div id='google-signin-button' className='w-full'></div>
               </div>
             </Form>
           )}

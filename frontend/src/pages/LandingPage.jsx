@@ -382,12 +382,12 @@ export default function HomePage() {
           <p className='text-gray-500 mb-10 text-lg'>
             Join hundreds of providers today. Setup takes less than 2 minutes.
           </p>
-          <button
-            onClick={handleBookNow}
-            className='px-12 py-5 bg-green-600 text-white rounded-2xl font-bold text-xl hover:bg-green-700 shadow-2xl shadow-green-200 transition-all active:scale-95'
+          <Link
+            to={handleBookNow}
+            className='px-6 py-4 border border-green-600 bg-green-600 text-white rounded-2xl font-bold text-xl h transition-all active:scale-95'
           >
             Get Started for Free
-          </button>
+          </Link>
           <p className='mt-6 text-sm text-gray-400'>
             No credit card required • Secure & Encrypted
           </p>

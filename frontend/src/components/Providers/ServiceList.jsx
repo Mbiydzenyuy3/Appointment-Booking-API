@@ -48,6 +48,41 @@ export default function ServiceList({ services = [], onDelete }) {
                 </p>
               )}
 
+              {service.additional_description && (
+                <p className='text-gray-600 mb-4 leading-relaxed'>
+                  {service.additional_description}
+                </p>
+              )}
+
+              {service.location && (
+                <div className='flex items-center gap-2 mb-4'>
+                  <svg
+                    className='w-4 h-4 text-gray-400'
+                    fill='currentColor'
+                    viewBox='0 0 20 20'
+                  >
+                    <path
+                      fillRule='evenodd'
+                      d='M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z'
+                      clipRule='evenodd'
+                    />
+                  </svg>
+                  <span className='text-sm text-gray-600'>
+                    {service.location}
+                  </span>
+                </div>
+              )}
+
+              {service.image_url && (
+                <div className='mb-4'>
+                  <img
+                    src={service.image_url}
+                    alt='Business image'
+                    className='w-full h-32 object-cover rounded-lg'
+                  />
+                </div>
+              )}
+
               <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-600'>
                 <div className='flex items-center gap-2'>
                   <svg

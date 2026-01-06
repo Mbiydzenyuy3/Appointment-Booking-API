@@ -16,8 +16,6 @@ api.interceptors.request.use(
     const publicAuthEndpoints = [
       "/auth/login",
       "/auth/register",
-      "/auth/forgot-password",
-      "/auth/reset-password",
       "/auth/google-auth",
       "/services",
       "/slots/search/available",
@@ -55,8 +53,6 @@ api.interceptors.response.use(
         "401 Unauthorized - clearing token and redirecting to login"
       );
       localStorage.removeItem("token");
-      // Optionally redirect to login page
-      // window.location.href = "/login";
     }
     return Promise.reject(error);
   }

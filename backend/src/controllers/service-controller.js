@@ -6,7 +6,15 @@ import ProviderModel from "../models/provider-model.js";
 export async function create(req, res, next) {
   try {
     const userId = req.user?.user_id;
-    const { name, description, price, durationMinutes } = req.body;
+    const {
+      name,
+      description,
+      price,
+      durationMinutes,
+      location,
+      additionalDescription,
+      imageUrl
+    } = req.body;
 
     const provider = await ProviderModel.findByUserId(userId);
     if (!provider?.provider_id) {
@@ -22,7 +30,10 @@ export async function create(req, res, next) {
       name,
       description,
       price,
-      durationMinutes
+      durationMinutes,
+      location,
+      additionalDescription,
+      imageUrl
     });
 
     const service = await ServiceService.createServices({
@@ -30,7 +41,10 @@ export async function create(req, res, next) {
       name,
       description,
       price,
-      durationMinutes
+      durationMinutes,
+      location,
+      additionalDescription,
+      imageUrl
     });
 
     return res.status(201).json({
