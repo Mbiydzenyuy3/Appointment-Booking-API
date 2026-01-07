@@ -162,7 +162,17 @@ const initializeDbSchema = async () => {
       );
     `);
 
-    // PROVIDER REVIEWS TABLE
+    // PROVIDER REVIEWS TABLE - Handle potential type mismatch
+    await client.query(`
+      DO $$
+      BEGIN
+        -- Drop table if it exists with wrong column types
+        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'provider_reviews' AND column_name = 'provider_id' AND data_type = 'uuid') THEN
+          DROP TABLE provider_reviews;
+        END IF;
+      END $$;
+    `);
+
     await client.query(`
       CREATE TABLE IF NOT EXISTS provider_reviews (
         review_id SERIAL PRIMARY KEY,
