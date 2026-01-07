@@ -122,9 +122,25 @@ const initializeDbSchema = async () => {
 
     // Add new columns to existing providers table
     await client.query(`
-      ALTER TABLE providers 
+      ALTER TABLE providers
       ADD COLUMN IF NOT EXISTS hourly_rate DECIMAL(10, 2),
-      ADD COLUMN IF NOT EXISTS service_types TEXT;
+      ADD COLUMN IF NOT EXISTS service_types TEXT,
+      ADD COLUMN IF NOT EXISTS booking_slug VARCHAR(255) UNIQUE,
+      ADD COLUMN IF NOT EXISTS referral_code VARCHAR(255) UNIQUE,
+      ADD COLUMN IF NOT EXISTS last_active TIMESTAMP,
+      ADD COLUMN IF NOT EXISTS response_time_avg INTEGER DEFAULT 0,
+      ADD COLUMN IF NOT EXISTS total_bookings INTEGER DEFAULT 0,
+      ADD COLUMN IF NOT EXISTS completed_bookings INTEGER DEFAULT 0,
+      ADD COLUMN IF NOT EXISTS cancellation_rate DECIMAL(5,2) DEFAULT 0.00,
+      ADD COLUMN IF NOT EXISTS average_rating DECIMAL(3,2) DEFAULT 0.00,
+      ADD COLUMN IF NOT EXISTS profile_views INTEGER DEFAULT 0,
+      ADD COLUMN IF NOT EXISTS last_profile_view TIMESTAMP,
+      ADD COLUMN IF NOT EXISTS referral_count INTEGER DEFAULT 0,
+      ADD COLUMN IF NOT EXISTS is_online BOOLEAN DEFAULT FALSE,
+      ADD COLUMN IF NOT EXISTS certifications JSONB DEFAULT '[]',
+      ADD COLUMN IF NOT EXISTS business_photos TEXT[] DEFAULT '{}',
+      ADD COLUMN IF NOT EXISTS testimonials JSONB DEFAULT '[]',
+      ADD COLUMN IF NOT EXISTS years_of_experience INTEGER DEFAULT 0;
     `);
 
     // Make password nullable for OAuth users
@@ -141,6 +157,19 @@ const initializeDbSchema = async () => {
         hourly_rate DECIMAL(10, 2),
         service_types TEXT,
         rating DECIMAL CHECK (rating >= 0 AND rating <= 5),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // PROVIDER REVIEWS TABLE
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS provider_reviews (
+        review_id SERIAL PRIMARY KEY,
+        provider_id INTEGER REFERENCES providers(provider_id) ON DELETE CASCADE,
+        user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
+        rating DECIMAL(3,2) NOT NULL CHECK (rating >= 1.0 AND rating <= 5.0),
+        review_text TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
@@ -168,6 +197,19 @@ const initializeDbSchema = async () => {
       ADD COLUMN IF NOT EXISTS location TEXT,
       ADD COLUMN IF NOT EXISTS additional_description TEXT,
       ADD COLUMN IF NOT EXISTS image_url TEXT;
+    `);
+
+    // Rename columns if they exist with old names
+    await client.query(`
+      DO $$
+      BEGIN
+        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'services' AND column_name = 'name') THEN
+          ALTER TABLE services RENAME COLUMN name TO service_name;
+        END IF;
+        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'services' AND column_name = 'duration') THEN
+          ALTER TABLE services RENAME COLUMN duration TO duration_minutes;
+        END IF;
+      END $$;
     `);
 
     // TIME SLOT TABLE
