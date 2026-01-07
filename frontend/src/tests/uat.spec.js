@@ -4,7 +4,12 @@
  */
 
 import { test, expect } from "@playwright/test";
-import { analyzeAccessibility } from "@axe-core/playwright";
+import { injectAxe, getAxeResults } from "@axe-core/playwright";
+
+const runAccessibilityTests = async (page) => {
+  await injectAxe(page);
+  return await getAxeResults(page);
+};
 
 // UAT Test Scenarios
 const uatScenarios = [
@@ -218,7 +223,7 @@ test.describe("User Acceptance Testing (UAT)", () => {
 
             // Check accessibility at each step
             if (step.includes("page") || step.includes("navigate")) {
-              const accessibility = await analyzeAccessibility(page);
+              const accessibility = await runAccessibilityTests(page);
               results.accessibility[step] = accessibility;
 
               // Fail if critical accessibility issues
@@ -301,7 +306,7 @@ test.describe("User Acceptance Testing (UAT)", () => {
           }
 
           // Check accessibility on mobile
-          const accessibility = await analyzeAccessibility(page);
+          const accessibility = await runAccessibilityTests(page);
           const mobileViolations = accessibility.violations.filter((v) =>
             ["touch-target", "mobile"].some(
               (keyword) =>
@@ -338,7 +343,7 @@ test.describe("User Acceptance Testing (UAT)", () => {
         }
 
         // Verify basic functionality
-        const accessibility = await analyzeAccessibility(page);
+        const accessibility = await runAccessibilityTests(page);
         expect(accessibility.violations.length).toBe(0);
 
         // Test performance
@@ -521,7 +526,7 @@ async function verifySuccessCriteria(page, criteria) {
     }
 
     case "All pages meet accessibility standards": {
-      const accessibility = await analyzeAccessibility(page);
+      const accessibility = await runAccessibilityTests(page);
       return accessibility.violations.length === 0;
     }
 

@@ -231,34 +231,59 @@ const AvailabilityPicker = ({ providerId, onSlotSelect, selectedSlotId }) => {
             })}
           </h4>
 
-          <div className='grid grid-cols-2 gap-2 max-h-48 overflow-y-auto'>
-            {getSlotsForDate(selectedDate).map((slot) => (
-              <button
-                key={slot.timeslot_id}
-                onClick={() => handleSlotSelect(slot)}
-                className={`
-                  p-3 text-center rounded-lg border-2 transition-all duration-200 touch-target
-                  ${
-                    selectedSlotId === slot.timeslot_id
-                      ? "border-green-500 bg-green-50 text-green-700"
-                      : "border-gray-200 hover:border-green-300 hover:bg-green-50 text-gray-700"
-                  }
-                `}
-              >
-                <div className='font-medium'>
-                  {new Date(`2000-01-01T${slot.start_time}`).toLocaleTimeString(
+          {getSlotsForDate(selectedDate).length === 0 ? (
+            <div className='text-center py-8 text-gray-500'>
+              <svg className='w-12 h-12 mx-auto mb-3 text-gray-300' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={1} d='M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' />
+              </svg>
+              <p className='text-sm'>No available time slots for this date</p>
+              <p className='text-xs mt-1'>Try selecting a different date</p>
+            </div>
+          ) : (
+            <div className='grid grid-cols-2 gap-2 max-h-48 overflow-y-auto'>
+              {getSlotsForDate(selectedDate).map((slot) => (
+                <button
+                  key={slot.timeslot_id}
+                  onClick={() => handleSlotSelect(slot)}
+                  className={`
+                    p-3 text-center rounded-lg border-2 transition-all duration-200 touch-target
+                    ${
+                      selectedSlotId === slot.timeslot_id
+                        ? "border-green-500 bg-green-50 text-green-700 shadow-md transform scale-105"
+                        : "border-gray-200 hover:border-green-300 hover:bg-green-50 text-gray-700 hover:shadow-sm"
+                    }
+                  `}
+                  aria-label={`Select time slot ${new Date(`2000-01-01T${slot.start_time}`).toLocaleTimeString(
                     "en-US",
                     {
                       hour: "numeric",
                       minute: "2-digit",
                       hour12: true
                     }
+                  )} - ${slot.name}`}
+                >
+                  <div className='font-medium'>
+                    {new Date(`2000-01-01T${slot.start_time}`).toLocaleTimeString(
+                      "en-US",
+                      {
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true
+                      }
+                    )}
+                  </div>
+                  <div className='text-xs text-gray-500 mt-1'>{slot.name}</div>
+                  {selectedSlotId === slot.timeslot_id && (
+                    <div className='mt-1'>
+                      <svg className='w-4 h-4 mx-auto text-green-600' fill='currentColor' viewBox='0 0 20 20'>
+                        <path fillRule='evenodd' d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z' clipRule='evenodd' />
+                      </svg>
+                    </div>
                   )}
-                </div>
-                <div className='text-xs text-gray-500 mt-1'>{slot.name}</div>
-              </button>
-            ))}
-          </div>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { LazyImage } from "../hooks/useLazyLoading";
+import { LazyImage } from "../../hooks/useLazyLoading";
 
 /**
  * ProgressiveImage component that supports WebP with fallbacks

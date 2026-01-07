@@ -4,7 +4,12 @@
  */
 
 import { test, expect } from "@playwright/test";
-import { analyzeAccessibility } from "@axe-core/playwright";
+import { injectAxe, getAxeResults } from "@axe-core/playwright";
+
+const runAccessibilityTests = async (page) => {
+  await injectAxe(page);
+  return await getAxeResults(page);
+};
 
 // Test user workflows for appointment booking system
 test.describe("End-to-End User Workflows", () => {
@@ -17,7 +22,7 @@ test.describe("End-to-End User Workflows", () => {
       await page.waitForLoadState("networkidle");
 
       // Check accessibility of landing page
-      const landingAccessibility = await analyzeAccessibility(page);
+      const landingAccessibility = await runAccessibilityTests(page);
       expect(landingAccessibility.violations.length).toBe(0);
 
       // Navigate to registration
@@ -25,7 +30,7 @@ test.describe("End-to-End User Workflows", () => {
       await page.waitForLoadState("networkidle");
 
       // Check accessibility of registration page
-      const registerAccessibility = await analyzeAccessibility(page);
+      const registerAccessibility = await runAccessibilityTests(page);
       expect(registerAccessibility.violations.length).toBe(0);
 
       // Fill registration form
@@ -76,7 +81,7 @@ test.describe("End-to-End User Workflows", () => {
       await page.waitForLoadState("networkidle");
 
       // Check accessibility of login page
-      const loginAccessibility = await analyzeAccessibility(page);
+      const loginAccessibility = await runAccessibilityTests(page);
       expect(loginAccessibility.violations.length).toBe(0);
 
       // Test keyboard navigation
@@ -120,7 +125,7 @@ test.describe("End-to-End User Workflows", () => {
       await page.goto("/dashboard");
       await page.waitForLoadState("networkidle");
 
-      const dashboardAccessibility = await analyzeAccessibility(page);
+      const dashboardAccessibility = await runAccessibilityTests(page);
       expect(dashboardAccessibility.violations.length).toBe(0);
 
       // Navigate to appointment booking
@@ -128,7 +133,7 @@ test.describe("End-to-End User Workflows", () => {
       await page.waitForLoadState("networkidle");
 
       // Check booking page accessibility
-      const bookingAccessibility = await analyzeAccessibility(page);
+      const bookingAccessibility = await runAccessibilityTests(page);
       expect(bookingAccessibility.violations.length).toBe(0);
 
       // Test service selection with keyboard navigation
@@ -179,7 +184,7 @@ test.describe("End-to-End User Workflows", () => {
       await page.waitForLoadState("networkidle");
 
       // Check appointments page accessibility
-      const appointmentsAccessibility = await analyzeAccessibility(page);
+      const appointmentsAccessibility = await runAccessibilityTests(page);
       expect(appointmentsAccessibility.violations.length).toBe(0);
 
       // Test appointment list accessibility
@@ -236,7 +241,7 @@ test.describe("Responsive End-to-End Tests", () => {
         await page.waitForLoadState("networkidle");
 
         // Check responsive accessibility
-        const accessibility = await analyzeAccessibility(page);
+        const accessibility = await runAccessibilityTests(page);
         expect(accessibility.violations.length).toBe(0);
 
         // Test form usability on mobile

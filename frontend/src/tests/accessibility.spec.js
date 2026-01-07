@@ -4,12 +4,13 @@
  */
 
 import { test, expect } from "@playwright/test";
-import { analyzeAccessibility } from "@axe-core/playwright";
+import { injectAxe, getAxeResults } from "@axe-core/playwright";
 
 // Import our comprehensive accessibility suite
 // Note: This would need to be adapted for Playwright context
 const runAccessibilityTests = async (page) => {
-  const results = await analyzeAccessibility(page, {
+  await injectAxe(page);
+  const results = await getAxeResults(page, {
     detailedReport: true,
     detailedReportOptions: {
       html: true

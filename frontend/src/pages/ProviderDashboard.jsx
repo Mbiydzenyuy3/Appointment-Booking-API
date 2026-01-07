@@ -91,7 +91,7 @@ export default function ProviderDashboard() {
     try {
       await api.delete(`/services/${serviceId}`);
       setServices((prev) => prev.filter((s) => s.service_id !== serviceId));
-      toast.success("Service deleted");
+      toast.success("Service removed successfully. Your changes are saved.");
     } catch (error) {
       console.error("Delete service error:", error);
       toast.error("Failed to delete service");
@@ -102,7 +102,9 @@ export default function ProviderDashboard() {
     try {
       const res = await api.post("/slots/create", slot);
       setTimeSlots((prev) => [...prev, res.data.data]);
-      toast.success("Timeslot created");
+      toast.success(
+        "Perfect! Your time slot has been added and is ready for bookings."
+      );
     } catch (error) {
       console.error("Create timeslot error:", error);
       toast.error("Failed to create timeslot");
@@ -113,7 +115,7 @@ export default function ProviderDashboard() {
     try {
       await api.delete(`/slots/${slotId}`);
       setTimeSlots((prev) => prev.filter((s) => s.timeslot_id !== slotId));
-      toast.success("Timeslot deleted");
+      toast.success("Time slot removed. Your schedule has been updated.");
     } catch (error) {
       console.error("Delete timeslot error:", error);
       toast.error("Failed to delete timeslot");
@@ -470,7 +472,9 @@ export default function ProviderDashboard() {
                         <button
                           onClick={() => {
                             navigator.clipboard.writeText(bookingLink);
-                            toast.success("Link copied to clipboard!");
+                            toast.success(
+                              "Link copied! Share it with your clients to start getting bookings."
+                            );
                           }}
                           className='px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700'
                         >
@@ -498,7 +502,9 @@ export default function ProviderDashboard() {
                         <button
                           onClick={() => {
                             navigator.clipboard.writeText(referralCode);
-                            toast.success("Referral code copied!");
+                            toast.success(
+                              "Referral code copied! Share it to invite other providers."
+                            );
                           }}
                           className='px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700'
                         >
@@ -523,43 +529,20 @@ export default function ProviderDashboard() {
                       >
                         <path d='M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1h4v1a2 2 0 11-4 0zM12 14c.015-.34.208-.646.477-.859a4 4 0 10-4.954 0c.27.213.462.519.477.859h1.49c.83 0 1.5.67 1.5 1.5S14.33 17 13.5 17h-3C9.67 17 9 16.33 9 15.5v-1.379c.234-.121.406-.312.523-.531.472-.722 1.264-1.09 2.475-1.09z' />
                       </svg>
-                      WhatsApp Broadcasting
+                      Marketing Tools
                     </h2>
                   </div>
                   <div className='p-4 sm:p-6'>
                     <p className='text-gray-600 mb-4'>
-                      Broadcast your available slots to clients via WhatsApp.
+                      Use your personal booking link and referral code to grow
+                      your business.
                     </p>
-                    <button
-                      onClick={async () => {
-                        try {
-                          const availableSlots = timeSlots.filter(
-                            (slot) => slot.is_available
-                          );
-                          if (availableSlots.length === 0) {
-                            toast.error("No available slots to broadcast");
-                            return;
-                          }
-                          const result = await api.post(
-                            "/whatsapp/broadcast-slots",
-                            {
-                              slots: availableSlots.map((slot) => ({
-                                day: slot.day,
-                                start_time: slot.start_time,
-                                end_time: slot.end_time
-                              }))
-                            }
-                          );
-                          toast.success(result.data.message);
-                        } catch (error) {
-                          console.error("Broadcast error:", error);
-                          toast.error("Failed to broadcast slots");
-                        }
-                      }}
-                      className='px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium'
-                    >
-                      📱 Broadcast Available Slots
-                    </button>
+                    <div className='text-center py-8'>
+                      <div className='text-4xl mb-4'>📈</div>
+                      <p className='text-gray-600'>
+                        Marketing features coming soon!
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -670,7 +653,9 @@ export default function ProviderDashboard() {
                       <button
                         onClick={() => {
                           navigator.clipboard.writeText(bookingLink);
-                          toast.success("Link copied to clipboard!");
+                          toast.success(
+                            "Link copied! Share it with your clients to start getting bookings."
+                          );
                         }}
                         className='px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium'
                       >
@@ -700,7 +685,9 @@ export default function ProviderDashboard() {
                       <button
                         onClick={() => {
                           navigator.clipboard.writeText(referralCode);
-                          toast.success("Referral code copied!");
+                          toast.success(
+                            "Referral code copied! Share it to invite other providers."
+                          );
                         }}
                         className='px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm font-medium'
                       >
@@ -717,43 +704,20 @@ export default function ProviderDashboard() {
                 <div className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden'>
                   <div className='p-4 border-b border-gray-100'>
                     <h2 className='text-lg font-semibold text-gray-900'>
-                      WhatsApp Broadcasting
+                      Marketing Tools
                     </h2>
                   </div>
                   <div className='p-4'>
                     <p className='text-gray-600 mb-4'>
-                      Broadcast your available slots to clients via WhatsApp.
+                      Use your personal booking link and referral code to grow
+                      your business.
                     </p>
-                    <button
-                      onClick={async () => {
-                        try {
-                          const availableSlots = timeSlots.filter(
-                            (slot) => slot.is_available
-                          );
-                          if (availableSlots.length === 0) {
-                            toast.error("No available slots to broadcast");
-                            return;
-                          }
-                          const result = await api.post(
-                            "/whatsapp/broadcast-slots",
-                            {
-                              slots: availableSlots.map((slot) => ({
-                                day: slot.day,
-                                start_time: slot.start_time,
-                                end_time: slot.end_time
-                              }))
-                            }
-                          );
-                          toast.success(result.data.message);
-                        } catch (error) {
-                          console.error("Broadcast error:", error);
-                          toast.error("Failed to broadcast slots");
-                        }
-                      }}
-                      className='w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium'
-                    >
-                      📱 Broadcast Available Slots
-                    </button>
+                    <div className='text-center py-8'>
+                      <div className='text-4xl mb-4'>📈</div>
+                      <p className='text-gray-600'>
+                        Marketing features coming soon!
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>

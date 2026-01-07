@@ -9,7 +9,6 @@ const ProviderModel = {
     user_id,
     bio,
     rating,
-    whatsapp_number,
     certifications = [],
     business_photos = [],
     testimonials = [],
@@ -27,8 +26,8 @@ const ProviderModel = {
 
       const { rows } = await query(
         `
-        INSERT INTO providers (user_id, bio, rating, booking_slug, referral_code, whatsapp_number, certifications, business_photos, testimonials, years_of_experience)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        INSERT INTO providers (user_id, bio, rating, booking_slug, referral_code, certifications, business_photos, testimonials, years_of_experience)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         RETURNING *;
         `,
         [
@@ -37,7 +36,6 @@ const ProviderModel = {
           rating,
           bookingSlug,
           referralCode,
-          whatsapp_number,
           JSON.stringify(certifications),
           webpPhotos, // Store WebP versions
           JSON.stringify(testimonials),
