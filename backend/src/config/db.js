@@ -120,6 +120,35 @@ const initializeDbSchema = async () => {
       ADD COLUMN IF NOT EXISTS accessibility_history JSONB DEFAULT '[]';
     `);
 
+    // Make password nullable for OAuth users
+    await client.query(`
+      ALTER TABLE users ALTER COLUMN password DROP NOT NULL;
+    `);
+
+    // SERVICE PROVIDER TABLE - Handle potential type mismatch
+    await client.query(`
+      DO $$
+      BEGIN
+        -- Drop table if it exists with wrong column types
+        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'providers' AND column_name = 'provider_id' AND data_type = 'uuid') THEN
+          DROP TABLE providers CASCADE;
+        END IF;
+      END $$;
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS providers (
+        provider_id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL UNIQUE REFERENCES users(user_id) ON DELETE CASCADE,
+        bio TEXT,
+        hourly_rate DECIMAL(10, 2),
+        service_types TEXT,
+        rating DECIMAL CHECK (rating >= 0 AND rating <= 5),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
     // Add new columns to existing providers table
     await client.query(`
       ALTER TABLE providers
@@ -141,25 +170,6 @@ const initializeDbSchema = async () => {
       ADD COLUMN IF NOT EXISTS business_photos TEXT[] DEFAULT '{}',
       ADD COLUMN IF NOT EXISTS testimonials JSONB DEFAULT '[]',
       ADD COLUMN IF NOT EXISTS years_of_experience INTEGER DEFAULT 0;
-    `);
-
-    // Make password nullable for OAuth users
-    await client.query(`
-      ALTER TABLE users ALTER COLUMN password DROP NOT NULL;
-    `);
-
-    // SERVICE PROVIDER TABLE
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS providers (
-        provider_id SERIAL PRIMARY KEY,
-        user_id INTEGER NOT NULL UNIQUE REFERENCES users(user_id) ON DELETE CASCADE,
-        bio TEXT,
-        hourly_rate DECIMAL(10, 2),
-        service_types TEXT,
-        rating DECIMAL CHECK (rating >= 0 AND rating <= 5),
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
     `);
 
     // PROVIDER REVIEWS TABLE - Handle potential type mismatch
