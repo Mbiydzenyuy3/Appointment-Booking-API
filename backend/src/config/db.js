@@ -77,7 +77,7 @@ const initializeDbSchema = async () => {
     // USERS TABLE
     await client.query(`
       CREATE TABLE IF NOT EXISTS users (
-        user_id SERIAL PRIMARY KEY,
+        user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         name VARCHAR(50) NOT NULL,
         email VARCHAR(100) UNIQUE NOT NULL,
         password VARCHAR(255),
@@ -130,7 +130,7 @@ const initializeDbSchema = async () => {
       DO $$
       BEGIN
         -- Drop table if it exists with wrong column types
-        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'providers' AND column_name = 'provider_id' AND data_type = 'uuid') THEN
+        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'providers' AND column_name = 'user_id' AND data_type = 'integer') THEN
           DROP TABLE providers CASCADE;
         END IF;
       END $$;
@@ -138,8 +138,8 @@ const initializeDbSchema = async () => {
 
     await client.query(`
       CREATE TABLE IF NOT EXISTS providers (
-        provider_id SERIAL PRIMARY KEY,
-        user_id INTEGER NOT NULL UNIQUE REFERENCES users(user_id) ON DELETE CASCADE,
+        provider_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id UUID NOT NULL UNIQUE REFERENCES users(user_id) ON DELETE CASCADE,
         bio TEXT,
         hourly_rate DECIMAL(10, 2),
         service_types TEXT,
@@ -177,7 +177,7 @@ const initializeDbSchema = async () => {
       DO $$
       BEGIN
         -- Drop table if it exists with wrong column types
-        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'provider_reviews' AND column_name = 'provider_id' AND data_type = 'uuid') THEN
+        IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'provider_reviews' AND column_name = 'provider_id' AND data_type = 'integer') THEN
           DROP TABLE provider_reviews;
         END IF;
       END $$;
@@ -185,9 +185,9 @@ const initializeDbSchema = async () => {
 
     await client.query(`
       CREATE TABLE IF NOT EXISTS provider_reviews (
-        review_id SERIAL PRIMARY KEY,
-        provider_id INTEGER REFERENCES providers(provider_id) ON DELETE CASCADE,
-        user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
+        review_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        provider_id UUID REFERENCES providers(provider_id) ON DELETE CASCADE,
+        user_id UUID REFERENCES users(user_id) ON DELETE CASCADE,
         rating DECIMAL(3,2) NOT NULL CHECK (rating >= 1.0 AND rating <= 5.0),
         review_text TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -197,8 +197,8 @@ const initializeDbSchema = async () => {
 
     await client.query(`
       CREATE TABLE IF NOT EXISTS services (
-        service_id SERIAL PRIMARY KEY,
-        provider_id INTEGER NOT NULL REFERENCES providers(provider_id) ON DELETE CASCADE,
+        service_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        provider_id UUID NOT NULL REFERENCES providers(provider_id) ON DELETE CASCADE,
         service_name VARCHAR(100) NOT NULL,
         description TEXT,
         price DECIMAL(10, 2) NOT NULL,
@@ -235,9 +235,9 @@ const initializeDbSchema = async () => {
     // TIME SLOT TABLE
     await client.query(`
       CREATE TABLE IF NOT EXISTS time_slots (
-        timeslot_id SERIAL PRIMARY KEY,
-        provider_id INTEGER NOT NULL REFERENCES providers(provider_id) ON DELETE CASCADE,
-        service_id INTEGER NOT NULL REFERENCES services(service_id) ON DELETE CASCADE,
+        timeslot_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        provider_id UUID NOT NULL REFERENCES providers(provider_id) ON DELETE CASCADE,
+        service_id UUID NOT NULL REFERENCES services(service_id) ON DELETE CASCADE,
         day DATE NOT NULL,
         start_time TIME NOT NULL,
         end_time TIME NOT NULL,
@@ -270,11 +270,11 @@ const initializeDbSchema = async () => {
     // APPOINTMENTS TABLE
     await client.query(`
        CREATE TABLE IF NOT EXISTS appointments (
-        appointment_id SERIAL PRIMARY KEY,
-        user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-        provider_id INTEGER NOT NULL REFERENCES providers(provider_id) ON DELETE CASCADE,
-        service_id INTEGER NOT NULL REFERENCES services(service_id) ON DELETE CASCADE,
-        timeslot_id INTEGER NOT NULL REFERENCES time_slots(timeslot_id) ON DELETE CASCADE,
+        appointment_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+        provider_id UUID NOT NULL REFERENCES providers(provider_id) ON DELETE CASCADE,
+        service_id UUID NOT NULL REFERENCES services(service_id) ON DELETE CASCADE,
+        timeslot_id UUID NOT NULL REFERENCES time_slots(timeslot_id) ON DELETE CASCADE,
         appointment_date DATE NOT NULL,
         appointment_time TIME NOT NULL,
         status VARCHAR(20) CHECK (status IN ('booked', 'canceled', 'completed', 'no-show')) DEFAULT 'booked',

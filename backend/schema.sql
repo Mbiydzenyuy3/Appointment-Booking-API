@@ -1,8 +1,8 @@
--- Database schema for appointment booking app
+i-- Database schema for appointment booking app
 
 -- Users table
 CREATE TABLE users (
-    user_id SERIAL PRIMARY KEY,
+    user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(255),
@@ -27,8 +27,8 @@ CREATE TABLE users (
 
 -- Providers table
 CREATE TABLE providers (
-    provider_id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
+    provider_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(user_id) ON DELETE CASCADE,
     bio TEXT,
     rating DECIMAL(3,2) DEFAULT 0.00,
     hourly_rate DECIMAL(10,2),
@@ -39,8 +39,8 @@ CREATE TABLE providers (
 
 -- Services table
 CREATE TABLE services (
-    service_id SERIAL PRIMARY KEY,
-    provider_id INTEGER REFERENCES providers(provider_id) ON DELETE CASCADE,
+    service_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    provider_id UUID REFERENCES providers(provider_id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
     description TEXT,
     duration INTEGER NOT NULL, -- in minutes
@@ -51,9 +51,9 @@ CREATE TABLE services (
 
 -- Time slots table
 CREATE TABLE time_slots (
-     timeslot_id SERIAL PRIMARY KEY,
-     provider_id INTEGER REFERENCES providers(provider_id) ON DELETE CASCADE,
-     service_id INTEGER REFERENCES services(service_id) ON DELETE CASCADE,
+     timeslot_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+     provider_id UUID REFERENCES providers(provider_id) ON DELETE CASCADE,
+     service_id UUID REFERENCES services(service_id) ON DELETE CASCADE,
      day DATE,
      start_time TIME NOT NULL,
      end_time TIME NOT NULL,
@@ -65,11 +65,11 @@ CREATE TABLE time_slots (
 
 -- Appointments table
 CREATE TABLE appointments (
-     appointment_id SERIAL PRIMARY KEY,
-     user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
-     provider_id INTEGER REFERENCES providers(provider_id) ON DELETE CASCADE,
-     service_id INTEGER REFERENCES services(service_id) ON DELETE SET NULL,
-     timeslot_id INTEGER REFERENCES time_slots(timeslot_id) ON DELETE SET NULL,
+     appointment_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+     user_id UUID REFERENCES users(user_id) ON DELETE CASCADE,
+     provider_id UUID REFERENCES providers(provider_id) ON DELETE CASCADE,
+     service_id UUID REFERENCES services(service_id) ON DELETE SET NULL,
+     timeslot_id UUID REFERENCES time_slots(timeslot_id) ON DELETE SET NULL,
      appointment_date DATE,
      appointment_time TIME,
      status VARCHAR(50) DEFAULT 'booked' CHECK (status IN ('booked', 'confirmed', 'completed', 'cancelled', 'rescheduled')),
