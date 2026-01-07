@@ -116,9 +116,6 @@ class AISchedulerController {
     }
   }
 
-  /**
-   * Learn from user appointment behavior
-   */
   async learnFromAppointmentBehavior(req, res) {
     try {
       const { userId } = req.params;
