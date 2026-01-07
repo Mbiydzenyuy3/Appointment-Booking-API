@@ -8,22 +8,17 @@ export default function HomePage() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const handleBookNow = () => {
-    if (user) {
-      if (user.user_type === "client") {
-        navigate("/dashboard");
-      } else if (user.user_type === "provider") {
-        navigate("/provider-dashboard");
-      } else {
-        navigate("/dashboard");
-      }
-    } else {
-      navigate("/login");
-    }
-  };
-
   const handleExploreBusinesses = () => {
-    navigate("/explore");
+    const whatInput = document.querySelector(
+      'input[placeholder*="What do you need"]'
+    ).value;
+    const whereInput = document.querySelector(
+      'input[placeholder*="Where"]'
+    ).value;
+    const params = new URLSearchParams();
+    if (whatInput.trim()) params.set("q", whatInput.trim());
+    if (whereInput.trim()) params.set("location", whereInput.trim());
+    navigate(`/explore?${params.toString()}`);
   };
 
   const handleProviderCTA = () => {
@@ -33,12 +28,6 @@ export default function HomePage() {
       navigate("/register");
     }
   };
-
-  const ctaLabel = user
-    ? user.user_type === "provider"
-      ? "Go to Dashboard"
-      : "Book an Appointment"
-    : "Start Accepting Bookings";
 
   return (
     <div className='min-h-screen bg-white flex flex-col font-sans' id='hero'>
@@ -51,30 +40,37 @@ export default function HomePage() {
         ></div>
 
         <div className='relative z-10 max-w-5xl text-center px-4' id='/'>
-          <h1 className='text-5xl sm:text-5xl lg:text-6xl font-extrabold mb-6 leading-tight'>
-            Let clients book you without calls, messages, or stress.
+          <h1 className='text-5xl sm:text-5xl lg:text-6xl font-extrabold mb-6 leading-tight text-white'>
+            Stop Wasting Credit on Unanswered Calls.
           </h1>
           <p className='text-lg sm:text-xl text-green-100 mb-10'>
-            BookEasy helps service businesses accept bookings online while
-            clients book instantly, anytime.
+            Find trusted barbers, doctors, and coaches in Douala, Yaoundé, and
+            Buea. Book instantly, pay securely, and skip the waiting line.
           </p>
-          <div className='flex flex-col sm:flex-row gap-4 justify-center'>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleExploreBusinesses();
+            }}
+            className='flex flex-col sm:flex-row gap-4 justify-center mb-6 max-w-2xl mx-auto'
+          >
+            <input
+              type='text'
+              placeholder='What do you need? (e.g., Barber, Dentist, Makeup)'
+              className='flex-1 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500'
+            />
+            <input
+              type='text'
+              placeholder='Where? (e.g., Akwa, Bonanjo, Molyko)'
+              className='flex-1 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500'
+            />
             <button
-              onClick={handleExploreBusinesses}
-              aria-label='Explore Businesses'
-              className='btn btn-primary px-8 py-4 text-lg font-semibold'
+              type='submit'
+              className='btn btn-primary px-12 py-3 font-semibold whitespace-nowrap'
             >
-              Explore Businesses
+              Find Appointments
             </button>
-
-            <button
-              onClick={handleProviderCTA}
-              aria-label={ctaLabel}
-              className='btn btn-outline border-white text-white hover:bg-white hover:text-green-900 px-8 py-4 text-lg font-semibold'
-            >
-              {ctaLabel}
-            </button>
-          </div>
+          </form>
           <p className='mt-6 text-sm text-green-200'>
             Free to start • No credit card required
           </p>
@@ -167,10 +163,64 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section className='py-16 bg-gray-50'>
+        <div className='container mx-auto px-6 text-center'>
+          <h2 className='text-3xl md:text-4xl font-bold text-gray-900 mb-12'>
+            Real Pros. Verified Identities.
+          </h2>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto'>
+            <div className='bg-white p-8 rounded-xl shadow-sm'>
+              <div className='w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4'>
+                <svg
+                  className='w-8 h-8'
+                  fill='none'
+                  stroke='currentColor'
+                  viewBox='0 0 24 24'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth='2'
+                    d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
+                  />
+                </svg>
+              </div>
+              <h3 className='font-bold text-xl mb-2'>Identity Checked</h3>
+              <p className='text-gray-600'>
+                Every "Verified" business has submitted a valid CNI and business
+                location proof. We know exactly who they are.
+              </p>
+            </div>
+            <div className='bg-white p-8 rounded-xl shadow-sm'>
+              <div className='w-16 h-16 bg-yellow-50 text-yellow-500 rounded-full flex items-center justify-center mx-auto mb-4'>
+                <svg
+                  className='w-8 h-8'
+                  fill='none'
+                  stroke='currentColor'
+                  viewBox='0 0 24 24'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth='2'
+                    d='M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z'
+                  />
+                </svg>
+              </div>
+              <h3 className='font-bold text-xl mb-2'>Real Reviews Only</h3>
+              <p className='text-gray-600'>
+                You can only review a business after you've actually booked and
+                paid. No fake 5-star ratings from cousins and friends.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className='py-16 bg-white' id='features'>
         <div className='container-mobile'>
           <h2 className='text-3xl font-bold text-center mb-12 text-green-800'>
-            What Book Easy Offers
+            What BOOKEasy Offers
           </h2>
 
           <div className='grid grid-cols-1 sm:grid-cols-3 gap-6'>
@@ -235,88 +285,126 @@ export default function HomePage() {
       </section>
 
       <section className='py-20 bg-white'>
-        <div className='container mx-auto px-6 grid md:grid-cols-2 gap-16 items-center'>
-          <div>
-            <h2 className='text-3xl md:text-4xl font-bold text-gray-900 mb-6 leading-tight'>
-              Stop losing clients to <br />
-              manual scheduling.
-            </h2>
-            <div className='space-y-6'>
+        <div className='container mx-auto px-6'>
+          <h2 className='text-3xl md:text-4xl font-bold text-center text-gray-900 mb-12'>
+            Why BOOKEasy is Better Than "Just Call Me"
+          </h2>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-12'>
+            <div className='space-y-8'>
               <div className='flex gap-4'>
                 <div className='flex-shrink-0 w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center'>
-                  <svg
-                    className='w-6 h-6'
-                    fill='none'
-                    stroke='currentColor'
-                    viewBox='0 0 24 24'
-                  >
-                    <path
-                      strokeLinecap='round'
-                      strokeLinejoin='round'
-                      strokeWidth='2'
-                      d='M6 18L18 6M6 6l12 12'
-                    />
-                  </svg>
+                  ❌
                 </div>
                 <div>
                   <h4 className='font-bold text-gray-900'>The Old Way</h4>
-                  <p className='text-gray-500 text-sm'>
-                    Missed calls, double-bookings, and constant back-and-forth
-                    messages.
+                  <p className='text-gray-500'>
+                    "Has he read my WhatsApp?" You send a message. One tick. You
+                    wait 4 hours for a reply just to hear "I'm busy today."
                   </p>
                 </div>
               </div>
               <div className='flex gap-4'>
                 <div className='flex-shrink-0 w-12 h-12 bg-green-50 text-green-500 rounded-full flex items-center justify-center'>
-                  <svg
-                    className='w-6 h-6'
-                    fill='none'
-                    stroke='currentColor'
-                    viewBox='0 0 24 24'
-                  >
-                    <path
-                      strokeLinecap='round'
-                      strokeLinejoin='round'
-                      strokeWidth='2'
-                      d='M5 13l4 4L19 7'
-                    />
-                  </svg>
+                  ✅
                 </div>
                 <div>
-                  <h4 className='font-bold text-gray-900'>The BookEasy Way</h4>
-                  <p className='text-gray-500 text-sm'>
-                    Automated reminders, real-time availability, and a
-                    professional link in your bio.
+                  <h4 className='font-bold text-gray-900'>The BOOKEasy Way</h4>
+                  <p className='text-gray-500'>
+                    Instant Confirmation. See real-time availability. Tap "Book"
+                    and get an SMS confirmation in seconds. No chatting
+                    required.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className='space-y-8'>
+              <div className='flex gap-4'>
+                <div className='flex-shrink-0 w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center'>
+                  ❌
+                </div>
+                <div>
+                  <h4 className='font-bold text-gray-900'>The Old Way</h4>
+                  <p className='text-gray-500'>
+                    The "I'm Coming" Lie. You arrive on time, but the barber is
+                    eating or "stuck in traffic," and you wait 45 minutes on a
+                    plastic chair.
+                  </p>
+                </div>
+              </div>
+              <div className='flex gap-4'>
+                <div className='flex-shrink-0 w-12 h-12 bg-green-50 text-green-500 rounded-full flex items-center justify-center'>
+                  ✅
+                </div>
+                <div>
+                  <h4 className='font-bold text-gray-900'>The BOOKEasy Way</h4>
+                  <p className='text-gray-500'>
+                    Respect for Your Time. Professionals on BOOKEasy are rated
+                    for punctuality. You get reminders, they get reminders. You
+                    sit in the chair, not the waiting room.
                   </p>
                 </div>
               </div>
             </div>
           </div>
-          <div
-            className='bg-green-50 rounded-3xl p-10 relative overflow-hidden'
-            id='testimonials'
-          >
-            <h3 className='text-2xl font-bold text-green-900 mb-4'>
-              "I saved 10 hours a week"
-            </h3>
-            <p className='text-green-800/80 mb-6 italic'>
-              "Since using BookEasy, I don't have to answer the phone while I'm
-              with a client. They just book themselves. It's transformed my
-              business."
-            </p>
-            <div className='flex items-center gap-3'>
-              <div className='w-10 h-10 bg-green-200 rounded-full'>
-                <img
-                  className='rounded-full'
-                  src='https://ca.slack-edge.com/T045U09V0US-U07RJ7G5GNS-bd2528068427-72'
-                  alt='Nkwenui Nadine'
-                />
+        </div>
+      </section>
+
+      <section className='py-20 bg-gray-50'>
+        <div className='container mx-auto px-6'>
+          <h2 className='text-3xl md:text-4xl font-bold text-center text-gray-900 mb-16'>
+            Cameroonians Saving Time with BOOKEasy
+          </h2>
+          <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
+            <div className='bg-white p-8 rounded-xl shadow-sm'>
+              <p className='text-gray-600 mb-6 italic'>
+                "I used to spend my Saturday mornings waiting at the barber in
+                Bonamoussadi. Now, I book my slot on Friday night, walk in at
+                10:00 AM, and I'm out by 10:45 AM. It feels like VIP treatment."
+              </p>
+              <div className='flex items-center gap-3'>
+                <div className='w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center'>
+                  <span className='text-gray-600 font-bold'>JC</span>
+                </div>
+                <div>
+                  <p className='font-bold text-gray-900'>Jean-Claude</p>
+                  <p className='text-sm text-gray-500'>
+                    Entrepreneur in Douala
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className='text-sm font-bold text-green-900 leading-none'>
-                  Local Service Provider
-                </p>
-                <p className='text-xs text-green-700'>Yaounde, Cameroon</p>
+            </div>
+            <div className='bg-white p-8 rounded-xl shadow-sm'>
+              <p className='text-gray-600 mb-6 italic'>
+                "Finding a vet in Buea who was actually open on Sundays was a
+                nightmare. BOOKEasy showed me who was available instantly. No
+                more driving around blindly."
+              </p>
+              <div className='flex items-center gap-3'>
+                <div className='w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center'>
+                  <span className='text-gray-600 font-bold'>SM</span>
+                </div>
+                <div>
+                  <p className='font-bold text-gray-900'>Sarah M.</p>
+                  <p className='text-sm text-gray-500'>Pet Owner in Buea</p>
+                </div>
+              </div>
+            </div>
+            <div className='bg-white p-8 rounded-xl shadow-sm'>
+              <p className='text-gray-600 mb-6 italic'>
+                "As a makeup artist, I wasted hours replying to 'How much?' on
+                WhatsApp. Now my clients see my prices and book directly. I've
+                saved 10+ hours a week."
+              </p>
+              <div className='flex items-center gap-3'>
+                <div className='w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center'>
+                  <span className='text-gray-600 font-bold'>AB</span>
+                </div>
+                <div>
+                  <p className='font-bold text-gray-900'>Aline Beauty</p>
+                  <p className='text-sm text-gray-500'>
+                    Makeup Artist in Yaoundé
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -375,23 +463,36 @@ export default function HomePage() {
         </div>
       </section> */}
 
-      <section className='py-20 bg-white text-center'>
+      <section className='py-20 bg-white'>
         <div className='container mx-auto px-6'>
-          <h2 className='text-4xl font-bold text-gray-900 mb-6'>
-            Ready to grow your business?
-          </h2>
-          <p className='text-gray-500 mb-10 text-lg'>
-            Join hundreds of providers today. Setup takes less than 2 minutes.
-          </p>
-          <Link
-            to={handleBookNow}
-            className='px-6 py-4 border border-green-600 bg-green-600 text-white rounded-2xl font-bold text-xl h transition-all active:scale-95'
-          >
-            Get Started for Free
-          </Link>
-          <p className='mt-6 text-sm text-gray-400'>
-            No credit card required • Secure & Encrypted
-          </p>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-16'>
+            <div className='text-center'>
+              <h2 className='text-4xl font-bold text-gray-900 mb-6'>
+                Ready to skip the queue?
+              </h2>
+              <button
+                onClick={handleExploreBusinesses}
+                className='px-6 py-4 border border-green-600 bg-green-600 text-white rounded-2xl font-bold text-xl transition-all active:scale-95 hover:bg-green-700'
+              >
+                Book Your First Appointment
+              </button>
+            </div>
+            <div className='text-center'>
+              <h2 className='text-4xl font-bold text-gray-900 mb-6'>
+                Run a Service Business?
+              </h2>
+              <p className='text-gray-500 mb-6 text-lg'>
+                Join 500+ Cameroonian pros filling their calendars
+                automatically. Stop chasing clients and start getting booked.
+              </p>
+              <button
+                onClick={handleProviderCTA}
+                className='px-6 py-4 border border-green-600 bg-green-600 text-white rounded-2xl font-bold text-xl transition-all active:scale-95 hover:bg-green-700'
+              >
+                List My Business Free
+              </button>
+            </div>
+          </div>
         </div>
       </section>
 
