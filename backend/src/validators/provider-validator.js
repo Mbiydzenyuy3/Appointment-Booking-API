@@ -4,9 +4,6 @@ import Joi from "joi";
 export const providerSchema = Joi.object({
   bio: Joi.string().max(500).required(),
   rating: Joi.number().min(0).max(5),
-  whatsapp_number: Joi.string()
-    .pattern(/^\+?[1-9]\d{1,14}$/)
-    .optional(),
   referral_code: Joi.string().length(12).optional()
 });
 

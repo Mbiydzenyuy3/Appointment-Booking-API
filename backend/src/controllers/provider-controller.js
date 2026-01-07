@@ -16,7 +16,6 @@ export async function createProvider(req, res, next) {
     const {
       bio,
       rating,
-      whatsapp_number,
       referral_code,
       certifications,
       business_photos,
@@ -28,7 +27,6 @@ export async function createProvider(req, res, next) {
     logDebug("createProvider: extracted from req", {
       bio,
       rating,
-      whatsapp_number,
       referral_code,
       user_id,
       fullUser: req.user
@@ -56,7 +54,6 @@ export async function createProvider(req, res, next) {
       user_id,
       bio,
       rating,
-      whatsapp_number,
       certifications,
       business_photos,
       testimonials,
