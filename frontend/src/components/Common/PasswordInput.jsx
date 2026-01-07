@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Field, ErrorMessage, useField } from "formik";
-import { Eye, EyeOff, Lock } from "lucide-react";
 
 export default function PasswordInput({
   name,
@@ -11,8 +10,6 @@ export default function PasswordInput({
 }) {
   const [showPassword, setShowPassword] = useState(false);
   const [field] = useField(name);
-
-  const toggleVisibility = () => setShowPassword((prev) => !prev);
 
   return (
     <div className='space-y-1.5 w-full'>
@@ -41,27 +38,26 @@ export default function PasswordInput({
           autoComplete={autoComplete}
           required={required}
           className='
-            w-full pl-10 pr-10 py-2.5
+            w-full pl-10 py-2.5
             border border-gray-200 rounded-md
             bg-gray-50/30 text-gray-800
             placeholder:text-gray-400
-           
+
           '
         />
+      </div>
 
-        <button
-          type='button'
-          onClick={toggleVisibility}
-          aria-label={showPassword ? "Hide password" : "Show password"}
-          className='
-            absolute right-2
-            text-gray-400 hover:text-gray-600
-            focus:outline-none
-            flex items-center justify-center
-          '
-        >
-          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-        </button>
+      <div className='flex items-center mt-2'>
+        <input
+          type='checkbox'
+          id={`${name}-show`}
+          checked={showPassword}
+          onChange={() => setShowPassword((prev) => !prev)}
+          className='mr-2 border-none shadow-none bg-transparent outline-none'
+        />
+        <label htmlFor={`${name}-show`} className='text-sm text-gray-700'>
+          Show password
+        </label>
       </div>
 
       <ErrorMessage

@@ -5,7 +5,8 @@ import {
   getProviderReferralCode,
   processReferral,
   updateProviderActivity,
-  updateProviderCredibility
+  updateProviderCredibility,
+  getTopProviders
 } from "../services/provider-service.js";
 import { logError, logDebug } from "../utils/logger.js";
 
@@ -199,6 +200,21 @@ export async function getAllProviders(req, res, next) {
     });
   } catch (err) {
     logError("getAllProviders error", err);
+    next(err);
+  }
+}
+
+export async function getTopProvidersController(req, res, next) {
+  try {
+    const limit = parseInt(req.query.limit) || 3;
+    const providers = await getTopProviders(limit);
+
+    return res.json({
+      success: true,
+      data: providers
+    });
+  } catch (err) {
+    logError("getTopProviders error", err);
     next(err);
   }
 }

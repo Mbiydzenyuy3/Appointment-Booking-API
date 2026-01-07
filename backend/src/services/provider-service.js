@@ -111,3 +111,24 @@ export async function updateProviderCredibility(provider_id, metrics) {
     throw new Error(err.message || "Unable to update credibility metrics.");
   }
 }
+
+export async function getTopProviders(limit = 3) {
+  try {
+    const result = await query(
+      `
+      SELECT p.*, u.name, COALESCE(AVG(pr.rating), 0) as average_rating, COUNT(pr.review_id) as review_count
+      FROM providers p
+      JOIN users u ON p.user_id = u.user_id
+      LEFT JOIN provider_reviews pr ON p.provider_id = pr.provider_id
+      GROUP BY p.provider_id, u.user_id
+      ORDER BY average_rating DESC, review_count DESC
+      LIMIT $1
+    `,
+      [limit]
+    );
+    return result.rows;
+  } catch (err) {
+    logError("Service error - getting top providers", err);
+    throw new Error("Unable to fetch top providers.");
+  }
+}

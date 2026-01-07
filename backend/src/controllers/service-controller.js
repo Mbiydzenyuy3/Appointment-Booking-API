@@ -86,11 +86,10 @@ export async function listByProvider(req, res, next) {
 // Search services
 export async function search(req, res, next) {
   try {
-    const { q } = req.query;
-    if (!q || q.trim() === "") {
-      return res.status(400).json({ message: "Search query is required" });
-    }
-    const services = await ServiceService.searchServices(q.trim());
+    const { q, location } = req.query;
+    const query = q ? q.trim() : "";
+    const loc = location ? location.trim() : null;
+    const services = await ServiceService.searchServices(query, loc);
     return res.status(200).json({ success: true, data: services });
   } catch (err) {
     logError("search controller error", err);

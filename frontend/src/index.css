@@ -260,7 +260,6 @@ body {
   }
 }
 
-button,
 .btn,
 [role="button"],
 [tabindex] {
@@ -271,7 +270,7 @@ button,
   -webkit-appearance: none;
   appearance: none;
   border: none;
-  background: none;
+  /* background: none; */
   cursor: pointer;
 }
 

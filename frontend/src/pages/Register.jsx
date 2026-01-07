@@ -4,7 +4,6 @@ import * as Yup from "yup";
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
-import PasswordInput from "../components/Common/PasswordInput.jsx";
 
 const RegisterSchema = Yup.object().shape({
   name: Yup.string().required("name input field is required"),
@@ -27,6 +26,7 @@ export default function Register() {
   const navigate = useNavigate();
   const [formError, setFormError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <div className='relative flex items-center justify-center bg-green-50 py-4 px-4 safe-area-bottom'>
@@ -148,19 +148,38 @@ export default function Register() {
               </div>
 
               <div>
-                <PasswordInput
+                <label
+                  htmlFor='password'
+                  className='block text-sm font-medium text-gray-700 mb-2'
+                >
+                  Password
+                </label>
+                <Field
                   name='password'
-                  label='Password'
+                  type={showPassword ? "text" : "password"}
                   placeholder='Create a password'
                   autoComplete='new-password'
-                  showPasswordRequirements={true}
-                  error={
-                    <ErrorMessage
-                      name='password'
-                      component='p'
-                      className='text-sm text-red-600 mt-1'
-                    />
-                  }
+                  className='input-field field w-full touch-target text-gray-700'
+                />
+                <div className='flex items-center'>
+                  <input
+                    type='checkbox'
+                    id='showPassword'
+                    checked={showPassword}
+                    onChange={() => setShowPassword(!showPassword)}
+                    className='mr-2 border-none shadow-none bg-transparent outline-none'
+                  />
+                  <label
+                    htmlFor='showPassword'
+                    className='text-sm text-gray-700'
+                  >
+                    Show password
+                  </label>
+                </div>
+                <ErrorMessage
+                  name='password'
+                  component='p'
+                  className='text-sm text-red-600 mt-1'
                 />
               </div>
 

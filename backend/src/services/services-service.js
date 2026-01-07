@@ -51,9 +51,9 @@ export async function listAllServices() {
 }
 
 // Search services
-export async function searchServices(query) {
+export async function searchServices(query, location = null) {
   try {
-    return await ServiceModel.searchServices(query);
+    return await ServiceModel.searchServices(query, location);
   } catch (err) {
     logError("searchServices: failed", err);
     throw err;

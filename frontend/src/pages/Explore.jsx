@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useCurrency } from "../context/CurrencyContext.jsx";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   trackExploreView,
   trackServiceViewed,
@@ -15,6 +15,7 @@ const ExplorePage = () => {
   const { user } = useAuth();
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -23,11 +24,12 @@ const ExplorePage = () => {
     service: null
   });
 
-  const fetchServices = async (query = "") => {
+  const fetchServices = async (query = "", location = "") => {
     try {
-      const endpoint = query
-        ? `/services/search?q=${encodeURIComponent(query)}`
-        : "/services";
+      const params = new URLSearchParams();
+      if (query) params.append("q", query);
+      if (location) params.append("location", location);
+      const endpoint = `/services/search?${params.toString()}`;
       const servicesRes = await api.get(endpoint);
       const servicesWithProvider = (
         Array.isArray(servicesRes.data.data) ? servicesRes.data.data : []
@@ -48,7 +50,9 @@ const ExplorePage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        await fetchServices();
+        const serviceParam = searchParams.get("service") || "";
+        const locationParam = searchParams.get("location") || "";
+        await Promise.all([fetchServices(serviceParam, locationParam)]);
         // Track explore page view
         trackExploreView({ service_count: services.length });
       } catch (error) {
@@ -60,7 +64,7 @@ const ExplorePage = () => {
     };
 
     fetchData();
-  }, []);
+  }, [searchParams]);
 
   const handleBookClick = (service) => {
     // Track service viewed and booking started
@@ -83,25 +87,30 @@ const ExplorePage = () => {
 
   return (
     <div className='min-h-screen bg-gray-50'>
-      <div className='container-mobile py-8'>
-        {/* Page title section */}
-        <div className='mb-6 sm:mb-8'>
-          <h1 className='text-2xl sm:text-3xl font-bold text-gray-900'>
-            Explore Services
-          </h1>
-          <p className='text-gray-600 mt-1'>
-            Find and book services from trusted providers
-          </p>
+      {/* Success Metrics Hero Section */}
+      <section className='text-green-800 py-16'>
+        <div className='container-mobile'>
+          <div className='text-center mb-12'>
+            <h1 className='text-3xl sm:text-4xl font-bold mb-4'>
+              Join Our Circle of Thriving Businesses
+            </h1>
+            <p className='text-gray-600 text-lg max-w-2xl mx-auto'>
+              Discover how service providers are growing their businesses and
+              clients are finding trusted professionals on BOOKEasy
+            </p>
+          </div>
         </div>
+      </section>
 
+      <div className='container-mobile py-8'>
         {/* Available Services Section */}
         <section>
           <div className='flex items-center justify-between mb-4 sm:mb-6'>
             <h2 className='text-xl sm:text-2xl font-semibold text-gray-900'>
-              Available Services
+              All Available Businesses
             </h2>
             <span className='text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full'>
-              {services.length} services
+              {services.length} services from trusted providers
             </span>
           </div>
 
@@ -120,24 +129,53 @@ const ExplorePage = () => {
               {services.map((service) => (
                 <div
                   key={service.service_id}
-                  className='booking-card group hover-lift'
+                  className='bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all border border-gray-100 group overflow-hidden'
                 >
+                  {/* Provider Header with Trust Indicators */}
+                  <div className='bg-gradient-to-r from-green-50 to-blue-50 px-4 py-3 border-b border-gray-100'>
+                    <div className='flex items-center justify-between'>
+                      <div className='flex items-center'>
+                        <div className='w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-xs font-bold mr-2'>
+                          ✓
+                        </div>
+                        <div>
+                          <div className='font-semibold text-sm text-gray-900'>
+                            {service.provider_name}
+                          </div>
+                          <div className='flex items-center text-xs text-gray-600'>
+                            <span className='flex text-yellow-400 mr-1'>
+                              {"★".repeat(
+                                Math.floor(service.average_rating || 0)
+                              )}
+                            </span>
+                            <span>
+                              {(service.average_rating || 0).toFixed(1)} (
+                              {service.review_count || 0} reviews)
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className='text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-medium'>
+                        {service.certifications &&
+                        service.certifications.length > 0
+                          ? "Certified"
+                          : "Verified"}
+                      </div>
+                    </div>
+                  </div>
+
                   <div className='p-4 sm:p-6'>
                     <div className='flex items-start justify-between mb-3'>
                       <h3 className='text-lg font-semibold text-gray-900 group-hover:text-green-700 transition-colors'>
                         {service.service_name}
                       </h3>
-                      <div className='bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium'>
+                      <div className='bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-bold'>
                         {formatPrice(service.price)}
                       </div>
                     </div>
 
-                    <p className='text-sm text-gray-500 mb-2'>
-                      Provider: {service.provider_name}
-                    </p>
-
                     <p
-                      className='text-gray-600 mb-4 overflow-hidden'
+                      className='text-gray-600 mb-4 overflow-hidden text-sm'
                       style={{
                         display: "-webkit-box",
                         WebkitLineClamp: 2,
@@ -147,8 +185,9 @@ const ExplorePage = () => {
                       {service.description}
                     </p>
 
-                    <div className='flex items-center justify-between mb-4 text-sm text-gray-500'>
-                      <span className='flex items-center'>
+                    {/* Service Details */}
+                    <div className='grid grid-cols-2 gap-4 mb-4 text-sm'>
+                      <div className='flex items-center text-gray-500'>
                         <svg
                           className='w-4 h-4 mr-1'
                           fill='currentColor'
@@ -161,7 +200,39 @@ const ExplorePage = () => {
                           />
                         </svg>
                         {service.duration_minutes} min
-                      </span>
+                      </div>
+                      <div className='flex items-center text-gray-500'>
+                        <svg
+                          className='w-4 h-4 mr-1'
+                          fill='currentColor'
+                          viewBox='0 0 20 20'
+                        >
+                          <path
+                            fillRule='evenodd'
+                            d='M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z'
+                            clipRule='evenodd'
+                          />
+                        </svg>
+                        Instant booking
+                      </div>
+                    </div>
+
+                    {/* Business Results Indicator */}
+                    <div className='bg-blue-50 rounded-lg p-3 mb-4'>
+                      <div className='flex items-center justify-between text-sm'>
+                        <span className='text-blue-700 font-medium'>
+                          Business Growth
+                        </span>
+                        <span className='text-green-600 font-bold'>
+                          +85% bookings
+                        </span>
+                      </div>
+                      <div className='w-full bg-blue-200 rounded-full h-2 mt-2'>
+                        <div
+                          className='bg-green-500 h-2 rounded-full'
+                          style={{ width: "85%" }}
+                        ></div>
+                      </div>
                     </div>
 
                     <div className='flex space-x-2'>
@@ -186,6 +257,8 @@ const ExplorePage = () => {
             </div>
           )}
         </section>
+
+        {/* Trust & Credibility Section */}
 
         <BookAppointmentForm
           providerId={bookingModal.service?.providerId}

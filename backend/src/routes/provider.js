@@ -118,6 +118,24 @@ router.get("/", ProviderController.getAllProviders);
 
 /**
  * @swagger
+ * /providers/top:
+ *   get:
+ *     summary: Get top-rated providers
+ *     tags: [Providers]
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 3
+ *     responses:
+ *       200:
+ *         description: Array of top providers
+ */
+router.get("/top", ProviderController.getTopProvidersController);
+
+/**
+ * @swagger
  * /providers/{providerId}/booking-link:
  *   get:
  *     summary: Get personal booking link for a provider

@@ -35,10 +35,15 @@ export async function createService({
 
 export async function findAllServices() {
   try {
-    const queryText = `SELECT s.service_id, s.provider_id, s.service_name as name, s.description, s.price, s.duration_minutes as duration, s.location, s.additional_description, s.image_url, u.name as provider_name, p.booking_slug
+    const queryText = `SELECT s.service_id, s.provider_id, s.service_name as name, s.description, s.price, s.duration_minutes as duration, s.location, s.additional_description, s.image_url, u.name as provider_name, p.booking_slug,
+                       p.certifications, p.business_photos, p.testimonials, p.years_of_experience, p.profile_views,
+                       COALESCE(AVG(pr.rating), 0) as average_rating,
+                       COUNT(pr.review_id) as review_count
                        FROM services s
                        JOIN providers p ON s.provider_id = p.provider_id
-                       JOIN users u ON p.user_id = u.user_id`;
+                       JOIN users u ON p.user_id = u.user_id
+                       LEFT JOIN provider_reviews pr ON p.provider_id = pr.provider_id
+                       GROUP BY s.service_id, p.provider_id, u.user_id`;
 
     const result = await query(queryText);
     return result.rows;
@@ -48,17 +53,40 @@ export async function findAllServices() {
   }
 }
 
-export async function searchServices(query) {
+export async function searchServices(query, location = null) {
   try {
-    const { rows } = await query(
-      `SELECT s.service_id, s.provider_id, s.service_name as name, s.description, s.price, s.duration_minutes as duration, s.location, s.additional_description, s.image_url, u.name as provider_name, p.booking_slug
+    let sql = `SELECT s.service_id, s.provider_id, s.service_name as name, s.description, s.price, s.duration_minutes as duration, s.location, s.additional_description, s.image_url, u.name as provider_name, p.booking_slug,
+        p.certifications, p.business_photos, p.testimonials, p.years_of_experience, p.profile_views,
+        COALESCE(AVG(pr.rating), 0) as average_rating,
+        COUNT(pr.review_id) as review_count
         FROM services s
         JOIN providers p ON s.provider_id = p.provider_id
         JOIN users u ON p.user_id = u.user_id
-        WHERE LOWER(s.service_name) LIKE LOWER($1)
-           OR LOWER(u.name) LIKE LOWER($1)`,
-      [`%${query}%`]
-    );
+        LEFT JOIN provider_reviews pr ON p.provider_id = pr.provider_id`;
+    const params = [];
+    let whereClauses = [];
+
+    if (query && query.trim() !== "") {
+      whereClauses.push(
+        `(LOWER(s.service_name) LIKE LOWER($${
+          params.length + 1
+        }) OR LOWER(u.name) LIKE LOWER($${params.length + 1}))`
+      );
+      params.push(`%${query}%`);
+    }
+
+    if (location && location.trim() !== "") {
+      whereClauses.push(`LOWER(s.location) LIKE LOWER($${params.length + 1})`);
+      params.push(`%${location}%`);
+    }
+
+    if (whereClauses.length > 0) {
+      sql += ` WHERE ` + whereClauses.join(" AND ");
+    }
+
+    sql += ` GROUP BY s.service_id, p.provider_id, u.user_id`;
+
+    const { rows } = await query(sql, params);
     return rows;
   } catch (err) {
     logError("DB Error (search services):", err);
