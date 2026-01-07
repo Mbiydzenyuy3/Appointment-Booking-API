@@ -128,8 +128,7 @@ export default defineConfig({
           ui: ["react-modal", "react-datepicker", "react-hot-toast"],
           utils: ["date-fns", "axios", "jwt-decode"],
           // Mobile-first chunks
-          mobile: ["react-intersection-observer"],
-          images: ["sharp"] // If used in frontend
+          mobile: ["react-intersection-observer"]
         },
         // Optimize chunk size for mobile networks
         chunkFileNames: (chunkInfo) => {
