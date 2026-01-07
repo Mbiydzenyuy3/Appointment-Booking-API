@@ -234,7 +234,7 @@ export default function HeroSection() {
                     params.append("location", location.trim());
                   const queryString = params.toString();
                   navigate(
-                    queryString ? `/explore?${queryString}` : "/explore"
+                    queryString ? `/services?${queryString}` : "/services"
                   );
                 }}
                 className='h-14 px-8 flex items-center justify-center gap-4 text-white rounded-xl font-semibold transition-colors bg-green-800 z-50'

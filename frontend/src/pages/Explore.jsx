@@ -26,20 +26,32 @@ const ExplorePage = () => {
 
   const fetchServices = async (query = "", location = "") => {
     try {
-      const params = new URLSearchParams();
-      if (query) params.append("q", query);
-      if (location) params.append("location", location);
-      const endpoint = `/services/search?${params.toString()}`;
-      const servicesRes = await api.get(endpoint);
-      const servicesWithProvider = (
-        Array.isArray(servicesRes.data.data) ? servicesRes.data.data : []
-      ).map((s) => ({
+      const servicesRes = await api.get("/services");
+
+      let servicesData = Array.isArray(servicesRes.data.data)
+        ? servicesRes.data.data
+        : [];
+
+      if (query) {
+        servicesData = servicesData.filter((s) =>
+          s.name.toLowerCase().includes(query.toLowerCase())
+        );
+      }
+
+      if (location) {
+        servicesData = servicesData.filter((s) =>
+          (s.location || "").toLowerCase().includes(location.toLowerCase())
+        );
+      }
+
+      const servicesWithProvider = servicesData.map((s) => ({
         ...s,
         service_name: s.name,
         duration_minutes: s.duration,
-        providerId: s.provider_id || "default-provider-id",
-        booking_slug: s.booking_slug || "default-slug"
+        providerId: s.provider_id,
+        booking_slug: s.booking_slug || s.provider_id
       }));
+
       setServices(servicesWithProvider);
     } catch (error) {
       console.error("Fetch services error:", error);
