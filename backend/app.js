@@ -45,8 +45,13 @@ app.use(
   })
 );
 
-// IMPORTANT: allow preflight
-app.options("*", cors());
+// This allows preflight
+app.use((req, res, next) => {
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+  next();
+});
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
