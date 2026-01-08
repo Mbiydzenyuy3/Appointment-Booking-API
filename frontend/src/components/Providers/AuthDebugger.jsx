@@ -36,9 +36,9 @@ export default function AuthDebugger() {
   const runAuthTest = async () => {
     const result = await testAuth();
     if (result.success) {
-      toast.success("Authentication test passed!");
+      toast.success("Sign in test passed!");
     } else {
-      toast.error(`Authentication test failed: ${result.error}`);
+      toast.error(`Sign in test failed: ${result.error}`);
     }
   };
 

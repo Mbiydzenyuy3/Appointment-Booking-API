@@ -6,19 +6,13 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 
 const RegisterSchema = Yup.object().shape({
-  name: Yup.string().required("name input field is required"),
+  name: Yup.string().required("Business name is required"),
   email: Yup.string()
-    .email("Invalid email")
-    .required("email input field is required"),
+    .email("Please enter a valid email address")
+    .required("Email is required"),
   password: Yup.string()
-    .matches(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-      "Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character."
-    )
-    .required("password input field is required"),
-  user_type: Yup.string()
-    .oneOf(["client", "provider"], "Invalid role")
-    .required("user type input field is equired")
+    .min(8, "Password must be at least 8 characters long")
+    .required("Password is required")
 });
 
 export default function Register() {
@@ -49,10 +43,10 @@ export default function Register() {
             className='text-2xl sm:text-3xl font-bold text-gray-900 mb-2'
             id='register-title'
           >
-            Create Account
+            Start Your Business
           </h1>
           <p className='text-gray-600'>
-            Join BOOKEasy to manage your appointments
+            Create your account to start accepting bookings
           </p>
         </div>
 
@@ -60,22 +54,21 @@ export default function Register() {
           initialValues={{
             name: "",
             email: "",
-            password: "",
-            user_type: "client"
+            password: ""
           }}
           validationSchema={RegisterSchema}
           onSubmit={async (values, { setSubmitting }) => {
             setFormError("");
             console.log("Submitting register form:", values);
-            const res = await register(values);
+            // Default to provider role for MVP
+            const registerData = { ...values, user_type: "provider" };
+            const res = await register(registerData);
             console.log("Register response:", res);
 
             if (res.success) {
               setSuccess(true);
               setTimeout(() => {
-                if (res.user_type === "provider")
-                  navigate("/provider/dashboard");
-                else navigate("/dashboard");
+                navigate("/provider/dashboard");
               }, 900);
             } else {
               setFormError(res.message);
@@ -110,14 +103,14 @@ export default function Register() {
                   htmlFor='name'
                   className='block text-sm font-medium text-gray-700 mb-2'
                 >
-                  Full Name
+                  Business Name
                 </label>
                 <Field
                   name='name'
                   type='text'
-                  placeholder='Enter your full name'
+                  placeholder='Enter your business name'
                   className='input-field field w-full touch-target text-gray-700'
-                  autoComplete='name'
+                  autoComplete='organization'
                 />
                 <ErrorMessage
                   name='name'
@@ -157,7 +150,7 @@ export default function Register() {
                 <Field
                   name='password'
                   type={showPassword ? "text" : "password"}
-                  placeholder='Create a password'
+                  placeholder='Choose a password'
                   autoComplete='new-password'
                   className='input-field field w-full touch-target text-gray-700'
                 />
@@ -183,27 +176,6 @@ export default function Register() {
                 />
               </div>
 
-              <div>
-                <label
-                  htmlFor='user_type'
-                  className='block text-sm font-medium text-gray-700 mb-2'
-                >
-                  Account Type
-                </label>
-                <Field
-                  as='select'
-                  name='user_type'
-                  className='input-field field w-full touch-target text-gray-700'
-                >
-                  <option value='client'>Client - Book appointments</option>
-                  <option value='provider'>Provider - Manage services</option>
-                </Field>
-                <ErrorMessage
-                  name='user_type'
-                  component='p'
-                  className='text-sm text-red-600 mt-1'
-                />
-              </div>
               {/* Email/Password Registration Button */}
               <button
                 type='submit'
@@ -216,13 +188,13 @@ export default function Register() {
                     Creating account...
                   </div>
                 ) : (
-                  "Create Account"
+                  "Get Started"
                 )}
               </button>
 
               <div className='text-center'>
                 <p className='text-sm text-gray-600'>
-                  Already have an account?{" "}
+                  Already have a business account?{" "}
                   <Link
                     to='/login'
                     className='text-green-600 hover:text-green-700 font-medium hover:underline touch-target inline-block'

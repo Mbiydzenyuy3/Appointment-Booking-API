@@ -34,49 +34,22 @@ export const Provider = ({ children }) => {
     setIsLoading(false);
   }, []);
 
-  const login = async (
-    email,
-    password,
-    isGoogleAuth = false,
-    userData = null
-  ) => {
+  const login = async (email, password) => {
     try {
-      if (isGoogleAuth && userData) {
-        // Handle Google OAuth login
-        // userData should contain the user information from Google
-        const decoded = {
-          sub: userData.user_id,
-          email: userData.email,
-          user_type: userData.user_type, // This can be null for new users
-          provider_id: userData.provider_id,
-          name: userData.name,
-          profile_picture: userData.profile_picture,
-          is_new_user: userData.is_new_user || false
-        };
+      const response = await api.post("/auth/login", { email, password });
+      const { token } = response.data;
 
+      if (token && token.split(".").length === 3) {
+        localStorage.setItem("token", token);
+        const decoded = jwtDecode(token);
         setUser(decoded);
-        return {
-          success: true,
-          user_type: userData.user_type,
-          is_new_user: userData.is_new_user || !userData.user_type
-        };
+
+        // Track login event
+        trackLogin(decoded.sub, decoded.user_type);
+
+        return { success: true, user_type: decoded.user_type };
       } else {
-        // Handle regular email/password login
-        const response = await api.post("/auth/login", { email, password });
-        const { token } = response.data;
-
-        if (token && token.split(".").length === 3) {
-          localStorage.setItem("token", token);
-          const decoded = jwtDecode(token);
-          setUser(decoded);
-
-          // Track login event
-          trackLogin(decoded.sub, decoded.user_type);
-
-          return { success: true, user_type: decoded.user_type };
-        } else {
-          return { success: false, message: "Invalid token received" };
-        }
+        return { success: false, message: "Invalid token received" };
       }
     } catch (error) {
       return {

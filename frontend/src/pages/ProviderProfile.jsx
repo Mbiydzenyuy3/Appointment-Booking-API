@@ -254,7 +254,7 @@ const ProviderProfile = () => {
             <div className='flex flex-col items-end space-y-2'>
               {totalSlots > 0 && (
                 <div className='bg-orange-100 text-orange-800 px-3 py-2 rounded-lg text-sm font-medium'>
-                  ⚡ Only {totalSlots} slots left this week!
+                  ⚡ Only {totalSlots} times left this week!
                 </div>
               )}
               <button
@@ -458,7 +458,7 @@ const ProviderProfile = () => {
               </div>
               {totalSlots > 0 && (
                 <div className='text-xs text-orange-600 font-medium'>
-                  🔥 Limited availability
+                  🔥 Limited times available
                 </div>
               )}
             </div>
@@ -537,7 +537,7 @@ const ProviderProfile = () => {
                             clipRule='evenodd'
                           />
                         </svg>
-                        {service.available_slots} slots available
+                        {service.available_slots} times available
                       </span>
                     </div>
 

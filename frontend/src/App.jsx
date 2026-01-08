@@ -30,7 +30,6 @@ import UserTypeSelection from "./components/Common/UserTypeSelection.jsx";
 import PrivateRoute from "./routes/PrivateRoute.jsx";
 import LandingRoute from "./routes/LandingRoute.jsx";
 import AuthRoute from "./routes/AuthRoute.jsx";
-import GoogleAuthDebug from "./components/Providers/GoogleAuthDebug.jsx";
 import ProviderProfile from "./pages/ProviderProfile.jsx";
 
 // Layout component for authenticated client pages
@@ -216,16 +215,6 @@ function App() {
                           <UserTypeSelection />
                         </PublicLayout>
                       </PrivateRoute>
-                    }
-                  />
-
-                  {/* Debug Routes */}
-                  <Route
-                    path='/debug-google-auth'
-                    element={
-                      <PublicLayout>
-                        <GoogleAuthDebug />
-                      </PublicLayout>
                     }
                   />
 

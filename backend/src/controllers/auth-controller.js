@@ -1,26 +1,30 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import crypto from "crypto";
-import * as AuthService from "../services/auth-service.js";
-import { sendPasswordResetEmail } from "../services/email-service.js";
 import { logError, logInfo } from "../utils/logger.js";
 import { query } from "../config/db.js";
 
 // Controller function for user registration
 export async function register(req, res, next) {
-  const { name, email, password, user_type, bio } = req.body;
+  const { name, email, password, user_type } = req.body;
 
   if (!name || !email || !password || !user_type) {
     return res.status(400).json({
       success: false,
-      message: "Missing required fields."
+      message: "Please provide your name, email, password, and account type."
     });
   }
 
   if (!["client", "provider"].includes(user_type)) {
     return res.status(400).json({
       success: false,
-      message: "Invalid user_type. Must be 'client' or 'provider'."
+      message: "Account type must be 'client' or 'provider'."
+    });
+  }
+
+  if (password.length < 6) {
+    return res.status(400).json({
+      success: false,
+      message: "Password must be at least 6 characters long."
     });
   }
 
@@ -35,7 +39,8 @@ export async function register(req, res, next) {
       await query("ROLLBACK");
       return res.status(400).json({
         success: false,
-        message: "Email already in use."
+        message:
+          "This email is already registered. Please try logging in instead."
       });
     }
 
@@ -57,7 +62,7 @@ export async function register(req, res, next) {
         `INSERT INTO providers (user_id, bio)
          VALUES ($1, $2)
          RETURNING provider_id`,
-        [userId, bio || ""]
+        [userId, ""]
       );
 
       providerId = providerInsertResult.rows[0].provider_id;
@@ -73,12 +78,12 @@ export async function register(req, res, next) {
         provider_id: providerId
       },
       process.env.JWT_SECRET,
-      { expiresIn: "3h" }
+      { expiresIn: "24h" }
     );
 
     res.status(201).json({
       success: true,
-      message: "User registered successfully.",
+      message: "Welcome! Your account has been created successfully.",
       token,
       data: {
         user_id: userId,
@@ -89,7 +94,7 @@ export async function register(req, res, next) {
     });
   } catch (err) {
     await query("ROLLBACK");
-    logError("❌ Error during registration:", err);
+    logError("Error during registration:", err);
     next(err);
   }
 }

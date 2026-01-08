@@ -33,10 +33,10 @@ export default function TimeslotForm({ onCreate, services = [] }) {
     >
       <div className='mb-6'>
         <h2 className='text-2xl font-bold text-gray-800 mb-2'>
-          Add a Timeslot
+          Set Availability
         </h2>
         <p className='text-gray-600 text-sm'>
-          Create available time slots for your services
+          Set times when you're available for bookings
         </p>
       </div>
 
@@ -158,7 +158,7 @@ export default function TimeslotForm({ onCreate, services = [] }) {
                 d='M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'
               />
             </svg>
-            Add A Timeslot
+            Set Availability
           </span>
         </button>
       </div>

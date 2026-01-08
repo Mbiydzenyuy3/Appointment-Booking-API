@@ -1,12 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
-import { useGoogleAuth } from "../hooks/useGoogleAuth.js";
 import PasswordInput from "../components/Common/PasswordInput.jsx";
-
-import GoogleButton from "../components/Auth/GoogleButton.jsx";
 import SuccessOverlay from "../components/Common/SuccessOverlay.jsx";
 
 const LoginSchema = Yup.object().shape({
@@ -17,13 +14,8 @@ const LoginSchema = Yup.object().shape({
 export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const { initializeGoogleAuth } = useGoogleAuth();
   const [formError, setFormError] = useState("");
   const [success, setSuccess] = useState(false);
-
-  useEffect(() => {
-    initializeGoogleAuth();
-  }, [initializeGoogleAuth]);
 
   return (
     <div className='relative min-h-screen flex items-center justify-center bg-green-50 py-6 px-4'>
@@ -104,17 +96,6 @@ export default function Login() {
               >
                 {isSubmitting ? "Signing in..." : "Sign In"}
               </button>
-
-              <div className='relative'>
-                <div className='absolute inset-0 flex items-center'>
-                  <div className='w-full border-t border-gray-300' />
-                </div>
-                <div className='relative flex justify-center text-sm'>
-                  <span className='px-2 bg-white text-gray-500'>Or</span>
-                </div>
-              </div>
-
-              <GoogleButton />
 
               <div className='text-center space-y-2'>
                 <p className='text-sm text-gray-600'>
