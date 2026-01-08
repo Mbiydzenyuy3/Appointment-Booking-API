@@ -103,12 +103,12 @@ export default function Register() {
                   htmlFor='name'
                   className='block text-sm font-medium text-gray-700 mb-2'
                 >
-                  Business Name
+                  Business Type Name
                 </label>
                 <Field
                   name='name'
                   type='text'
-                  placeholder='Enter your business name'
+                  placeholder='Haircut, Salon, Plumber, Spa, etc.'
                   className='input-field field w-full touch-target text-gray-700'
                   autoComplete='organization'
                 />
