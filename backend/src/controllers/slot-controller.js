@@ -1,27 +1,66 @@
 // src/controllers/slot-controller.js
 import * as SlotService from "../services/slot-service.js";
 import { logError } from "../utils/logger.js";
+import { query } from "../config/db.js";
 
 export async function create(req, res, next) {
   try {
-    const { day, startTime, endTime, serviceId } = req.body;
-    const providerId = req.user?.provider_id;
+    const { day, start_time, end_time, service_id } = req.body;
+    const userId = req.user?.sub;
+
+    if (!day || !start_time || !end_time || !service_id) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide date, start time, end time, and service."
+      });
+    }
+
+    // Get provider_id from user
+    const providerResult = await query(
+      "SELECT provider_id FROM providers WHERE user_id = $1",
+      [userId]
+    );
+    if (providerResult.rowCount === 0) {
+      return res.status(403).json({
+        success: false,
+        message: "Please create a business profile first."
+      });
+    }
+    const providerId = providerResult.rows[0].provider_id;
+
+    // Verify service belongs to provider
+    const serviceCheck = await query(
+      "SELECT 1 FROM services WHERE service_id = $1 AND provider_id = $2",
+      [service_id, providerId]
+    );
+    if (serviceCheck.rowCount === 0) {
+      return res.status(403).json({
+        success: false,
+        message: "You can only create time slots for your own services."
+      });
+    }
 
     const slot = await SlotService.create({
       day,
-      startTime,
-      endTime,
-      serviceId,
+      start_time,
+      end_time,
+      service_id,
       providerId
     });
 
     return res.status(201).json({
       success: true,
-      message: "Slot created successfully",
+      message: "Your availability has been added successfully!",
       data: slot
     });
   } catch (err) {
-    logError("Error creating slot", err);
+    logError("Error creating time slot", err);
+    if (err.message.includes("overlap")) {
+      return res.status(409).json({
+        success: false,
+        message: "This time slot overlaps with an existing one."
+      });
+    }
     next(err);
   }
 }
@@ -29,48 +68,83 @@ export async function create(req, res, next) {
 export async function list(req, res, next) {
   try {
     const { providerId } = req.params;
-    // if (req.user.provider_id === providerId) return res.status(200).json();
 
     const slots = await SlotService.getSlotsByProvider(providerId);
 
     return res.status(200).json({
       success: true,
-      message: "Slots fetched successfully",
       data: slots
     });
   } catch (err) {
-    logError("Error fetching slots", err);
+    logError("Error fetching time slots", err);
     next(err);
   }
 }
 
 export async function update(req, res, next) {
   try {
-    const providerId = req.user?.provider_id;
+    const userId = req.user?.sub;
     const slotId = req.params.slotId;
+
+    // Get provider_id
+    const providerResult = await query(
+      "SELECT provider_id FROM providers WHERE user_id = $1",
+      [userId]
+    );
+    if (providerResult.rowCount === 0) {
+      return res.status(403).json({
+        success: false,
+        message: "Please create a business profile first."
+      });
+    }
+    const providerId = providerResult.rows[0].provider_id;
+
     const updated = await SlotService.update(slotId, req.body, providerId);
 
-    return res.json({ success: true, message: "Slot updated", data: updated });
+    return res.json({
+      success: true,
+      message: "Your availability has been updated successfully!",
+      data: updated
+    });
   } catch (err) {
     if (err.message === "Slot overlaps with an existing slot") {
       return res.status(409).json({
         success: false,
-        message: err.message
+        message: "This time slot overlaps with an existing one."
       });
     }
+    logError("Error updating time slot", err);
     next(err);
   }
 }
 
 export async function remove(req, res, next) {
   try {
-    const providerId = req.user?.provider_id;
+    const userId = req.user?.sub;
     const slotId = req.params.slotId;
+
+    // Get provider_id
+    const providerResult = await query(
+      "SELECT provider_id FROM providers WHERE user_id = $1",
+      [userId]
+    );
+    if (providerResult.rowCount === 0) {
+      return res.status(403).json({
+        success: false,
+        message: "Please create a business profile first."
+      });
+    }
+    const providerId = providerResult.rows[0].provider_id;
+
     const deleted = await SlotService.remove(slotId, providerId);
 
-    return res.json({ success: true, message: "Slot deleted", data: deleted });
+    return res.json({
+      success: true,
+      message: "Your availability has been deleted successfully.",
+      data: deleted
+    });
   } catch (err) {
-    logError("Slot deletion error", err);
+    logError("Error deleting time slot", err);
     next(err);
   }
 }
@@ -82,17 +156,16 @@ export async function get(req, res, next) {
 
     return res.status(200).json({
       success: true,
-      message: "Slot fetched successfully",
       data: slot
     });
   } catch (err) {
     if (err.message === "Slot not found") {
       return res.status(404).json({
         success: false,
-        message: err.message
+        message: "Time slot not found."
       });
     }
-    logError("Error fetching slot", err);
+    logError("Error fetching time slot", err);
     next(err);
   }
 }
@@ -111,11 +184,10 @@ export async function search(req, res, next) {
 
     return res.status(200).json({
       success: true,
-      message: "Available slots fetched successfully",
       data: slots
     });
   } catch (err) {
-    logError("Error searching slots", err);
+    logError("Error searching time slots", err);
     next(err);
   }
 }

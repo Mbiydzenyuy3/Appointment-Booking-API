@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useCurrency } from "../context/CurrencyContext.jsx";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import {
   trackExploreView,
   trackServiceViewed,
@@ -99,6 +100,15 @@ const ExplorePage = () => {
 
   return (
     <div className='min-h-screen bg-gray-50'>
+      {/* Back Button */}
+      <button
+        onClick={() => navigate("/")}
+        className='fixed top-4 left-4 z-50 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 rounded-full p-3 shadow-lg border border-gray-200 transition-all duration-200 group'
+        aria-label='Go back to home'
+      >
+        <ArrowLeft className='w-5 h-5 group-hover:-translate-x-1 transition-transform' />
+      </button>
+
       {/* Success Metrics Hero Section */}
       <section className='text-green-800 py-16'>
         <div className='container-mobile'>
@@ -161,7 +171,7 @@ const ExplorePage = () => {
                               )}
                             </span>
                             <span>
-                              {(service.average_rating || 0).toFixed(1)} (
+                              {Number(service.average_rating || 0).toFixed(1)} (
                               {service.review_count || 0} reviews)
                             </span>
                           </div>

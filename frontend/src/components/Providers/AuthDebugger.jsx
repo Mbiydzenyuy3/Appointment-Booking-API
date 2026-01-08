@@ -1,98 +1,114 @@
-import React from "react";
+import React, { useState } from "react";
 import { useAuth } from "../../context/AuthContext.jsx";
-import { testAuth, testServiceCreation } from "../../utils/authTest.js";
-import toast from "react-hot-toast";
 
-export default function AuthDebugger() {
-  const { user } = useAuth();
+const AuthDebugger = () => {
+  const { user, token, isAuthenticated, login, logout } = useAuth();
+  const [isExpanded, setIsExpanded] = useState(false);
 
-  const checkToken = () => {
-    const token = localStorage.getItem("token");
-    console.log("Token from localStorage:", token);
+  if (process.env.NODE_ENV === "production") {
+    return null; // Don't show in production
+  }
 
-    if (token) {
-      // Check if token has proper JWT format (3 parts separated by dots)
-      const tokenParts = token.split(".");
-      console.log("Token parts count:", tokenParts.length);
-
-      if (tokenParts.length === 3) {
-        try {
-          const decoded = JSON.parse(atob(tokenParts[1]));
-          console.log("Decoded token payload:", decoded);
-          console.log("Token expiry:", new Date(decoded.exp * 1000));
-          console.log("Current time:", new Date());
-          console.log("Token expired:", Date.now() > decoded.exp * 1000);
-        } catch (e) {
-          console.error("Failed to decode token:", e);
-        }
-      } else {
-        console.warn("Token doesn't have proper JWT format");
-      }
-    } else {
-      console.warn("No token found in localStorage");
-    }
+  const toggleExpanded = () => {
+    setIsExpanded(!isExpanded);
   };
 
-  const runAuthTest = async () => {
-    const result = await testAuth();
-    if (result.success) {
-      toast.success("Sign in test passed!");
-    } else {
-      toast.error(`Sign in test failed: ${result.error}`);
-    }
+  const formatToken = (token) => {
+    if (!token) return "No token";
+    if (token.length <= 50) return token;
+    return `${token.substring(0, 25)}...${token.substring(token.length - 25)}`;
   };
 
-  const runServiceTest = async () => {
-    const result = await testServiceCreation();
-    if (result.success) {
-      toast.success("Service creation test passed!");
-    } else {
-      toast.error(`Service creation test failed: ${result.error}`);
+  const parseToken = (token) => {
+    if (!token) return null;
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      return payload;
+    } catch {
+      return { error: "Invalid token format" };
     }
   };
 
   return (
-    <div className='bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4'>
-      <h3 className='font-semibold text-yellow-800 mb-2'>System Monitor </h3>
+    <div className='fixed bottom-4 right-4 bg-gray-900 text-white p-4 rounded-lg shadow-lg max-w-md z-50'>
+      <div className='flex items-center justify-between mb-2'>
+        <h3 className='text-sm font-bold'>Auth Debugger</h3>
+        <button
+          onClick={toggleExpanded}
+          className='text-gray-400 hover:text-white text-sm'
+        >
+          {isExpanded ? "▼" : "▶"}
+        </button>
+      </div>
 
-      <div className='space-y-2 text-sm text-gray-700'>
+      <div className='text-xs space-y-1'>
         <div>
-          <strong>User State:</strong>{" "}
-          {user
-            ? `Logged in as ${user.email} (${user.user_type})`
-            : "Not logged in"}
+          <span className='text-gray-400'>Status:</span>{" "}
+          <span className={isAuthenticated ? "text-green-400" : "text-red-400"}>
+            {isAuthenticated ? "Authenticated" : "Not Authenticated"}
+          </span>
         </div>
 
-        <div>
-          <strong>Provider ID:</strong> {user?.provider_id || "Not available"}
-        </div>
+        {isExpanded && (
+          <>
+            <div>
+              <span className='text-gray-400'>User:</span>{" "}
+              {user ? (
+                <pre className='text-xs bg-gray-800 p-1 rounded mt-1 overflow-x-auto'>
+                  {JSON.stringify(user, null, 2)}
+                </pre>
+              ) : (
+                <span className='text-yellow-400'>No user data</span>
+              )}
+            </div>
 
-        <div>
-          <strong>Token Status:</strong>{" "}
-          {localStorage.getItem("token") ? "Present" : "Missing"}
-        </div>
+            <div>
+              <span className='text-gray-400'>Token:</span>{" "}
+              <span className='font-mono text-xs'>{formatToken(token)}</span>
+            </div>
 
-        <div className='flex gap-2 flex-wrap pt-2'>
-          <button
-            onClick={checkToken}
-            className='bg-yellow-600 text-white px-3 py-1 rounded text-xs hover:bg-yellow-700'
-          >
-            Check Token Details
-          </button>
-          <button
-            onClick={runAuthTest}
-            className='bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700'
-          >
-            Test Auth
-          </button>
-          <button
-            onClick={runServiceTest}
-            className='bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-700'
-          >
-            Test Service Creation
-          </button>
-        </div>
+            {token && (
+              <div>
+                <span className='text-gray-400'>Token Payload:</span>
+                <pre className='text-xs bg-gray-800 p-1 rounded mt-1 overflow-x-auto'>
+                  {JSON.stringify(parseToken(token), null, 2)}
+                </pre>
+              </div>
+            )}
+
+            <div className='flex space-x-2 mt-2'>
+              <button
+                onClick={() =>
+                  console.log("Auth State:", { user, token, isAuthenticated })
+                }
+                className='px-2 py-1 bg-blue-600 hover:bg-blue-700 rounded text-xs'
+              >
+                Log State
+              </button>
+
+              {isAuthenticated ? (
+                <button
+                  onClick={logout}
+                  className='px-2 py-1 bg-red-600 hover:bg-red-700 rounded text-xs'
+                >
+                  Logout
+                </button>
+              ) : (
+                <button
+                  onClick={() =>
+                    login({ email: "test@example.com", password: "password" })
+                  }
+                  className='px-2 py-1 bg-green-600 hover:bg-green-700 rounded text-xs'
+                >
+                  Test Login
+                </button>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
-}
+};
+
+export default AuthDebugger;

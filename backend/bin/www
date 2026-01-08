@@ -8,7 +8,7 @@ import { app, initSocket } from "../app.js";
 import { logInfo, logError, logDebug } from "../src/utils/logger.js";
 import { connectToDb, initializeDbSchema } from "../src/config/db.js";
 import { initializeRedis } from "../src/config/redis.js";
-import cacheService from "../src/services/cache-service.js";
+import performanceMonitor from "../src/services/performance-monitor.js";
 
 /**
  * Get port from environment and store in Express
@@ -88,6 +88,7 @@ async function startServer() {
     await connectToDb();
     await initializeDbSchema(); // Ensure schema is initialized
     await initializeRedis(); // Initialize Redis cache
+    performanceMonitor.start(); // Start performance monitoring
     server.listen(PORT);
     server.on("error", onError);
     server.on("listening", onListening);

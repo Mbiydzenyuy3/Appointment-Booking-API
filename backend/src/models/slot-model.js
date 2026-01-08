@@ -50,8 +50,8 @@ export const createSlot = async ({
     const newSlotInsert = await client.query(
       `
       INSERT INTO time_slots (
-        provider_id, service_id, day, start_time, end_time, is_booked, is_available
-      ) VALUES ($1, $2, $3, $4, $5, false, true)
+        provider_id, service_id, day, start_time, end_time, is_booked, created_at, updated_at
+      ) VALUES ($1, $2, $3, $4, $5, false, NOW(), NOW())
       RETURNING *
       `,
       [providerId, serviceId, day, startTime, endTime]
@@ -201,7 +201,7 @@ export async function searchAvailableSlots({
     SELECT ts.*, s.service_name as name
     FROM time_slots ts
     JOIN services s ON ts.service_id = s.service_id
-    WHERE ts.is_available = true AND ts.is_booked = false
+    WHERE ts.is_booked = false
   `;
 
   const params = [];
@@ -240,7 +240,7 @@ export const advanceSlots = async () => {
 
     // Get all available slots where day < today
     const { rows: slots } = await client.query(
-      `SELECT timeslot_id, day FROM time_slots WHERE day < $1 AND is_available = true AND is_booked = false`,
+      `SELECT timeslot_id, day FROM time_slots WHERE day < $1 AND is_booked = false`,
       [today]
     );
 

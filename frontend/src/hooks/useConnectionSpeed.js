@@ -1,95 +1,106 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
-/**
- * Hook to detect connection speed and apply optimizations for slow networks
- * Particularly useful for 2G/3G networks in areas like Cameroon
- */
 export const useConnectionSpeed = () => {
   const [connectionSpeed, setConnectionSpeed] = useState("unknown");
-  const [isSlowConnection, setIsSlowConnection] = useState(false);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [connectionType, setConnectionType] = useState("unknown");
 
-  useEffect(() => {
-    // Check Network Information API (supported in modern browsers)
-    const checkConnection = () => {
-      if ("connection" in navigator) {
-        const connection =
-          navigator.connection ||
-          navigator.mozConnection ||
-          navigator.webkitConnection;
+  // Test connection speed by downloading a small image
+  const testConnectionSpeed = useCallback(async () => {
+    try {
+      const startTime = Date.now();
+      const response = await fetch("/favicon.ico", { method: "HEAD" });
+      const endTime = Date.now();
 
-        if (connection) {
-          const effectiveType = connection.effectiveType;
-          const downlink = connection.downlink;
+      if (response.ok) {
+        const latency = endTime - startTime;
 
-          // Determine if connection is slow
-          const isSlow =
-            effectiveType === "slow-2g" ||
-            effectiveType === "2g" ||
-            (effectiveType === "3g" && downlink < 1) ||
-            downlink < 0.5;
-
-          setConnectionSpeed(effectiveType || "unknown");
-          setIsSlowConnection(isSlow);
-
-          // Apply CSS class to body for global slow network optimizations
-          if (isSlow) {
-            document.body.classList.add("connection-slow");
-          } else {
-            document.body.classList.remove("connection-slow");
-          }
+        // Estimate connection speed based on latency
+        if (latency < 50) {
+          setConnectionSpeed("fast");
+        } else if (latency < 150) {
+          setConnectionSpeed("medium");
+        } else {
+          setConnectionSpeed("slow");
         }
-      } else {
-        // Fallback: measure connection speed with a small request
-        measureConnectionSpeed();
       }
-    };
-
-    const measureConnectionSpeed = async () => {
-      try {
-        const startTime = Date.now();
-        // Use a small image or API call to measure speed
-        await fetch("/favicon.ico", {
-          method: "HEAD",
-          cache: "no-cache"
-        });
-        const endTime = Date.now();
-        const duration = endTime - startTime;
-
-        // Rough estimation: if it takes more than 500ms, consider it slow
-        const isSlow = duration > 500;
-        setIsSlowConnection(isSlow);
-        setConnectionSpeed(isSlow ? "slow" : "fast");
-
-        if (isSlow) {
-          document.body.classList.add("connection-slow");
-        }
-      } catch {
-        // If measurement fails, assume fast connection
-        setConnectionSpeed("unknown");
-        setIsSlowConnection(false);
-      }
-    };
-
-    checkConnection();
-
-    // Listen for connection changes
-    if ("connection" in navigator) {
-      const connection =
-        navigator.connection ||
-        navigator.mozConnection ||
-        navigator.webkitConnection;
-      if (connection) {
-        const updateConnection = () => checkConnection();
-        connection.addEventListener("change", updateConnection);
-
-        return () => {
-          connection.removeEventListener("change", updateConnection);
-        };
-      }
+    } catch {
+      setConnectionSpeed("offline");
     }
   }, []);
 
-  return { connectionSpeed, isSlowConnection };
-};
+  // Get connection information from navigator
+  const updateConnectionInfo = useCallback(() => {
+    if ("connection" in navigator) {
+      const connection = navigator.connection;
+      setConnectionType(connection.effectiveType || "unknown");
 
-export default useConnectionSpeed;
+      // Map connection types to speed categories
+      switch (connection.effectiveType) {
+        case "4g":
+          setConnectionSpeed("fast");
+          break;
+        case "3g":
+          setConnectionSpeed("medium");
+          break;
+        case "2g":
+        case "slow-2g":
+          setConnectionSpeed("slow");
+          break;
+        default:
+          // If we can't determine from connection API, test manually
+          testConnectionSpeed();
+      }
+    } else {
+      // Fallback for browsers that don't support connection API
+      testConnectionSpeed();
+    }
+  }, [testConnectionSpeed]);
+
+  useEffect(() => {
+    // Initial connection check
+    updateConnectionInfo();
+
+    // Listen for online/offline events
+    const handleOnline = () => {
+      setIsOnline(true);
+      updateConnectionInfo();
+    };
+
+    const handleOffline = () => {
+      setIsOnline(false);
+      setConnectionSpeed("offline");
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    // Listen for connection changes if supported
+    if ("connection" in navigator) {
+      const connection = navigator.connection;
+      const handleConnectionChange = () => {
+        updateConnectionInfo();
+      };
+
+      connection.addEventListener("change", handleConnectionChange);
+
+      return () => {
+        window.removeEventListener("online", handleOnline);
+        window.removeEventListener("offline", handleOffline);
+        connection.removeEventListener("change", handleConnectionChange);
+      };
+    }
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, [updateConnectionInfo]);
+
+  return {
+    connectionSpeed,
+    isOnline,
+    connectionType,
+    testConnectionSpeed
+  };
+};

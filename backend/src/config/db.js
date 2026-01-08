@@ -74,6 +74,17 @@ const initializeDbSchema = async () => {
     // Enable pgcrypto
     await client.query("CREATE EXTENSION IF NOT EXISTS pgcrypto");
 
+    // Drop all existing tables to ensure clean slate (for development/migration)
+    logInfo("Dropping existing tables for clean schema initialization...");
+    await client.query(`
+      DROP TABLE IF EXISTS appointments CASCADE;
+      DROP TABLE IF EXISTS time_slots CASCADE;
+      DROP TABLE IF EXISTS services CASCADE;
+      DROP TABLE IF EXISTS provider_reviews CASCADE;
+      DROP TABLE IF EXISTS providers CASCADE;
+      DROP TABLE IF EXISTS users CASCADE;
+    `);
+
     // USERS TABLE
     await client.query(`
       CREATE TABLE IF NOT EXISTS users (
@@ -132,6 +143,14 @@ const initializeDbSchema = async () => {
         -- Drop table if it exists with wrong column types
         IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'providers' AND column_name = 'user_id' AND data_type = 'integer') THEN
           DROP TABLE providers CASCADE;
+        END IF;
+        -- Also drop if the table exists but doesn't have the right structure
+        IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'providers') THEN
+          -- Check if user_id is not UUID
+          IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                        WHERE table_name = 'providers' AND column_name = 'user_id' AND data_type = 'uuid') THEN
+            DROP TABLE providers CASCADE;
+          END IF;
         END IF;
       END $$;
     `);

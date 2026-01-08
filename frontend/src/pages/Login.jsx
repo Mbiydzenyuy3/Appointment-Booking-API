@@ -36,7 +36,7 @@ export default function Login() {
           >
             Welcome Back
           </h1>
-          <p className='text-gray-600 mt-1'>Sign in to manage your bookings</p>
+          <p className='text-gray-600 mt-1'>Sign in to manage your business</p>
         </div>
 
         <Formik

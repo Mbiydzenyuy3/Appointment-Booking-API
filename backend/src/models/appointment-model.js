@@ -24,8 +24,8 @@ export const CreateAppointment = async ({
 
     const slot = slotRes.rows[0];
     if (!slot) throw new Error("Slot not found");
-    if (slot.is_booked || !slot.is_available) {
-      throw new Error("Slot is already booked or unavailable");
+    if (slot.is_booked) {
+      throw new Error("Slot is already booked");
     }
 
     const {
@@ -43,9 +43,9 @@ export const CreateAppointment = async ({
     const appointmentRes = await client.query(
       `
       INSERT INTO appointments (
-        timeslot_id, user_id, provider_id, service_id, appointment_date, appointment_time, status,
-        guest_name, guest_email, guest_phone, is_guest_booking
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        timeslot_id, user_id, provider_id, service_id, appointment_date, appointment_time,
+        guest_name, guest_email, guest_phone, is_guest_booking, created_at, updated_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW())
       RETURNING *
       `,
       [
@@ -55,7 +55,6 @@ export const CreateAppointment = async ({
         service_id,
         finalAppointmentDate,
         finalAppointmentTime,
-        "booked",
         guest_name || null,
         guest_email || null,
         guest_phone || null,
@@ -65,7 +64,7 @@ export const CreateAppointment = async ({
 
     // Mark the slot as booked
     await client.query(
-      `UPDATE time_slots SET is_booked = true, is_available = false WHERE timeslot_id = $1`,
+      `UPDATE time_slots SET is_booked = true WHERE timeslot_id = $1`,
       [timeslotId]
     );
 
@@ -104,7 +103,7 @@ export const cancelAppointment = async (appointmentId) => {
 
     // Reopen the time slot
     await client.query(
-      `UPDATE time_slots SET is_booked = false, is_available = true WHERE timeslot_id = $1`,
+      `UPDATE time_slots SET is_booked = false WHERE timeslot_id = $1`,
       [timeslot_id]
     );
 
@@ -122,16 +121,12 @@ export const cancelAppointment = async (appointmentId) => {
 // Find all appointments for a specific user
 export const findAppointmentsByUser = async (
   userId,
-  { status, startDate, endDate, limit = 10, offset = 0 }
+  { startDate, endDate, limit = 10, offset = 0 }
 ) => {
   let query = `SELECT * FROM appointments WHERE user_id = $1`;
   const params = [userId];
   let i = 2;
 
-  if (status) {
-    query += ` AND status = $${i++}`;
-    params.push(status);
-  }
   if (startDate) {
     query += ` AND appointment_date >= $${i++}`;
     params.push(startDate);

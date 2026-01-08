@@ -1,110 +1,37 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext.jsx";
-import api from "../../services/api.js";
 
-export default function UserTypeSelection() {
+const UserTypeSelection = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
 
-  useEffect(() => {
-    // If user already has a user_type, redirect to appropriate dashboard
-    if (user?.user_type) {
-      if (user.user_type === "provider") {
-        navigate("/provider/dashboard");
-      } else {
-        navigate("/dashboard");
-      }
-    }
-  }, [user, navigate]);
-
-  const handleUserTypeSelect = async (selectedUserType) => {
-    setIsLoading(true);
-    setError("");
-
-    try {
-      // Update user type in the backend
-      const response = await api.put("/auth/update-user-type", {
-        user_type: selectedUserType
-      });
-
-      if (response.data.success) {
-        // Update the token in localStorage
-        localStorage.setItem("token", response.data.token);
-
-        // Reload the page to update auth context with new token
-        window.location.reload();
-      } else {
-        setError(response.data.message || "Failed to update user type");
-      }
-    } catch (error) {
-      console.error("Error updating user type:", error);
-      setError(
-        error.response?.data?.message ||
-          "Failed to update user type. Please try again."
-      );
-    } finally {
-      setIsLoading(false);
-    }
+  const handleUserTypeSelect = (userType) => {
+    // Store the selected user type temporarily
+    sessionStorage.setItem("selectedUserType", userType);
+    // Navigate to registration page
+    navigate("/register");
   };
 
   return (
-    <div className='min-h-screen flex items-center justify-center bg-green-200 py-6 px-4 safe-area-bottom'>
-      <div className='bg-white shadow-xl rounded-2xl w-full max-w-md p-6 sm:p-8'>
-        {/* Header */}
+    <div className='min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4'>
+      <div className='max-w-md w-full bg-white rounded-lg shadow-lg p-8'>
         <div className='text-center mb-8'>
-          <div className='text-6xl mb-4'>🎯</div>
-          <h1 className='text-2xl sm:text-3xl font-bold text-gray-900 mb-2'>
-            Choose Your Account Type
+          <h1 className='text-3xl font-bold text-gray-900 mb-2'>
+            Welcome to BookEasy
           </h1>
           <p className='text-gray-600'>
-            Welcome {user?.name}! Select how you'd like to use BOOKEasy
+            Choose how you'd like to use our platform
           </p>
         </div>
 
-        {error && (
-          <div className='bg-red-50 border border-red-200 rounded-lg p-4 mb-6'>
-            <p className='text-sm text-red-700 text-center flex items-center justify-center'>
-              <svg
-                className='w-4 h-4 mr-2'
-                fill='currentColor'
-                viewBox='0 0 20 20'
-              >
-                <path
-                  fillRule='evenodd'
-                  d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z'
-                  clipRule='evenodd'
-                />
-              </svg>
-              {error}
-            </p>
-          </div>
-        )}
-
-        {/* User Type Options */}
         <div className='space-y-4'>
-          {/* Client Option */}
           <button
             onClick={() => handleUserTypeSelect("client")}
-            disabled={isLoading}
-            className='w-full p-6 border-2 border-gray-200 rounded-xl hover:border-green-500 hover:bg-green-50 transition-all duration-200 text-left disabled:opacity-50 disabled:cursor-not-allowed'
+            className='w-full p-6 border-2 border-blue-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors group'
           >
             <div className='flex items-center space-x-4'>
-              <div className='text-4xl'>👤</div>
-              <div className='flex-1'>
-                <h3 className='text-xl font-semibold text-gray-900 mb-1'>
-                  Client
-                </h3>
-                <p className='text-gray-600 text-sm'>
-                  Book appointments with service providers and manage your
-                  bookings
-                </p>
-              </div>
-              <div className='text-green-600'>
+              <div className='flex-shrink-0 w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors'>
                 <svg
-                  className='w-6 h-6'
+                  className='w-6 h-6 text-blue-600'
                   fill='none'
                   stroke='currentColor'
                   viewBox='0 0 24 24'
@@ -113,33 +40,29 @@ export default function UserTypeSelection() {
                     strokeLinecap='round'
                     strokeLinejoin='round'
                     strokeWidth={2}
-                    d='M9 5l7 7-7 7'
+                    d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'
                   />
                 </svg>
+              </div>
+              <div className='text-left'>
+                <h3 className='text-lg font-semibold text-gray-900'>
+                  I'm a Client
+                </h3>
+                <p className='text-gray-600 text-sm'>
+                  I want to book appointments with service providers
+                </p>
               </div>
             </div>
           </button>
 
-          {/* Provider Option */}
           <button
             onClick={() => handleUserTypeSelect("provider")}
-            disabled={isLoading}
-            className='w-full p-6 border-2 border-gray-200 rounded-xl hover:border-green-500 hover:bg-green-50 transition-all duration-200 text-left disabled:opacity-50 disabled:cursor-not-allowed'
+            className='w-full p-6 border-2 border-green-200 rounded-lg hover:border-green-300 hover:bg-green-50 transition-colors group'
           >
             <div className='flex items-center space-x-4'>
-              <div className='text-4xl'>🏢</div>
-              <div className='flex-1'>
-                <h3 className='text-xl font-semibold text-gray-900 mb-1'>
-                  Provider
-                </h3>
-                <p className='text-gray-600 text-sm'>
-                  Offer your services, manage appointments, and grow your
-                  business
-                </p>
-              </div>
-              <div className='text-green-600'>
+              <div className='flex-shrink-0 w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 transition-colors'>
                 <svg
-                  className='w-6 h-6'
+                  className='w-6 h-6 text-green-600'
                   fill='none'
                   stroke='currentColor'
                   viewBox='0 0 24 24'
@@ -148,29 +71,36 @@ export default function UserTypeSelection() {
                     strokeLinecap='round'
                     strokeLinejoin='round'
                     strokeWidth={2}
-                    d='M9 5l7 7-7 7'
+                    d='M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4'
                   />
                 </svg>
+              </div>
+              <div className='text-left'>
+                <h3 className='text-lg font-semibold text-gray-900'>
+                  I'm a Provider
+                </h3>
+                <p className='text-gray-600 text-sm'>
+                  I want to offer services and manage appointments
+                </p>
               </div>
             </div>
           </button>
         </div>
 
-        {/* Loading State */}
-        {isLoading && (
-          <div className='mt-6 text-center'>
-            <div className='loading-spinner mx-auto mb-2'></div>
-            <p className='text-sm text-gray-600'>Setting up your account...</p>
-          </div>
-        )}
-
-        {/* Additional Info */}
-        <div className='mt-8 pt-6 border-t border-gray-200'>
-          <p className='text-xs text-gray-500 text-center'>
-            You can change your account type later in your profile settings
+        <div className='mt-8 text-center'>
+          <p className='text-sm text-gray-500'>
+            Already have an account?{" "}
+            <button
+              onClick={() => navigate("/login")}
+              className='text-blue-600 hover:text-blue-500 font-medium'
+            >
+              Sign in here
+            </button>
           </p>
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default UserTypeSelection;

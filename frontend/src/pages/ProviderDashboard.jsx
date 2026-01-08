@@ -4,8 +4,8 @@ import ServiceForm from "../components/Providers/ServiceForm.jsx";
 import ServiceList from "../components/Providers/ServiceList.jsx";
 import TimeslotForm from "../components/Providers/TimeSlotForm.jsx";
 import TimeslotList from "../components/Providers/TimeSlotList.jsx";
-import Appointments from "../components/Appointments/Appointments.jsx";
-import AuthDebugger from "../components/Providers/AuthDebugger.jsx";
+// import Appointments from "../components/Appointments/Appointments.jsx";
+// import AuthDebugger from "../components/Providers/AuthDebugger.jsx";
 import api from "../services/api.js";
 import toast from "react-hot-toast";
 
@@ -140,10 +140,10 @@ export default function ProviderDashboard() {
     <div className='min-h-screen max-w-7xl mx-auto'>
       <div className='mb-6 sm:mb-8'>
         <h1 className='text-2xl sm:text-3xl font-bold text-gray-900'>
-          Provider Dashboard
+          Business Dashboard
         </h1>
         <p className='text-gray-600 mt-1'>
-          Welcome, {user?.email || "Provider"}! Manage your services and
+          Welcome, {user?.email || "Business Owner"}! Manage your services and
           schedule.
         </p>
       </div>

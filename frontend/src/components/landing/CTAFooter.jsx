@@ -14,7 +14,7 @@ import {
   Twitter
 } from "lucide-react";
 
-export default function CTAFooter({ onProviderClick }) {
+export default function CTAFooter({ onProviderClick, onClientClick }) {
   return (
     <>
       {/* CTA Section */}
@@ -43,7 +43,10 @@ export default function CTAFooter({ onProviderClick }) {
                 appointment in under 2 minutes.
               </p>
 
-              <Button className='bg-[#1B4332] hover:bg-[#2D5A45] text-white rounded-full px-8 py-6 text-lg font-semibold group/btn'>
+              <Button
+                onClick={onClientClick}
+                className='bg-[#1B4332] hover:bg-[#2D5A45] text-white rounded-full px-8 py-6 text-lg font-semibold group/btn'
+              >
                 Book Your First Appointment
                 <ArrowRight className='ml-2 w-5 h-5 group-hover/btn:translate-x-1 transition-transform' />
               </Button>

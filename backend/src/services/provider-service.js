@@ -3,9 +3,14 @@ import ProviderModel from "../models/provider-model.js";
 import { query } from "../config/db.js";
 import { logError } from "../utils/logger.js";
 
-export async function createProvider({ user_id, bio, rating }) {
+export async function createProvider({ user_id, bio, phone, rating }) {
   try {
-    if (!user_id || typeof bio !== "string" || (rating && isNaN(rating))) {
+    if (
+      !user_id ||
+      typeof bio !== "string" ||
+      (phone && typeof phone !== "string") ||
+      (rating && isNaN(rating))
+    ) {
       throw new Error("Invalid input for provider creation");
     }
 
@@ -17,6 +22,7 @@ export async function createProvider({ user_id, bio, rating }) {
     return await ProviderModel.create({
       user_id,
       bio,
+      phone,
       rating
     });
   } catch (err) {

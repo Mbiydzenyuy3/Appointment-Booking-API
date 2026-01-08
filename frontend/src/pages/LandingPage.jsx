@@ -34,6 +34,10 @@ export default function HomePage() {
     }
   };
 
+  const handleClientCTA = () => {
+    navigate("/explore");
+  };
+
   return (
     <div className='min-h-screen bg-white flex flex-col font-sans' id='hero'>
       <HeroSection />
@@ -179,7 +183,10 @@ export default function HomePage() {
         </div>
       </section> */}
 
-      <CTAFooter onProviderClick={handleProviderCTA} />
+      <CTAFooter
+        onProviderClick={handleProviderCTA}
+        onClientClick={handleClientCTA}
+      />
     </div>
   );
 }

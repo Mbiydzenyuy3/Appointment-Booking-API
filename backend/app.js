@@ -14,7 +14,7 @@ import swaggerUi from "swagger-ui-express";
 import swaggerSpec from "./swaggerConfig.js";
 
 import { initializeRedis } from "./src/config/redis.js";
-import cacheService from "./src/services/cache-service.js";
+import performanceMonitor from "./src/services/performance-monitor.js";
 import cron from "node-cron";
 import * as SlotService from "./src/services/slot-service.js";
 // Route Imports
@@ -51,6 +51,26 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
+
+// Performance monitoring middleware
+app.use((req, res, next) => {
+  const startTime = Date.now();
+
+  // Record response
+  res.on("finish", () => {
+    const responseTime = Date.now() - startTime;
+    performanceMonitor.recordRequest(responseTime, res.statusCode);
+
+    // Record error if status >= 400
+    if (res.statusCode >= 400) {
+      performanceMonitor.recordError(
+        new Error(`HTTP ${res.statusCode}: ${req.method} ${req.path}`)
+      );
+    }
+  });
+
+  next();
+});
 
 // API Routes
 app.use("/", indexRouter);

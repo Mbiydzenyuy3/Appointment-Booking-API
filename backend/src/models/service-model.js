@@ -1,28 +1,22 @@
-// src/models/service-model.js
+// src/models/service-model.js - Simplified for MVP
 import { query } from "../config/db.js";
 import { logError } from "../utils/logger.js";
 
 export async function createService({
   providerId,
-  name,
+  service_name,
   description,
   price,
-  durationMinutes,
-  location,
-  additionalDescription,
-  imageUrl
+  duration_minutes
 }) {
   try {
-    const queryText = `INSERT INTO services (provider_id, service_name, description, price, duration_minutes, location, additional_description, image_url) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`;
+    const queryText = `INSERT INTO services (provider_id, service_name, description, price, duration_minutes, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, NOW(), NOW()) RETURNING *`;
     const params = [
       providerId,
-      name,
+      service_name,
       description,
       price,
-      durationMinutes,
-      location,
-      additionalDescription,
-      imageUrl
+      duration_minutes
     ];
 
     const result = await query(queryText, params);
@@ -35,15 +29,13 @@ export async function createService({
 
 export async function findAllServices() {
   try {
-    const queryText = `SELECT s.service_id, s.provider_id, s.service_name as name, s.description, s.price, s.duration_minutes as duration, s.location, s.additional_description, s.image_url, u.name as provider_name, p.booking_slug,
-                       p.certifications, p.business_photos, p.testimonials, p.years_of_experience, p.profile_views,
-                       COALESCE(AVG(pr.rating), 0) as average_rating,
-                       COUNT(pr.review_id) as review_count
+    const queryText = `SELECT s.service_id, s.provider_id, s.service_name, s.description, s.price, s.duration_minutes, u.name as provider_name, p.booking_slug,
+                              COALESCE(AVG(pr.rating), 0) as average_rating, COUNT(pr.review_id) as review_count
                        FROM services s
                        JOIN providers p ON s.provider_id = p.provider_id
                        JOIN users u ON p.user_id = u.user_id
-                       LEFT JOIN provider_reviews pr ON p.provider_id = pr.provider_id
-                       GROUP BY s.service_id, p.provider_id, u.user_id`;
+                       LEFT JOIN provider_reviews pr ON pr.provider_id = p.provider_id
+                       GROUP BY s.service_id, s.provider_id, s.service_name, s.description, s.price, s.duration_minutes, u.name, p.booking_slug`;
 
     const result = await query(queryText);
     return result.rows;
@@ -55,14 +47,10 @@ export async function findAllServices() {
 
 export async function searchServices(query, location = null) {
   try {
-    let sql = `SELECT s.service_id, s.provider_id, s.service_name as name, s.description, s.price, s.duration_minutes as duration, s.location, s.additional_description, s.image_url, u.name as provider_name, p.booking_slug,
-        p.certifications, p.business_photos, p.testimonials, p.years_of_experience, p.profile_views,
-        COALESCE(AVG(pr.rating), 0) as average_rating,
-        COUNT(pr.review_id) as review_count
-        FROM services s
-        JOIN providers p ON s.provider_id = p.provider_id
-        JOIN users u ON p.user_id = u.user_id
-        LEFT JOIN provider_reviews pr ON p.provider_id = pr.provider_id`;
+    let sql = `SELECT s.service_id, s.provider_id, s.service_name, s.description, s.price, s.duration_minutes, u.name as provider_name, p.booking_slug
+               FROM services s
+               JOIN providers p ON s.provider_id = p.provider_id
+               JOIN users u ON p.user_id = u.user_id`;
     const params = [];
     let whereClauses = [];
 
@@ -75,16 +63,9 @@ export async function searchServices(query, location = null) {
       params.push(`%${query}%`);
     }
 
-    if (location && location.trim() !== "") {
-      whereClauses.push(`LOWER(s.location) LIKE LOWER($${params.length + 1})`);
-      params.push(`%${location}%`);
-    }
-
     if (whereClauses.length > 0) {
       sql += ` WHERE ` + whereClauses.join(" AND ");
     }
-
-    sql += ` GROUP BY s.service_id, p.provider_id, u.user_id`;
 
     const { rows } = await query(sql, params);
     return rows;
@@ -97,26 +78,26 @@ export async function searchServices(query, location = null) {
 export async function findById(serviceId) {
   try {
     const { rows } = await query(
-      `SELECT service_id, provider_id, service_name as name, description, price, duration_minutes as duration, location, additional_description, image_url FROM services WHERE service_id = $1`,
+      `SELECT service_id, provider_id, service_name, description, price, duration_minutes FROM services WHERE service_id = $1`,
       [serviceId]
     );
     return rows[0];
   } catch (err) {
     logError("DB Error (find by service ID):", err);
-    throw new Error("Failed to query provider by service ID");
+    throw new Error("Failed to query service by ID");
   }
 }
 
 export async function findByProviderId(providerId) {
   try {
     const { rows } = await query(
-      `SELECT service_id, provider_id, service_name as name, description, price, duration_minutes as duration, location, additional_description, image_url FROM services WHERE provider_id = $1`,
+      `SELECT service_id, provider_id, service_name, description, price, duration_minutes FROM services WHERE provider_id = $1`,
       [providerId]
     );
     return rows;
   } catch (err) {
-    logError("DB Error (find by services ID):", err);
-    throw new Error("Failed to query services by user ID");
+    logError("DB Error (find by provider ID):", err);
+    throw new Error("Failed to query services by provider ID");
   }
 }
 
@@ -128,45 +109,21 @@ export async function deleteById(serviceId) {
   return rows[0];
 }
 
-export async function updateById(
-  serviceId,
-  {
-    providerId,
-    name,
-    description,
-    price,
-    durationMinutes,
-    location,
-    additionalDescription,
-    imageUrl
-  }
-) {
+export async function updateById(serviceId, updates) {
   try {
+    const { service_name, description, price, duration_minutes } = updates;
     const { rows } = await query(
       `
       UPDATE services
-      SET provider_id = $1,
-          service_name = $2,
-          description = $3,
-          price = $4,
-          duration_minutes = $5,
-          location = $6,
-          additional_description = $7,
-          image_url = $8
-      WHERE service_id = $9
+      SET service_name = $1,
+          description = $2,
+          price = $3,
+          duration_minutes = $4,
+          updated_at = NOW()
+      WHERE service_id = $5
       RETURNING *;
       `,
-      [
-        providerId,
-        name,
-        description,
-        price,
-        durationMinutes,
-        location,
-        additionalDescription,
-        imageUrl,
-        serviceId
-      ]
+      [service_name, description, price, duration_minutes, serviceId]
     );
     return rows[0];
   } catch (err) {
