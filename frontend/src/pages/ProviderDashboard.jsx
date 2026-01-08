@@ -5,7 +5,7 @@ import ServiceList from "../components/Providers/ServiceList.jsx";
 import TimeslotForm from "../components/Providers/TimeSlotForm.jsx";
 import TimeslotList from "../components/Providers/TimeSlotList.jsx";
 // import Appointments from "../components/Appointments/Appointments.jsx";
-// import AuthDebugger from "../components/Providers/AuthDebugger.jsx";
+import AuthDebugger from "../components/Providers/AuthDebugger.jsx";
 import api from "../services/api.js";
 import toast from "react-hot-toast";
 
@@ -157,7 +157,7 @@ export default function ProviderDashboard() {
         </div>
       ) : (
         <>
-          {/* <AuthDebugger /> */}
+          <AuthDebugger />
           <div className='mb-6 sm:hidden'>
             <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-2'>
               <div className='grid grid-cols-3 gap-2'>

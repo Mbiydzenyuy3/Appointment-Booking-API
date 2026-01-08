@@ -78,7 +78,7 @@ export async function register(req, res, next) {
         provider_id: providerId
       },
       process.env.JWT_SECRET,
-      { expiresIn: "24h" }
+      { expiresIn: "7d" }
     );
 
     res.status(201).json({
@@ -154,7 +154,7 @@ export async function login(req, res, next) {
         provider_id: providerId
       },
       process.env.JWT_SECRET,
-      { expiresIn: "24h" }
+      { expiresIn: "7d" }
     );
 
     logInfo("User logged in", user.email);

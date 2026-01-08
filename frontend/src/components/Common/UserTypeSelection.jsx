@@ -7,8 +7,8 @@ const UserTypeSelection = () => {
   const handleUserTypeSelect = (userType) => {
     // Store the selected user type temporarily
     sessionStorage.setItem("selectedUserType", userType);
-    // Navigate to registration page
-    navigate("/register");
+    // Navigate to the appropriate registration page
+    navigate(`/register/${userType}`);
   };
 
   return (

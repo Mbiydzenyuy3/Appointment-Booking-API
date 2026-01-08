@@ -20,7 +20,13 @@ export const Provider = ({ children }) => {
     if (token && token.split(".").length === 3) {
       try {
         const decoded = jwtDecode(token);
-        setUser(decoded);
+        // Check if token is expired
+        if (decoded.exp && decoded.exp * 1000 < Date.now()) {
+          localStorage.removeItem("token");
+          setUser(null);
+        } else {
+          setUser(decoded);
+        }
       } catch (err) {
         console.error("Invalid token:", err);
         localStorage.removeItem("token");

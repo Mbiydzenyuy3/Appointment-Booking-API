@@ -6,8 +6,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import SuccessOverlay from "../components/Common/SuccessOverlay.tsx";
 
-const RegisterSchema = Yup.object().shape({
-  name: Yup.string().required("Business name is required"),
+const ClientRegisterSchema = Yup.object().shape({
+  name: Yup.string().required("Full name is required"),
   email: Yup.string()
     .email("Please enter a valid email address")
     .required("Email is required"),
@@ -17,7 +17,7 @@ const RegisterSchema = Yup.object().shape({
     .required("Password is required")
 });
 
-export default function Register() {
+export default function ClientRegister() {
   const { register } = useAuth();
   const navigate = useNavigate();
   const [formError, setFormError] = useState("");
@@ -25,10 +25,10 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className='relative flex items-center justify-center bg-green-50 py-4 px-4 safe-area-bottom'>
+    <div className='relative flex items-center justify-center bg-blue-50 py-4 px-4 safe-area-bottom'>
       <Link
-        to='/'
-        className='absolute left-4 top-4 inline-flex items-center text-green-600 hover:text-green-700 font-medium'
+        to='/register'
+        className='absolute left-4 top-4 inline-flex items-center text-blue-600 hover:text-blue-700 font-medium'
       >
         ← Back
       </Link>
@@ -45,10 +45,10 @@ export default function Register() {
             className='text-2xl sm:text-3xl font-bold text-gray-900 mb-2'
             id='register-title'
           >
-            Start Your Business
+            Join BookEasy
           </h1>
           <p className='text-gray-600'>
-            Create your account to start accepting bookings
+            Create your account to book appointments
           </p>
         </div>
 
@@ -58,13 +58,13 @@ export default function Register() {
             email: "",
             password: ""
           }}
-          validationSchema={RegisterSchema}
+          validationSchema={ClientRegisterSchema}
           onSubmit={async (values, { setSubmitting }) => {
             setFormError("");
-            console.log("Submitting register form:", values);
+            console.log("Submitting client register form:", values);
             // Use selected user type
             const userType =
-              sessionStorage.getItem("selectedUserType") || "provider";
+              sessionStorage.getItem("selectedUserType") || "client";
             const registerData = { ...values, user_type: userType };
             const res = await register(registerData);
             console.log("Register response:", res);
@@ -72,7 +72,7 @@ export default function Register() {
             if (res.success) {
               setSuccess(true);
               setTimeout(() => {
-                navigate("/provider/dashboard");
+                navigate("/dashboard");
               }, 900);
             } else {
               setFormError(res.message);
@@ -107,14 +107,14 @@ export default function Register() {
                   htmlFor='name'
                   className='block text-sm font-medium text-gray-700 mb-2'
                 >
-                  Business Type Name
+                  Full Name
                 </label>
                 <Field
                   name='name'
                   type='text'
-                  placeholder='Haircut, Salon, Plumber, Spa, etc.'
+                  placeholder='Enter your full name'
                   className='input-field field w-full touch-target text-gray-700'
-                  autoComplete='organization'
+                  autoComplete='name'
                 />
                 <ErrorMessage
                   name='name'
@@ -198,10 +198,10 @@ export default function Register() {
 
               <div className='text-center'>
                 <p className='text-sm text-gray-600'>
-                  Already have a business account?{" "}
+                  Already have an account?{" "}
                   <Link
                     to='/login'
-                    className='text-green-600 hover:text-green-700 font-medium hover:underline touch-target inline-block'
+                    className='text-blue-600 hover:text-blue-700 font-medium hover:underline touch-target inline-block'
                   >
                     Sign In
                   </Link>

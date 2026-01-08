@@ -16,6 +16,7 @@ import { initAnalytics } from "./services/analytics.js";
 import HomePage from "./pages/LandingPage.jsx";
 import LoginPage from "./pages/Login.jsx";
 import RegisterPage from "./pages/Register.jsx";
+import ClientRegisterPage from "./pages/ClientRegister.jsx";
 import UserProfile from "./pages/UserProfile.jsx";
 import DashboardPage from "./pages/Dashboard.jsx";
 import ProviderDashboard from "./pages/ProviderDashboard.jsx";
@@ -112,6 +113,26 @@ function App() {
                     element={
                       <AuthRoute>
                         <PublicLayout>
+                          <UserTypeSelection />
+                        </PublicLayout>
+                      </AuthRoute>
+                    }
+                  />
+                  <Route
+                    path='/register/client'
+                    element={
+                      <AuthRoute>
+                        <PublicLayout>
+                          <ClientRegisterPage />
+                        </PublicLayout>
+                      </AuthRoute>
+                    }
+                  />
+                  <Route
+                    path='/register/provider'
+                    element={
+                      <AuthRoute>
+                        <PublicLayout>
                           <RegisterPage />
                         </PublicLayout>
                       </AuthRoute>
@@ -205,16 +226,6 @@ function App() {
                       <PublicLayout>
                         <Unauthorized />
                       </PublicLayout>
-                    }
-                  />
-                  <Route
-                    path='/select-user-type'
-                    element={
-                      <PrivateRoute>
-                        <PublicLayout>
-                          <UserTypeSelection />
-                        </PublicLayout>
-                      </PrivateRoute>
                     }
                   />
 

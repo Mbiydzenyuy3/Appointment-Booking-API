@@ -111,7 +111,7 @@ export default function ServiceForm({ onCreate }) {
               Create a new service offering for your clients
             </p>
           </div>
-          <div className='flex-shrink-0'>
+          <div className='flex-shrink-0 text-gray-700'>
             <CurrencySelector />
           </div>
         </div>
