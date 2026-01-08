@@ -16,10 +16,16 @@ export const SocketProvider = ({ children }) => {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
+    const backendUrl = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
     // Initialize socket connection
-    const socketInstance = io(import.meta.env.VITE_BACKEND_URL, {
+    const socketInstance = io(backendUrl, {
       transports: ["websocket", "polling"],
-      upgrade: true
+      upgrade: true,
+      timeout: 5000,
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000
     });
 
     socketInstance.on("connect", () => {
@@ -27,9 +33,22 @@ export const SocketProvider = ({ children }) => {
       setIsConnected(true);
     });
 
-    socketInstance.on("disconnect", () => {
-      console.log("Disconnected from server");
+    socketInstance.on("disconnect", (reason) => {
+      console.log("Disconnected from server:", reason);
       setIsConnected(false);
+    });
+
+    socketInstance.on("connect_error", (error) => {
+      console.error("Socket connection error:", error);
+      setIsConnected(false);
+    });
+
+    socketInstance.on("reconnect_attempt", (attempt) => {
+      console.log(`Reconnection attempt ${attempt}`);
+    });
+
+    socketInstance.on("reconnect_failed", () => {
+      console.error("Failed to reconnect after maximum attempts");
     });
 
     setSocket(socketInstance);
