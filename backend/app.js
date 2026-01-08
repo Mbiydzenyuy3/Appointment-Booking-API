@@ -38,15 +38,15 @@ const __dirname = dirname(__filename);
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 app.use(
   cors({
-    origin: [
-      "https://appointment-booking-api-1-7zro.onrender.com",
-      "http://localhost:5173",
-      "http://localhost:5174"
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE"], // allowed HTTP methods
-    credentials: true // if you use cookies or auth headers
+    origin: ["https://appointment-booking-api-1-7zro.onrender.com"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true
   })
 );
+
+// IMPORTANT: allow preflight
+app.options("*", cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
