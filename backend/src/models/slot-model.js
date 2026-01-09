@@ -27,7 +27,7 @@ export const createSlot = async ({
     const exactDuplicate = await client.query(
       `
   SELECT * FROM time_slots
-  WHERE provider_id = $1 AND day = $2 AND start_time = $3 AND end_time = $4
+  WHERE provider_id = $1 AND day = $2::DATE AND start_time = $3::TIME AND end_time = $4::TIME
   `,
       [providerId, day, startTime, endTime]
     );
@@ -45,10 +45,10 @@ export const createSlot = async ({
       `
       SELECT * FROM time_slots
       WHERE provider_id = $1
-        AND day = $2
-        AND ($3 < end_time AND $4 > start_time)
+        AND day = $2::DATE
+        AND ($3::TIME < end_time AND $4::TIME > start_time)
       `,
-      [providerId, day, endTime, startTime]
+      [providerId, day, startTime, endTime]
     );
     console.log("Overlap check result:", overlapCheck.rows.length);
 
@@ -64,7 +64,7 @@ export const createSlot = async ({
       `
       INSERT INTO time_slots (
         provider_id, service_id, day, start_time, end_time, is_booked, created_at, updated_at
-      ) VALUES ($1, $2, $3, $4, $5, false, NOW(), NOW())
+      ) VALUES ($1, $2::UUID, $3::DATE, $4::TIME, $5::TIME, false, NOW(), NOW())
       RETURNING *
       `,
       [providerId, serviceId, day, startTime, endTime]
@@ -132,15 +132,15 @@ export const updateSlot = async (
     // Overlap check
     const overlap = await client.query(
       `SELECT * FROM time_slots
-       WHERE provider_id = $1 AND day = $2 AND timeslot_id <> $3 AND ($4 < end_time AND $5 > start_time)`,
-      [providerId, slot.day, slotId, endTime, startTime]
+       WHERE provider_id = $1 AND day = $2::DATE AND timeslot_id <> $3 AND ($4::TIME < end_time AND $5::TIME > start_time)`,
+      [providerId, slot.day, slotId, startTime, endTime]
     );
     if (overlap.rows.length > 0) {
       throw new Error("Slot overlaps with an existing slot");
     }
 
     const result = await client.query(
-      `UPDATE time_slots SET start_time = $1, end_time = $2, service_id = $3 WHERE timeslot_id = $4 RETURNING *`,
+      `UPDATE time_slots SET start_time = $1::TIME, end_time = $2::TIME, service_id = $3::UUID WHERE timeslot_id = $4 RETURNING *`,
       [startTime, endTime, serviceId, slotId]
     );
 
