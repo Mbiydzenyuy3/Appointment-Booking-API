@@ -27,11 +27,14 @@ api.interceptors.request.use(
     );
 
     if (!isPublicAuthEndpoint) {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       } else {
-        console.warn("No token found in localStorage for request:", config.url);
+        console.warn(
+          "No token found in sessionStorage for request:",
+          config.url
+        );
       }
     }
     return config;
@@ -52,7 +55,7 @@ api.interceptors.response.use(
       console.error(
         "401 Unauthorized - clearing token and redirecting to login"
       );
-      localStorage.removeItem("token");
+      sessionStorage.removeItem("token");
     }
     return Promise.reject(error);
   }

@@ -14,26 +14,19 @@ export const Provider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
 
-    // ✅ Ensure token is valid format before decoding
-    if (token && token.split(".").length === 3) {
+    // ✅ Ensure token is valid before decoding
+    if (token) {
       try {
         const decoded = jwtDecode(token);
-        // Check if token is expired
-        if (decoded.exp && decoded.exp * 1000 < Date.now()) {
-          localStorage.removeItem("token");
-          setUser(null);
-        } else {
-          setUser(decoded);
-        }
+        setUser(decoded);
       } catch (err) {
         console.error("Invalid token:", err);
-        localStorage.removeItem("token");
+        sessionStorage.removeItem("token");
         setUser(null);
       }
     } else {
-      localStorage.removeItem("token");
       setUser(null);
     }
 
@@ -45,17 +38,22 @@ export const Provider = ({ children }) => {
       const response = await api.post("/auth/login", { email, password });
       const { token } = response.data;
 
-      if (token && token.split(".").length === 3) {
-        localStorage.setItem("token", token);
-        const decoded = jwtDecode(token);
-        setUser(decoded);
+      if (token) {
+        sessionStorage.setItem("token", token);
+        try {
+          const decoded = jwtDecode(token);
+          setUser(decoded);
 
-        // Track login event
-        trackLogin(decoded.sub, decoded.user_type);
+          // Track login event
+          trackLogin(decoded.sub, decoded.user_type);
 
-        return { success: true, user_type: decoded.user_type };
+          return { success: true, user_type: decoded.user_type };
+        } catch {
+          sessionStorage.removeItem("token");
+          return { success: false, message: "Invalid token received" };
+        }
       } else {
-        return { success: false, message: "Invalid token received" };
+        return { success: false, message: "No token received" };
       }
     } catch (error) {
       return {
@@ -91,7 +89,7 @@ export const Provider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem("token");
+    sessionStorage.removeItem("token");
     setUser(null);
   };
 
