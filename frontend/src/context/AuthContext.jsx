@@ -1,7 +1,7 @@
 import React from "react";
 import { createContext, useContext, useState, useEffect } from "react";
 import api from "../services/api.js";
-import { jwtDecode } from "jwt-decode";
+import jwtDecode from "jwt-decode";
 import {
   trackLogin,
   trackRegistrationCompleted

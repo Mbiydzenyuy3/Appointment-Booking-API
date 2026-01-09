@@ -16,44 +16,46 @@ export const SocketProvider = ({ children }) => {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    const backendUrl = import.meta.env.VITE_API_URL || "http://localhost:4000";
+    const backendUrl =
+      import.meta.env.VITE_API_URL ||
+      "https://appointment-booking-api-yzxg.onrender.com"; // use HTTPS in prod
 
-    // Initialize socket connection
+    const token = localStorage.getItem("token"); // fetch JWT
+
+    if (!token) {
+      console.warn("No token found, socket will not connect");
+      return;
+    }
+
     const socketInstance = io(backendUrl, {
       transports: ["websocket", "polling"],
       upgrade: true,
       timeout: 5000,
       reconnection: true,
       reconnectionAttempts: 5,
-      reconnectionDelay: 1000
+      reconnectionDelay: 1000,
+      auth: {
+        token
+      }
     });
 
     socketInstance.on("connect", () => {
-      console.log("Connected to server");
+      console.log("✅ Socket connected:", socketInstance.id);
       setIsConnected(true);
     });
 
     socketInstance.on("disconnect", (reason) => {
-      console.log("Disconnected from server:", reason);
+      console.log("⚠️ Socket disconnected:", reason);
       setIsConnected(false);
     });
 
     socketInstance.on("connect_error", (error) => {
-      console.error("Socket connection error:", error);
+      console.error("❌ Socket connection error:", error.message);
       setIsConnected(false);
-    });
-
-    socketInstance.on("reconnect_attempt", (attempt) => {
-      console.log(`Reconnection attempt ${attempt}`);
-    });
-
-    socketInstance.on("reconnect_failed", () => {
-      console.error("Failed to reconnect after maximum attempts");
     });
 
     setSocket(socketInstance);
 
-    // Cleanup on unmount
     return () => {
       socketInstance.disconnect();
     };
