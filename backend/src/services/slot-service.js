@@ -19,6 +19,13 @@ export async function create({
   providerId
 }) {
   try {
+    console.log("Slot service create called with:", {
+      day,
+      startTime,
+      endTime,
+      serviceId,
+      providerId
+    });
     const slot = await createSlot({
       day,
       startTime,
@@ -30,6 +37,7 @@ export async function create({
     logInfo("Slot created", slot.timeslot_id);
     return slot;
   } catch (err) {
+    console.log("Slot service create error:", err);
     logError("Slot service failed to create slot", err);
     console.error("Detailed slot creation error:", err.message);
     throw new Error(

@@ -9,12 +9,21 @@ export const createSlot = async ({
   startTime,
   endTime
 }) => {
+  console.log("createSlot called with:", {
+    providerId,
+    serviceId,
+    day,
+    startTime,
+    endTime
+  });
   const client = await pool.connect();
 
   try {
     await client.query("BEGIN");
+    console.log("Transaction begun");
 
     // Check for exact duplicate
+    console.log("Checking for exact duplicate");
     const exactDuplicate = await client.query(
       `
   SELECT * FROM time_slots
@@ -22,6 +31,7 @@ export const createSlot = async ({
   `,
       [providerId, day, startTime, endTime]
     );
+    console.log("Exact duplicate check result:", exactDuplicate.rows.length);
 
     if (exactDuplicate.rows.length > 0) {
       throw new Error(
@@ -30,6 +40,7 @@ export const createSlot = async ({
     }
 
     // Check for overlapping slots
+    console.log("Checking for overlapping slots");
     const overlapCheck = await client.query(
       `
       SELECT * FROM time_slots
@@ -39,6 +50,7 @@ export const createSlot = async ({
       `,
       [providerId, day, endTime, startTime]
     );
+    console.log("Overlap check result:", overlapCheck.rows.length);
 
     if (overlapCheck.rows.length > 0) {
       throw new Error(
@@ -47,6 +59,7 @@ export const createSlot = async ({
     }
 
     // Insert new slot
+    console.log("Inserting new slot");
     const newSlotInsert = await client.query(
       `
       INSERT INTO time_slots (
@@ -56,10 +69,13 @@ export const createSlot = async ({
       `,
       [providerId, serviceId, day, startTime, endTime]
     );
+    console.log("Insert result:", newSlotInsert.rows[0]);
 
     await client.query("COMMIT");
+    console.log("Transaction committed");
     return newSlotInsert.rows[0];
   } catch (err) {
+    console.log("Error in createSlot:", err);
     await client.query("ROLLBACK");
     throw new Error(err.message || "Slot creation failed");
   } finally {

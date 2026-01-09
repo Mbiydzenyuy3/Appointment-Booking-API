@@ -85,7 +85,7 @@ export default function HeroSection() {
               }
               className='bg-[#1B4332] hover:bg-[#2D5A45] text-white rounded-full px-6 py-2 font-medium transition-colors'
             >
-              My Dashboard
+              My Account
             </Link>
           ) : (
             <>

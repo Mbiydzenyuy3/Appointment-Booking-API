@@ -4,7 +4,6 @@ import ServiceForm from "../components/Providers/ServiceForm.jsx";
 import ServiceList from "../components/Providers/ServiceList.jsx";
 import TimeslotForm from "../components/Providers/TimeSlotForm.jsx";
 import TimeslotList from "../components/Providers/TimeSlotList.jsx";
-// import Appointments from "../components/Appointments/Appointments.jsx";
 import AuthDebugger from "../components/Providers/AuthDebugger.jsx";
 import api from "../services/api.js";
 import toast from "react-hot-toast";
@@ -334,10 +333,12 @@ export default function ProviderDashboard() {
                       </p>
                     </div>
                   ) : (
-                    <ServiceList
-                      services={services}
-                      onDelete={handleDeleteService}
-                    />
+                    <div className='mt-16'>
+                      <ServiceList
+                        services={services}
+                        onDelete={handleDeleteService}
+                      />
+                    </div>
                   )}
                 </div>
               </div>
@@ -458,10 +459,12 @@ export default function ProviderDashboard() {
                         </p>
                       </div>
                     ) : (
-                      <ServiceList
-                        services={services}
-                        onDelete={handleDeleteService}
-                      />
+                      <div className='mt-16'>
+                        <ServiceList
+                          services={services}
+                          onDelete={handleDeleteService}
+                        />
+                      </div>
                     )}
                   </div>
                 </div>

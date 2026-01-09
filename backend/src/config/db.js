@@ -281,7 +281,7 @@ const initializeDbSchema = async () => {
     // Add missing columns to time_slots if they don't exist (for existing tables)
     await client.query(`
       ALTER TABLE time_slots
-      ADD COLUMN IF NOT EXISTS service_id INTEGER REFERENCES services(service_id) ON DELETE CASCADE,
+      ADD COLUMN IF NOT EXISTS service_id UUID REFERENCES services(service_id) ON DELETE CASCADE,
       ADD COLUMN IF NOT EXISTS day DATE NOT NULL DEFAULT CURRENT_DATE,
       ADD COLUMN IF NOT EXISTS is_booked BOOLEAN DEFAULT FALSE;
     `);

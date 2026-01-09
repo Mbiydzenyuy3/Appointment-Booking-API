@@ -8,7 +8,7 @@
 ALTER TABLE time_slots RENAME COLUMN slot_id TO timeslot_id;
 
 -- Add missing columns to time_slots
-ALTER TABLE time_slots ADD COLUMN service_id INTEGER REFERENCES services(service_id) ON DELETE CASCADE;
+ALTER TABLE time_slots ADD COLUMN service_id UUID REFERENCES services(service_id) ON DELETE CASCADE;
 ALTER TABLE time_slots ADD COLUMN day DATE;
 ALTER TABLE time_slots ADD COLUMN is_booked BOOLEAN DEFAULT FALSE;
 
