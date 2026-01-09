@@ -5,8 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Search, MapPin, ArrowRight, Star, Users, Clock } from "lucide-react";
 // eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
+import { useAuth } from "../../context/AuthContext.jsx";
 
 export default function HeroSection() {
+  const { user } = useAuth();
   const [service, setService] = useState("");
   const [location, setLocation] = useState("");
   const navigate = useNavigate();
@@ -74,18 +76,33 @@ export default function HeroSection() {
 
         {/* Desktop Auth Buttons */}
         <div className='hidden md:flex items-center gap-3'>
-          <Link
-            to='/register'
-            className='bg-[#1B4332] hover:bg-[#2D5A45] text-white rounded-full px-6 py-2 font-medium transition-colors'
-          >
-            Sign Up
-          </Link>
-          <Link
-            to='/login'
-            className='text-[#1B4332] hover:text-[#2D5A45] border border-[#1B4332] hover:border-[#2D5A45] rounded-full px-6 py-2 font-medium transition-colors'
-          >
-            Login
-          </Link>
+          {user ? (
+            <Link
+              to={
+                user.user_type === "provider"
+                  ? "/provider/dashboard"
+                  : "/dashboard"
+              }
+              className='bg-[#1B4332] hover:bg-[#2D5A45] text-white rounded-full px-6 py-2 font-medium transition-colors'
+            >
+              My Dashboard
+            </Link>
+          ) : (
+            <>
+              <Link
+                to='/register'
+                className='bg-[#1B4332] hover:bg-[#2D5A45] text-white rounded-full px-6 py-2 font-medium transition-colors'
+              >
+                Sign Up
+              </Link>
+              <Link
+                to='/login'
+                className='text-[#1B4332] hover:text-[#2D5A45] border border-[#1B4332] hover:border-[#2D5A45] rounded-full px-6 py-2 font-medium transition-colors'
+              >
+                Login
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -145,20 +162,36 @@ export default function HeroSection() {
 
             <hr className='my-4 border-gray-200' />
 
-            <Link
-              to='/register'
-              onClick={closeMobileNav}
-              className='block w-full text-center bg-[#1B4332] hover:bg-[#2D5A45] text-white rounded-full px-6 py-3 font-medium transition-colors'
-            >
-              Sign Up
-            </Link>
-            <Link
-              to='/login'
-              onClick={closeMobileNav}
-              className='block w-full text-center text-[#1B4332] hover:text-[#2D5A45] border border-[#1B4332] hover:border-[#2D5A45] rounded-full px-6 py-3 font-medium transition-colors'
-            >
-              Login
-            </Link>
+            {user ? (
+              <Link
+                to={
+                  user.user_type === "provider"
+                    ? "/provider/dashboard"
+                    : "/dashboard"
+                }
+                onClick={closeMobileNav}
+                className='block w-full text-center bg-[#1B4332] hover:bg-[#2D5A45] text-white rounded-full px-6 py-3 font-medium transition-colors'
+              >
+                Go to Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link
+                  to='/register'
+                  onClick={closeMobileNav}
+                  className='block w-full text-center bg-[#1B4332] hover:bg-[#2D5A45] text-white rounded-full px-6 py-3 font-medium transition-colors'
+                >
+                  Sign Up
+                </Link>
+                <Link
+                  to='/login'
+                  onClick={closeMobileNav}
+                  className='block w-full text-center text-[#1B4332] hover:text-[#2D5A45] border border-[#1B4332] hover:border-[#2D5A45] rounded-full px-6 py-3 font-medium transition-colors'
+                >
+                  Login
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -239,7 +272,7 @@ export default function HeroSection() {
                 }}
                 className='h-14 px-8 flex items-center justify-center gap-4 text-white rounded-xl font-semibold transition-colors bg-green-800 z-50'
               >
-                Explore Services
+                Find Appointments
                 <ArrowRight className='ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform' />
               </button>
             </div>
