@@ -38,7 +38,7 @@ const __dirname = dirname(__filename);
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 app.use(
   cors({
-    origin: ["https://appointment-booking-api-1-7zro.onrender.com"],
+    origin: true, // Allow all origins for now
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true
