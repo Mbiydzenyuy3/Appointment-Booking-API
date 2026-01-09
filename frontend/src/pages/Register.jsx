@@ -199,7 +199,7 @@ export default function Register() {
                       type='radio'
                       name='user_type'
                       value='provider'
-                      className='mr-2'
+                      className='mr-2 text-gray-700'
                     />
                     Provider - I want to offer services
                   </label>
@@ -208,7 +208,7 @@ export default function Register() {
                       type='radio'
                       name='user_type'
                       value='client'
-                      className='mr-2'
+                      className='mr-2 text-gray-700'
                     />
                     Client - I want to book services
                   </label>
