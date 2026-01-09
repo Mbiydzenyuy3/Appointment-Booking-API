@@ -20,7 +20,10 @@ const ClientRegisterSchema = Yup.object().shape({
       ),
       "Password must include at least one uppercase letter, one lowercase letter, one number, and one special character"
     )
-    .required("Password is required")
+    .required("Password is required"),
+  user_type: Yup.string()
+    .oneOf(["client", "provider"], "Please select a valid account type")
+    .required("Account type is required")
 });
 
 export default function ClientRegister() {
@@ -62,21 +65,23 @@ export default function ClientRegister() {
           initialValues={{
             name: "",
             email: "",
-            password: ""
+            password: "",
+            user_type: "client"
           }}
           validationSchema={ClientRegisterSchema}
           onSubmit={async (values, { setSubmitting }) => {
             setFormError("");
-            // Use selected user type
-            const userType =
-              sessionStorage.getItem("selectedUserType") || "client";
-            const registerData = { ...values, user_type: userType };
+            const registerData = { ...values };
             const res = await register(registerData);
 
             if (res.success) {
               setSuccess(true);
               setTimeout(() => {
-                navigate("/dashboard");
+                if (values.user_type === "provider") {
+                  navigate("/provider/dashboard");
+                } else {
+                  navigate("/dashboard");
+                }
               }, 900);
             } else {
               setFormError(res.message);
@@ -179,6 +184,37 @@ export default function ClientRegister() {
                 </div>
                 <ErrorMessage
                   name='password'
+                  component='p'
+                  className='text-sm text-red-600 mt-1'
+                />
+              </div>
+
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Account Type
+                </label>
+                <div className='space-y-2'>
+                  <label className='flex items-center'>
+                    <Field
+                      type='radio'
+                      name='user_type'
+                      value='client'
+                      className='mr-2'
+                    />
+                    Client - I want to book services
+                  </label>
+                  <label className='flex items-center'>
+                    <Field
+                      type='radio'
+                      name='user_type'
+                      value='provider'
+                      className='mr-2'
+                    />
+                    Provider - I want to offer services
+                  </label>
+                </div>
+                <ErrorMessage
+                  name='user_type'
                   component='p'
                   className='text-sm text-red-600 mt-1'
                 />

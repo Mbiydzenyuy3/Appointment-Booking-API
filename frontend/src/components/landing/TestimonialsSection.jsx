@@ -16,7 +16,7 @@ export default function TestimonialsSection() {
       location: "Douala",
       avatar:
         "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-      rating: 5
+      rating: 3
     },
     {
       quote:
@@ -26,7 +26,7 @@ export default function TestimonialsSection() {
       location: "Buea",
       avatar:
         "https://z-p3-scontent.fnsi2-1.fna.fbcdn.net/v/t39.30808-6/470488767_1106050554255256_7815918165849126675_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=833d8c&_nc_eui2=AeFTfRYSRSSm09D3ALpukNIbUfrs69wMDDBR-uzr3AwMMAhlk-0kKGdfDYBybn9akRlrutrB37Re45vIKzpt0Cpv&_nc_ohc=AJFE9eyTxvQQ7kNvwGw08ZV&_nc_oc=AdnyeTomyZXqv2CX6K8SpxvnTl_hGS2k9qEXlt76tK6dTW6wosTJL-wzhHJB3a2Nw5I&_nc_zt=23&_nc_ht=z-p3-scontent.fnsi2-1.fna&_nc_gid=153qay0XCxKMHp1qMvffQA&oh=00_AfoCjqtMy7VvmXPrfcRYAwWPbmHRZmF-2CfyXKiK4SUR2w&oe=6966BB75",
-      rating: 5
+      rating: 3
     },
     {
       quote:
@@ -36,7 +36,7 @@ export default function TestimonialsSection() {
       location: "Yaoundé",
       avatar:
         "https://blog.withsplice.com/wp-content/uploads/2024/11/hair-salon-vs-beauty-saloon1.jpg",
-      rating: 5
+      rating: 4
     },
     {
       quote:
@@ -46,7 +46,7 @@ export default function TestimonialsSection() {
       location: "Douala",
       avatar:
         "https://cdn-imddh.nitrocdn.com/BgpVdYdrOyYzGZDHCldtezOehOYupTPa/assets/images/optimized/rev-f05fc79/www.technoserve.org/wp-content/uploads/2024/07/CAL_2982-scaled-1.jpg",
-      rating: 5
+      rating: 3
     }
   ];
 
