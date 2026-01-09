@@ -194,7 +194,7 @@ export default function ClientRegister() {
                   Account Type
                 </label>
                 <div className='space-y-2'>
-                  <label className='flex items-center'>
+                  <label className='flex items-center text-gray-700'>
                     <Field
                       type='radio'
                       name='user_type'
@@ -203,7 +203,7 @@ export default function ClientRegister() {
                     />
                     Client - I want to book services
                   </label>
-                  <label className='flex items-center'>
+                  <label className='flex items-center text-gray-700'>
                     <Field
                       type='radio'
                       name='user_type'

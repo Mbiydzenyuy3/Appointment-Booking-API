@@ -194,21 +194,21 @@ export default function Register() {
                   Account Type
                 </label>
                 <div className='space-y-2'>
-                  <label className='flex items-center'>
+                  <label className='flex items-center text-gray-700'>
                     <Field
                       type='radio'
                       name='user_type'
                       value='provider'
-                      className='mr-2 text-gray-700'
+                      className='mr-2'
                     />
                     Provider - I want to offer services
                   </label>
-                  <label className='flex items-center'>
+                  <label className='flex items-center text-gray-700'>
                     <Field
                       type='radio'
                       name='user_type'
                       value='client'
-                      className='mr-2 text-gray-700'
+                      className='mr-2'
                     />
                     Client - I want to book services
                   </label>
