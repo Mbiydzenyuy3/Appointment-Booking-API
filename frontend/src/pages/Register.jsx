@@ -12,8 +12,14 @@ const RegisterSchema = Yup.object().shape({
     .email("Please enter a valid email address")
     .required("Email is required"),
   password: Yup.string()
-    .min(6, "Password must be at least 6 characters long")
+    .min(8, "Password must be at least 8 characters long")
     .max(30, "Password must be no more than 30 characters long")
+    .matches(
+      new RegExp(
+        "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*(),.?\":{}|<>_\\-+=\\[\\]\\\\';/]).*$"
+      ),
+      "Password must include at least one uppercase letter, one lowercase letter, one number, and one special character"
+    )
     .required("Password is required")
 });
 
@@ -61,13 +67,11 @@ export default function Register() {
           validationSchema={RegisterSchema}
           onSubmit={async (values, { setSubmitting }) => {
             setFormError("");
-            console.log("Submitting register form:", values);
             // Use selected user type
             const userType =
               sessionStorage.getItem("selectedUserType") || "provider";
             const registerData = { ...values, user_type: userType };
             const res = await register(registerData);
-            console.log("Register response:", res);
 
             if (res.success) {
               setSuccess(true);
@@ -154,7 +158,7 @@ export default function Register() {
                 <Field
                   name='password'
                   type={showPassword ? "text" : "password"}
-                  placeholder='Choose a password'
+                  placeholder='Password: 8-30 chars, 1 uppercase, 1 lowercase, 1 number, 1 special (!@#$%^&*)'
                   autoComplete='new-password'
                   className='input-field field w-full touch-target text-gray-700'
                 />

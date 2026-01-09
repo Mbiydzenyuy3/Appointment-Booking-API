@@ -56,10 +56,18 @@ export const Provider = ({ children }) => {
         return { success: false, message: "No token received" };
       }
     } catch (error) {
-      return {
-        success: false,
-        message: error.response?.data?.message || "Login failed"
-      };
+      let message = "Login failed";
+      if (!error.response) {
+        message =
+          "Network error: Please check your internet connection and try again.";
+      } else if (error.response.status >= 500) {
+        message = "Server error: Please try again later.";
+      } else {
+        message =
+          error.response.data?.message ||
+          "Login failed due to an unexpected error.";
+      }
+      return { success: false, message };
     }
   };
 
@@ -68,23 +76,38 @@ export const Provider = ({ children }) => {
       const response = await api.post("/auth/register", userData);
       const { token } = response.data;
 
-      if (token && token.split(".").length === 3) {
-        localStorage.setItem("token", token);
-        const decoded = jwtDecode(token);
-        setUser(decoded);
+      if (token) {
+        sessionStorage.setItem("token", token);
+        try {
+          const decoded = jwtDecode(token);
+          setUser(decoded);
 
-        // Track registration completion
-        trackRegistrationCompleted(decoded.sub, decoded.user_type);
+          // Track registration completion
+          trackRegistrationCompleted(decoded.sub, decoded.user_type);
 
-        return { success: true, user_type: decoded.user_type };
+          return { success: true, user_type: decoded.user_type };
+        } catch (decodeError) {
+          console.error("Token decode error:", decodeError);
+          sessionStorage.removeItem("token");
+          return { success: false, message: "Invalid token received" };
+        }
       } else {
-        return { success: false, message: "Invalid token received" };
+        return { success: false, message: "No token received" };
       }
     } catch (error) {
-      return {
-        success: false,
-        message: error.response?.data?.message || "Registration failed"
-      };
+      console.error("Register API error:", error);
+      let message = "Registration failed";
+      if (!error.response) {
+        message =
+          "Network error: Please check your internet connection and try again.";
+      } else if (error.response.status >= 500) {
+        message = "Server error: Please try again later.";
+      } else {
+        message =
+          error.response.data?.message ||
+          "Registration failed due to an unexpected error.";
+      }
+      return { success: false, message };
     }
   };
 

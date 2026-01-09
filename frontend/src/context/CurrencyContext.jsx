@@ -14,18 +14,18 @@ export const useCurrency = () => {
 export const CurrencyProvider = ({ children }) => {
   const [selectedCurrency, setSelectedCurrency] = useState("XAF");
   const [exchangeRates, setExchangeRates] = useState({
-    XAF: 550,
-    USD: 1,
-    EUR: 0.85,
-    GBP: 0.73,
-    JPY: 110,
-    CAD: 1.25,
-    AUD: 1.35
+    XAF: 1,
+    USD: 1 / 550,
+    EUR: 0.85 / 550,
+    GBP: 0.73 / 550,
+    JPY: 110 / 550,
+    CAD: 1.25 / 550,
+    AUD: 1.35 / 550
   });
 
   // Available currencies
   const currencies = [
-    { code: "XAF", symbol: "FCFA", name: "Central African CFA Franc" },
+    { code: "XAF", symbol: "FCFA", name: "CFA Franc" },
     { code: "USD", symbol: "$", name: "US Dollar" },
     { code: "EUR", symbol: "€", name: "Euro" },
     { code: "GBP", symbol: "£", name: "British Pound" },
@@ -64,15 +64,15 @@ export const CurrencyProvider = ({ children }) => {
   const updateExchangeRates = async () => {
     try {
       // In a real app, this would fetch from an API
-      // For now, we'll use static rates
+      // For now, we'll use static rates (relative to XAF)
       setExchangeRates({
-        XAF: 550,
-        USD: 1,
-        EUR: 0.85,
-        GBP: 0.73,
-        JPY: 110,
-        CAD: 1.25,
-        AUD: 1.35
+        XAF: 1,
+        USD: 1 / 550,
+        EUR: 0.85 / 550,
+        GBP: 0.73 / 550,
+        JPY: 110 / 550,
+        CAD: 1.25 / 550,
+        AUD: 1.35 / 550
       });
     } catch (error) {
       console.error("Error updating exchange rates:", error);

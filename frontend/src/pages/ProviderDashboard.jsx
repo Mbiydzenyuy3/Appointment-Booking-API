@@ -18,10 +18,25 @@ export default function ProviderDashboard() {
   const [appointments, setAppointments] = useState([]);
   const [bookingLink, setBookingLink] = useState("");
 
+  // Debug logging
+  console.log("ProviderDashboard render:", {
+    user,
+    provider_id: user?.provider_id
+  });
+
   useEffect(() => {
-    if (!user?.provider_id) return;
+    console.log("ProviderDashboard useEffect:", {
+      user,
+      provider_id: user?.provider_id
+    });
+    if (!user?.provider_id) {
+      console.log("No provider_id, skipping fetch");
+      setLoading(false);
+      return;
+    }
 
     const fetchData = async (providerId) => {
+      console.log("Fetching data for providerId:", providerId);
       try {
         const [servicesRes, slotsRes, appointmentsRes, linkRes] =
           await Promise.all([
@@ -31,6 +46,12 @@ export default function ProviderDashboard() {
             api.get(`/providers/${providerId}/booking-link`)
           ]);
 
+        console.log("Fetch responses:", {
+          servicesRes,
+          slotsRes,
+          appointmentsRes,
+          linkRes
+        });
         setServices(servicesRes.data.data);
         setTimeSlots(slotsRes.data.data);
         setAppointments(appointmentsRes.data.data || []);

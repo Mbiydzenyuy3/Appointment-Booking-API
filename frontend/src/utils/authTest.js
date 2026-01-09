@@ -13,7 +13,7 @@ export const testAuth = async () => {
   try {
     // Test a simple authenticated endpoint (adjust the endpoint as needed)
     const response = await api.get("/auth/me");
-    console.log("✅ Authentication test successful:", response.data);
+    console.log("✅ Authentication test successful");
     return { success: true, data: response.data };
   } catch (error) {
     console.error(
@@ -43,7 +43,7 @@ export const testServiceCreation = async (
 
   try {
     const response = await api.post("/services/create", testData);
-    console.log("✅ Service creation test successful:", response.data);
+    console.log("✅ Service creation test successful");
     return { success: true, data: response.data };
   } catch (error) {
     console.error(

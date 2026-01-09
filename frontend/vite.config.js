@@ -4,6 +4,11 @@ import { VitePWA } from "vite-plugin-pwa";
 import path from "path";
 
 export default defineConfig({
+  test: {
+    environment: "jsdom",
+    setupFiles: ["./src/test/setup.js"],
+    exclude: ["tests/**", "node_modules/**"]
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src")

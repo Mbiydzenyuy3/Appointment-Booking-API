@@ -123,7 +123,7 @@ export default function ServiceForm({ onCreate }) {
             htmlFor='service_name'
             className='block text-sm font-semibold text-gray-700 mb-2'
           >
-            Service Name *
+            Service Name
           </label>
           <input
             id='service_name'
@@ -143,7 +143,7 @@ export default function ServiceForm({ onCreate }) {
             htmlFor='description'
             className='block text-sm font-semibold text-gray-700 mb-2'
           >
-            Description *
+            Description
           </label>
           <textarea
             id='description'
@@ -219,7 +219,7 @@ export default function ServiceForm({ onCreate }) {
               htmlFor='price'
               className='block text-sm font-semibold text-gray-700 mb-2'
             >
-              Price ({selectedCurrency})
+              Price (in XAF)
             </label>
             <div className='relative'>
               <span className='absolute left-4 top-1/2 transform -translate-y-1/2 text-transparent font-medium'>
