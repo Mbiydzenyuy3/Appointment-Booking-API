@@ -15,11 +15,13 @@ export const Provider = ({ children }) => {
 
   useEffect(() => {
     const token = sessionStorage.getItem("token");
+    console.log("AuthContext useEffect - token from sessionStorage:", token);
 
     // ✅ Ensure token is valid before decoding
     if (token) {
       try {
         const decoded = jwtDecode(token);
+        console.log("Decoded token:", decoded);
         setUser(decoded);
       } catch (err) {
         console.error("Invalid token:", err);
@@ -27,6 +29,7 @@ export const Provider = ({ children }) => {
         setUser(null);
       }
     } else {
+      console.log("No token in sessionStorage");
       setUser(null);
     }
 
@@ -75,6 +78,8 @@ export const Provider = ({ children }) => {
     try {
       const response = await api.post("/auth/register", userData);
       const { token } = response.data;
+
+      console.log("Token received on registration:", token);
 
       if (token) {
         sessionStorage.setItem("token", token);
