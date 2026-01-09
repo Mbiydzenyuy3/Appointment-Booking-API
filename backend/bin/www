@@ -4,7 +4,8 @@ import dotenv from "dotenv";
 dotenv.config();
 import http from "node:http";
 import debug from "debug";
-import { app, initSocket } from "../app.js";
+import app from "../app.js";
+import { initSocket } from "../src/sockets/socket.js";
 import { logInfo, logError, logDebug } from "../src/utils/logger.js";
 import { connectToDb, initializeDbSchema } from "../src/config/db.js";
 import { initializeRedis } from "../src/config/redis.js";
@@ -13,13 +14,11 @@ import performanceMonitor from "../src/services/performance-monitor.js";
 /**
  * Get port from environment and store in Express
  */
-
 const PORT = normalizePort(process.env.PORT || "4000");
 
 /**
  * Create HTTP server
  */
-
 const server = http.createServer(app);
 
 // Initialize WebSocket server
@@ -37,7 +36,7 @@ function normalizePort(val) {
 });
 
 async function gracefulShutdown(signal) {
-  logInfo(`Received ${signal}.Shutting down...`);
+  logInfo(`Received ${signal}. Shutting down...`);
   try {
     await server.close();
     logInfo("Server closed gracefully. Exiting...");
@@ -51,13 +50,11 @@ async function gracefulShutdown(signal) {
 /**
  * Event listener for HTTP server "error" event.
  */
-
 function onError(error) {
   if (error.syscall !== "listen") throw error;
 
   const bind = typeof PORT === "string" ? `Pipe ${PORT}` : `Port ${PORT}`;
 
-  // handle specific listen errors with friendly messages
   switch (error.code) {
     case "EACCES":
       logError(`${bind} requires elevated privileges`);
@@ -65,7 +62,6 @@ function onError(error) {
     case "EADDRINUSE":
       logError(`${bind} is already in use`);
       logInfo("Trying next available port...");
-      // Ideally, pick random available port logic could go here
       process.exit(1);
     default:
       throw error;
@@ -75,7 +71,6 @@ function onError(error) {
 /**
  * Event listener for HTTP server "listening" event.
  */
-
 function onListening() {
   const addr = server.address();
   const bind = typeof addr === "string" ? `pipe ${addr}` : `port ${addr.port}`;
@@ -86,14 +81,14 @@ async function startServer() {
   try {
     logInfo(`Attempting to start server on port ${PORT}`);
     await connectToDb();
-    await initializeDbSchema(); // Ensure schema is initialized
-    await initializeRedis(); // Initialize Redis cache
-    performanceMonitor.start(); // Start performance monitoring
+    await initializeDbSchema();
+    await initializeRedis();
+    performanceMonitor.start();
     server.listen(PORT);
     server.on("error", onError);
     server.on("listening", onListening);
   } catch (error) {
-    logError("Server startup failed: ", error);
+    logError("Server startup failed:", error);
     process.exit(1);
   }
 }
