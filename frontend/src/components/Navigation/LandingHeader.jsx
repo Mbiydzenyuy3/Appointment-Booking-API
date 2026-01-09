@@ -1,7 +1,9 @@
- import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext.jsx";
 
 export default function LandingHeader() {
+  const { user, logout } = useAuth();
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   const [activeSection, setActiveSection] = useState(null);
@@ -113,18 +115,55 @@ export default function LandingHeader() {
 
             {/* Desktop Auth Buttons */}
             <div className='hidden md:flex items-center space-x-3'>
-              <Link
-                to='/register'
-                className='btn btn-primary text-sm px-4 py-2 touch-target shadow-sm'
-              >
-                Register
-              </Link>
-              <Link
-                to='/login'
-                className='text-sm font-medium text-green-800 hover:text-white px-4 py-2 rounded-lg hover:bg-green-800 border border-green-800 transition-all duration-200 touch-target'
-              >
-                Login
-              </Link>
+              {user ? (
+                <div className='flex items-center space-x-3'>
+                  <Link
+                    to='/explore'
+                    className='text-sm font-medium text-green-800 hover:text-green-600 px-3 py-2 rounded-lg transition-all duration-200 touch-target'
+                  >
+                    Explore
+                  </Link>
+                  <Link
+                    to={
+                      user.user_type === "provider"
+                        ? "/provider/dashboard"
+                        : "/dashboard"
+                    }
+                    className='text-sm font-medium text-green-800 hover:text-green-600 px-3 py-2 rounded-lg transition-all duration-200 touch-target'
+                  >
+                    Dashboard
+                  </Link>
+                  <div className='flex items-center space-x-2 px-3 py-2 bg-green-50 rounded-lg border border-green-200'>
+                    <div className='w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white text-sm font-medium'>
+                      {user.email?.charAt(0).toUpperCase()}
+                    </div>
+                    <span className='text-sm font-medium text-gray-700'>
+                      {user.email}
+                    </span>
+                    <button
+                      onClick={logout}
+                      className='text-sm text-red-600 hover:text-red-800 font-medium ml-2'
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <Link
+                    to='/register'
+                    className='btn btn-primary text-sm px-4 py-2 touch-target shadow-sm'
+                  >
+                    Register
+                  </Link>
+                  <Link
+                    to='/login'
+                    className='text-sm font-medium text-green-800 hover:text-white px-4 py-2 rounded-lg hover:bg-green-800 border border-green-800 transition-all duration-200 touch-target'
+                  >
+                    Login
+                  </Link>
+                </>
+              )}
             </div>
 
             {/* Mobile Menu Button */}
@@ -205,20 +244,64 @@ export default function LandingHeader() {
 
               <hr className='my-4 border-green-200' />
 
-              <Link
-                to='/register'
-                onClick={closeMobileNav}
-                className='block w-full text-left px-3 py-2 bg-green-700 text-white rounded hover:bg-green-800 transition-all duration-200 touch-target text-center font-medium'
-              >
-                Register
-              </Link>
-              <Link
-                to='/login'
-                onClick={closeMobileNav}
-                className='block w-full text-left px-3 py-2 text-green-800 hover:text-white hover:bg-green-700 rounded transition-all duration-200 touch-target text-center font-medium border border-green-700'
-              >
-                Login
-              </Link>
+              {user ? (
+                <div className='space-y-2'>
+                  <div className='px-3 py-2 bg-green-50 rounded-lg border border-green-200'>
+                    <div className='flex items-center space-x-2'>
+                      <div className='w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white text-sm font-medium'>
+                        {user.email?.charAt(0).toUpperCase()}
+                      </div>
+                      <span className='text-sm font-medium text-gray-700'>
+                        {user.email}
+                      </span>
+                    </div>
+                  </div>
+                  <Link
+                    to='/explore'
+                    onClick={closeMobileNav}
+                    className='block w-full text-left px-3 py-2 text-green-800 hover:text-white hover:bg-green-700 rounded transition-all duration-200 touch-target'
+                  >
+                    Explore
+                  </Link>
+                  <Link
+                    to={
+                      user.user_type === "provider"
+                        ? "/provider/dashboard"
+                        : "/dashboard"
+                    }
+                    onClick={closeMobileNav}
+                    className='block w-full text-left px-3 py-2 text-green-800 hover:text-white hover:bg-green-700 rounded transition-all duration-200 touch-target'
+                  >
+                    Dashboard
+                  </Link>
+                  <button
+                    onClick={() => {
+                      logout();
+                      closeMobileNav();
+                    }}
+                    className='block w-full text-left px-3 py-2 text-red-600 hover:text-red-800 rounded transition-all duration-200 touch-target'
+                  >
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <Link
+                    to='/register'
+                    onClick={closeMobileNav}
+                    className='block w-full text-left px-3 py-2 bg-green-700 text-white rounded hover:bg-green-800 transition-all duration-200 touch-target text-center font-medium'
+                  >
+                    Register
+                  </Link>
+                  <Link
+                    to='/login'
+                    onClick={closeMobileNav}
+                    className='block w-full text-left px-3 py-2 text-green-800 hover:text-white hover:bg-green-700 rounded transition-all duration-200 touch-target text-center font-medium border border-green-700'
+                  >
+                    Login
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         )}
