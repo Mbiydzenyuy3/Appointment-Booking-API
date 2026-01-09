@@ -2,6 +2,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 import path from "path";
+import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   test: {
@@ -16,6 +17,7 @@ export default defineConfig({
   },
   plugins: [
     tailwindcss(),
+    react(),
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "apple-touch-icon.png", "masked-icon.svg"],
