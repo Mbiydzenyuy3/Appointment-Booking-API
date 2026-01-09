@@ -239,7 +239,7 @@ export default function HeroSection() {
                 }}
                 className='h-14 px-8 flex items-center justify-center gap-4 text-white rounded-xl font-semibold transition-colors bg-green-800 z-50'
               >
-                Find Appointments
+                Explore Services
                 <ArrowRight className='ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform' />
               </button>
             </div>
