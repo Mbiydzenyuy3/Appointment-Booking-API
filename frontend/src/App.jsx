@@ -29,7 +29,6 @@ import SlotPage from "./pages/Slots.jsx";
 import Unauthorized from "./pages/Unauthorized.jsx";
 import UserTypeSelection from "./components/Common/UserTypeSelection.jsx";
 import PrivateRoute from "./routes/PrivateRoute.jsx";
-import LandingRoute from "./routes/LandingRoute.jsx";
 import AuthRoute from "./routes/AuthRoute.jsx";
 import ProviderProfile from "./pages/ProviderProfile.jsx";
 
@@ -75,11 +74,9 @@ function App() {
                   <Route
                     path='/'
                     element={
-                      <LandingRoute>
-                        <PublicLayout>
-                          <HomePage />
-                        </PublicLayout>
-                      </LandingRoute>
+                      <PublicLayout>
+                        <HomePage />
+                      </PublicLayout>
                     }
                   />
                   <Route
@@ -98,6 +95,8 @@ function App() {
                       </PublicLayout>
                     }
                   />
+
+                  {/* AUTH (logged-in users redirected) */}
                   <Route
                     path='/login'
                     element={
@@ -140,6 +139,7 @@ function App() {
                   />
 
                   {/* Protected Routes */}
+                  {/* CLIENT */}
                   <Route
                     path='/dashboard'
                     element={
@@ -150,6 +150,8 @@ function App() {
                       </PrivateRoute>
                     }
                   />
+
+                  {/* PROVIDER */}
                   <Route
                     path='/provider/dashboard'
                     element={
