@@ -38,7 +38,15 @@ const __dirname = dirname(__filename);
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 app.use(
   cors({
-    origin: true, // Allow all origins for now
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, etc.)
+      if (!origin) return callback(null, true);
+      // Allow the frontend origin
+      if (origin === "https://appointment-booking-api-1-7zro.onrender.com") {
+        return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS"));
+    },
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true
@@ -64,14 +72,7 @@ app.use((req, res, next) => {
   // Record response
   res.on("finish", () => {
     const responseTime = Date.now() - startTime;
-    performanceMonitor.recordRequest(responseTime, res.statusCode);
-
-    // Record error if status >= 400
-    if (res.statusCode >= 400) {
-      performanceMonitor.recordError(
-        new Error(`HTTP ${res.statusCode}: ${req.method} ${req.path}`)
-      );
-    }
+    performanceMonitor.recordRequest(responseTime, res.statusCode >= 400);
   });
 
   next();

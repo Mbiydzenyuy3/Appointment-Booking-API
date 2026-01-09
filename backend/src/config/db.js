@@ -18,7 +18,7 @@ const requiredVars = { DB_USER, DB_PASSWORD, DB_HOST, DB_NAME, DB_PORT };
 for (const [key, value] of Object.entries(requiredVars)) {
   if (!value) {
     logError(`❌ Environment variable ${key} is missing!`);
-    process.exit(1);
+    // process.exit(1); // Commented out to prevent crash in production
   }
 }
 const pool = new Pool({

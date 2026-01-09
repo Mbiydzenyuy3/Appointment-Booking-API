@@ -6,7 +6,12 @@ import ProviderModel from "../models/provider-model.js";
 export async function create(req, res, next) {
   try {
     const userId = req.user?.sub;
-    const { service_name, description, price, duration_minutes } = req.body;
+    const {
+      name: service_name,
+      description,
+      price,
+      durationMinutes: duration_minutes
+    } = req.body;
 
     if (!service_name || !description || !price || !duration_minutes) {
       return res.status(400).json({
@@ -94,7 +99,12 @@ export async function search(req, res, next) {
 export async function update(req, res, next) {
   try {
     const { serviceId } = req.params;
-    const { service_name, description, price, duration_minutes } = req.body;
+    const {
+      name: service_name,
+      description,
+      price,
+      durationMinutes: duration_minutes
+    } = req.body;
     const userId = req.user?.sub;
 
     if (!service_name || !description || !price || !duration_minutes) {

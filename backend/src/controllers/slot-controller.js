@@ -5,7 +5,12 @@ import { query } from "../config/db.js";
 
 export async function create(req, res, next) {
   try {
-    const { day, start_time, end_time, service_id } = req.body;
+    const {
+      day,
+      startTime: start_time,
+      endTime: end_time,
+      serviceId: service_id
+    } = req.body;
     const userId = req.user?.sub;
 
     if (!day || !start_time || !end_time || !service_id) {

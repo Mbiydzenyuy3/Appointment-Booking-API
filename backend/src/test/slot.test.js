@@ -15,7 +15,7 @@ test("Register provider", async () => {
       email: `provider${Date.now()}@mail.com`,
       password: "pass123",
       confirmPassword: "pass123",
-      user_type: "provider",
+      user_type: "provider"
     });
 
   providerToken = res.body.token;
@@ -30,10 +30,9 @@ test("Create service", async () => {
       name: "Consultation",
       description: "Short consultation session", // optional
       price: 50, // required
-      durationMinutes: 30, // required (not 'duration')
+      durationMinutes: 30 // required (not 'duration')
     });
 
-  console.log("Service creation response:", res.body); // helpful for debugging
   assert.strictEqual(res.statusCode, 201);
   serviceId = res.body.data?.service_id;
 });
@@ -51,7 +50,7 @@ test("Create slot with token", async () => {
       day: now.toISOString().split("T")[0], // e.g., "2025-05-16"
       startTime,
       endTime,
-      serviceId,
+      serviceId
     });
 
   // For debugging:

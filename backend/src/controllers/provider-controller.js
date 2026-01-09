@@ -1,6 +1,9 @@
 // src/controllers/provider-controller.js
 import ProviderModel from "../models/provider-model.js";
-import { getProviderByBookingSlug } from "../services/provider-service.js";
+import {
+  getProviderByBookingSlug,
+  listProviders
+} from "../services/provider-service.js";
 import { logError } from "../utils/logger.js";
 import { query } from "../config/db.js";
 
@@ -215,11 +218,21 @@ export async function getBookingLink(req, res, next) {
 
 // Stub implementations for missing provider controller functions
 export async function getAllProviders(req, res, next) {
-  // TODO: Implement get all providers functionality
-  res.status(501).json({
-    success: false,
-    message: "Get all providers functionality not implemented yet"
-  });
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = parseInt(req.query.offset) || 0;
+
+    const providers = await listProviders({ limit, offset });
+
+    return res.json({
+      success: true,
+      data: providers,
+      pagination: { limit, offset }
+    });
+  } catch (err) {
+    logError("Error getting all providers", err);
+    next(err);
+  }
 }
 
 export async function getTopProvidersController(req, res, next) {
