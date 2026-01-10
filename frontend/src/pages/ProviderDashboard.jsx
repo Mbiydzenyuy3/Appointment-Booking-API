@@ -67,7 +67,7 @@ export default function ProviderDashboard() {
   }, [user]);
 
   const handleCreateService = async (newService) => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     if (!token) {
       toast.error("You are not logged in. Please log in again.");
       return;

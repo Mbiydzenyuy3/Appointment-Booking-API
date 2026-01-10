@@ -13,11 +13,23 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     // Skip adding token for public auth endpoints
-    const isPublicAuthEndpoint =
-      config.url.startsWith("/auth/") ||
-      config.url === "/services" ||
-      config.url.startsWith("/slots/search/available") ||
-      config.url.startsWith("/providers");
+    const publicEndpoints = [
+      "/auth/login",
+      "/auth/register",
+      "/auth/forgot-password",
+      "/auth/reset-password",
+      "/services",
+      "/slots/search/available",
+      "/providers",
+      "/providers/top",
+      "/providers/slug/",
+      "/providers/profile/",
+      "/providers/reviews/"
+    ];
+
+    const isPublicAuthEndpoint = publicEndpoints.some((endpoint) =>
+      config.url.startsWith(endpoint)
+    );
 
     if (!isPublicAuthEndpoint) {
       const token = sessionStorage.getItem("token");
