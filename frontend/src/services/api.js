@@ -20,7 +20,6 @@ api.interceptors.request.use(
       "/auth/reset-password",
       "/services",
       "/slots/search/available",
-      "/providers",
       "/providers/top",
       "/providers/slug/",
       "/providers/profile/",
