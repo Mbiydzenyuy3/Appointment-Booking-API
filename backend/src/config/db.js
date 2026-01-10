@@ -74,16 +74,18 @@ const initializeDbSchema = async () => {
     // Enable pgcrypto
     await client.query("CREATE EXTENSION IF NOT EXISTS pgcrypto");
 
-    // Drop all existing tables to ensure clean slate (for development/migration)
-    logInfo("Dropping existing tables for clean schema initialization...");
-    await client.query(`
-      DROP TABLE IF EXISTS appointments CASCADE;
-      DROP TABLE IF EXISTS time_slots CASCADE;
-      DROP TABLE IF EXISTS services CASCADE;
-      DROP TABLE IF EXISTS provider_reviews CASCADE;
-      DROP TABLE IF EXISTS providers CASCADE;
-      DROP TABLE IF EXISTS users CASCADE;
-    `);
+    // Drop all existing tables to ensure clean slate (for development only)
+    if (NODE_ENV !== "production") {
+      logInfo("Dropping existing tables for clean schema initialization...");
+      await client.query(`
+        DROP TABLE IF EXISTS appointments CASCADE;
+        DROP TABLE IF EXISTS time_slots CASCADE;
+        DROP TABLE IF EXISTS services CASCADE;
+        DROP TABLE IF EXISTS provider_reviews CASCADE;
+        DROP TABLE IF EXISTS providers CASCADE;
+        DROP TABLE IF EXISTS users CASCADE;
+      `);
+    }
 
     // USERS TABLE
     await client.query(`
