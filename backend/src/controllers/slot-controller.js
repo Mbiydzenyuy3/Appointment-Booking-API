@@ -5,15 +5,10 @@ import { query } from "../config/db.js";
 
 export async function create(req, res, next) {
   try {
-    const {
-      day,
-      startTime: start_time,
-      endTime: end_time,
-      serviceId: service_id
-    } = req.body;
+    const { day, startTime, endTime, serviceId } = req.body;
     const userId = req.user?.sub;
 
-    if (!day || !start_time || !end_time || !service_id) {
+    if (!day || !startTime || !endTime || !serviceId) {
       return res.status(400).json({
         success: false,
         message: "Please provide date, start time, end time, and service."
@@ -36,7 +31,7 @@ export async function create(req, res, next) {
     // Verify service belongs to provider
     const serviceCheck = await query(
       "SELECT 1 FROM services WHERE service_id = $1 AND provider_id = $2",
-      [service_id, providerId]
+      [serviceId, providerId]
     );
     if (serviceCheck.rowCount === 0) {
       return res.status(403).json({
@@ -47,9 +42,9 @@ export async function create(req, res, next) {
 
     const slot = await SlotService.create({
       day,
-      start_time,
-      end_time,
-      service_id,
+      startTime,
+      endTime,
+      serviceId,
       providerId
     });
 
