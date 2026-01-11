@@ -3,8 +3,12 @@ import Joi from "joi";
 
 export const providerSchema = Joi.object({
   bio: Joi.string().max(500).required(),
-  rating: Joi.number().min(0).max(5),
-  referral_code: Joi.string().length(12).optional()
+  rating: Joi.number().min(0).max(5).optional(),
+  referral_code: Joi.string().length(12).optional(),
+  name: Joi.string().optional(),
+  phone: Joi.string().optional(),
+  address: Joi.string().optional(),
+  profile_picture: Joi.string().uri().optional()
 });
 
 export const availabilitySchema = Joi.object({

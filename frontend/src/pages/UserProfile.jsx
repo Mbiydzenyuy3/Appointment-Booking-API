@@ -22,7 +22,12 @@ export default function UserProfile() {
     bio: "",
     profile_picture: "",
     user_type: "",
-    provider_info: null
+    provider_info: {
+      bio: "",
+      service_types: "",
+      rating: 0,
+      referral_code: ""
+    }
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -56,28 +61,24 @@ export default function UserProfile() {
       if (response.data.success) {
         const data = response.data.data;
 
-        if (data.user_type === "provider") {
-          setProfileData({
-            name: data.name || "",
-            email: data.email || "",
-            phone: data.phone || "",
-            address: data.address || "",
-            bio: data.bio || "",
-            profile_picture: data.profile_picture || "",
-            user_type: "provider",
-            provider_info: {
-              bio: data.bio || "",
-              hourly_rate: data.hourly_rate || "",
-              service_types: data.service_types || ""
-            }
-          });
-        } else {
-          setProfileData({
-            ...data,
-            user_type: data.user_type,
-            provider_info: null
-          });
-        }
+        setProfileData({
+          name: data.name || "",
+          email: data.email || "",
+          phone: data.phone || "",
+          address: data.address || "",
+          bio: data.bio || "",
+          profile_picture: data.profile_picture || "",
+          user_type: data.user_type,
+          provider_info:
+            data.user_type === "provider"
+              ? {
+                  bio: data.bio || "",
+                  service_types: data.service_types || "",
+                  rating: data.rating || 0,
+                  referral_code: data.referral_code || ""
+                }
+              : null
+        });
       }
     } catch (error) {
       console.error("Error fetching profile:", error);
@@ -168,8 +169,14 @@ export default function UserProfile() {
 
     try {
       const updateData = {
-        bio: profileData.provider_info?.bio || "",
-        phone: profileData.phone || ""
+        name: profileData.name,
+        phone: profileData.phone,
+        address: profileData.address,
+        bio: profileData.provider_info?.bio || profileData.bio,
+        profile_picture: profileData.profile_picture,
+        service_types: profileData.provider_info?.service_types,
+        rating: profileData.provider_info?.rating || 0,
+        referral_code: profileData.provider_info?.referral_code || ""
       };
 
       const response = await api.put("/providers/me", updateData);
@@ -259,9 +266,6 @@ export default function UserProfile() {
     }
   };
 
-  // ---------------------
-  // Loading State
-  // ---------------------
   if (isLoading) {
     return (
       <div className='min-h-screen flex items-center justify-center'>
@@ -325,253 +329,174 @@ export default function UserProfile() {
 
       {/* Tab Content */}
       {activeTab === "profile" && (
-        <div className='bg-white shadow rounded-lg'>
-          {profileData.user_type === "provider" ? (
-            <div className='p-6 text-center'>
-              <div className='text-4xl mb-4'>👤</div>
-              <h3 className='text-lg font-medium text-gray-900 mb-2'>
-                Provider Profile
-              </h3>
-              <p className='text-gray-600 mb-4'>
-                Your basic account information is managed through your provider
-                profile. Use the "Provider Details" tab to update your business
-                information.
-              </p>
-
-              <div className='grid grid-cols-1 gap-6 sm:grid-cols-2'>
-                <div>
-                  <label className='block text-sm font-medium text-gray-700'>
-                    Full Name
-                  </label>
-                  <input
-                    type='text'
-                    value={profileData.name}
-                    disabled
-                    className='mt-1 block w-full text-gray-600 border-gray-300 rounded-md shadow-sm bg-gray-50 sm:text-sm'
-                  />
-                </div>
-
-                <div>
-                  <label className='block text-sm font-medium text-gray-700'>
-                    Email Address
-                  </label>
-                  <input
-                    type='email'
-                    value={profileData.email}
-                    disabled
-                    className='mt-1 block w-full text-gray-600 border-gray-300 rounded-md shadow-sm bg-gray-50 sm:text-sm'
-                  />
-                </div>
-
-                <div>
-                  <label className='block text-sm font-medium text-gray-700'>
-                    Account Type
-                  </label>
-                  <input
-                    type='text'
-                    value={profileData.user_type}
-                    disabled
-                    className='mt-1 block w-full border-gray-300 rounded-md shadow-sm bg-gray-50 sm:text-sm capitalize'
-                  />
-                </div>
-              </div>
+        <div className='bg-white shadow rounded-lg p-6'>
+          <form onSubmit={handleProfileSubmit} className='space-y-6'>
+            {/* Full Name */}
+            <div>
+              <label className='block text-sm font-medium text-gray-700'>
+                Full Name
+              </label>
+              <input
+                type='text'
+                name='name'
+                value={profileData.name}
+                onChange={handleInputChange}
+                className='mt-1 block w-full text-gray-600 border-gray-300 rounded-md shadow-sm sm:text-sm'
+              />
             </div>
-          ) : (
-            <form onSubmit={handleProfileSubmit} className='space-y-6 p-6'>
-              <div className='grid grid-cols-1 gap-6 sm:grid-cols-2'>
-                <div>
-                  <label className='block text-sm font-medium text-gray-700'>
-                    Full Name
-                  </label>
-                  <input
-                    type='text'
-                    name='name'
-                    value={profileData.name}
-                    onChange={handleInputChange}
-                    className='mt-1 block w-full text-gray-600 border-gray-300 rounded-md shadow-sm sm:text-sm'
-                    placeholder='Enter your full name'
-                  />
-                </div>
 
-                <div>
-                  <label className='block text-sm font-medium text-gray-700'>
-                    Email Address
-                  </label>
-                  <input
-                    type='email'
-                    name='email'
-                    value={profileData.email}
-                    disabled
-                    className='mt-1 block w-full text-gray-600 border-gray-300 rounded-md shadow-sm bg-gray-50 sm:text-sm'
-                  />
-                  <p className='mt-1 text-xs text-gray-500'>
-                    Email cannot be changed. Contact support if needed.
-                  </p>
-                </div>
+            {/* Email */}
+            <div>
+              <label className='block text-sm font-medium text-gray-700'>
+                Email
+              </label>
+              <input
+                type='email'
+                name='email'
+                value={profileData.email}
+                disabled
+                className='mt-1 block w-full text-gray-600 border-gray-300 rounded-md shadow-sm bg-gray-50 sm:text-sm'
+              />
+            </div>
 
-                <div>
-                  <label className='block text-sm font-medium text-gray-700'>
-                    Phone Number
-                  </label>
-                  <input
-                    type='tel'
-                    name='phone'
-                    value={profileData.phone}
-                    onChange={handleInputChange}
-                    className='mt-1 block w-full text-gray-600 border-gray-300 rounded-md shadow-sm sm:text-sm'
-                    placeholder='Enter your phone number'
-                  />
-                </div>
+            {/* Phone */}
+            <div>
+              <label className='block text-sm font-medium text-gray-700'>
+                Phone Number
+              </label>
+              <input
+                type='tel'
+                name='phone'
+                value={profileData.phone}
+                onChange={handleInputChange}
+                className='mt-1 block w-full text-gray-600 border-gray-300 rounded-md shadow-sm sm:text-sm'
+              />
+            </div>
 
-                <div>
-                  <label className='block text-sm font-medium text-gray-700'>
-                    Account Type
-                  </label>
-                  <input
-                    type='text'
-                    value={profileData.user_type}
-                    disabled
-                    className='mt-1 block w-full border-gray-300 rounded-md shadow-sm bg-gray-50 sm:text-sm capitalize'
-                  />
-                </div>
-              </div>
+            {/* Address */}
+            <div>
+              <label className='block text-sm font-medium text-gray-700'>
+                Address
+              </label>
+              <textarea
+                name='address'
+                value={profileData.address}
+                onChange={handleInputChange}
+                rows={3}
+                className='mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm'
+              />
+            </div>
 
-              <div>
-                <label className='block text-sm font-medium text-gray-700'>
-                  Address
-                </label>
-                <textarea
-                  name='address'
-                  rows={3}
-                  value={profileData.address}
-                  onChange={handleInputChange}
-                  className='mt-1 block w-full text-gray-600 border-gray-300 rounded-md shadow-sm sm:text-sm'
-                  placeholder='Enter your address'
-                />
-              </div>
+            {/* Bio */}
+            <div>
+              <label className='block text-sm font-medium text-gray-700'>
+                Bio
+              </label>
+              <textarea
+                name='bio'
+                value={profileData.bio}
+                onChange={handleInputChange}
+                rows={4}
+                className='mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm'
+              />
+            </div>
 
-              <div>
-                <label className='block text-sm font-medium text-gray-700'>
-                  Bio
-                </label>
-                <textarea
-                  name='bio'
-                  rows={4}
-                  value={profileData.bio}
-                  onChange={handleInputChange}
-                  className='mt-1 block w-full text-gray-600 border-gray-300 rounded-md shadow-sm sm:text-sm'
-                  placeholder='Tell us about yourself...'
-                />
-              </div>
+            {/* Profile Picture */}
+            <div>
+              <label className='block text-sm font-medium text-gray-700'>
+                Profile Picture URL
+              </label>
+              <input
+                type='url'
+                name='profile_picture'
+                value={profileData.profile_picture}
+                onChange={handleInputChange}
+                className='mt-1 block w-full text-gray-600 border-gray-300 rounded-md shadow-sm sm:text-sm'
+              />
+            </div>
 
-              <div>
-                <label className='block text-sm font-medium text-gray-700'>
-                  Profile Picture URL
-                </label>
-                <input
-                  type='url'
-                  name='profile_picture'
-                  value={profileData.profile_picture}
-                  onChange={handleInputChange}
-                  className='mt-1 block w-full text-gray-600 border-gray-300 rounded-md shadow-sm sm:text-sm'
-                  placeholder='https://example.com/profile-picture.jpg'
-                />
-                {profileData.profile_picture && (
-                  <div className='mt-2'>
-                    <img
-                      src={profileData.profile_picture}
-                      alt='Profile'
-                      className='h-20 w-20 rounded-full object-cover'
-                      onError={(e) => {
-                        e.target.style.display = "none";
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
-
-              <div className='flex justify-end'>
-                <button
-                  type='submit'
-                  disabled={isSaving}
-                  className='ml-3 save-button inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md bg-green-600 hover:bg-green-700 focus:outline-none disabled:opacity-50'
-                >
-                  {isSaving ? (
-                    <div className='flex items-center'>
-                      <div className='animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2'></div>
-                      Saving...
-                    </div>
-                  ) : (
-                    "Save Changes"
-                  )}
-                </button>
-              </div>
-            </form>
-          )}
+            <div className='flex justify-end'>
+              <button
+                type='submit'
+                disabled={isSaving}
+                className='ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md bg-green-600 hover:bg-green-700 text-white disabled:opacity-50'
+              >
+                {isSaving ? "Saving..." : "Save Changes"}
+              </button>
+            </div>
+          </form>
         </div>
       )}
 
       {activeTab === "provider" && profileData.user_type === "provider" && (
-        <div className='bg-white shadow rounded-lg'>
-          <div className='p-6'>
-            <h3 className='text-lg leading-6 font-medium text-gray-900 mb-4'>
-              Provider Information
-            </h3>
+        <div className='bg-white shadow rounded-lg p-6'>
+          <form onSubmit={handleProviderProfileSubmit} className='space-y-6'>
+            <div>
+              <label className='block text-sm font-medium text-gray-700'>
+                Bio
+              </label>
+              <textarea
+                name='bio'
+                rows={3}
+                value={profileData.provider_info?.bio || ""}
+                onChange={handleProviderInfoChange}
+                className='mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm'
+              />
+            </div>
 
-            {profileData.provider_info ? (
-              <form
-                onSubmit={handleProviderProfileSubmit}
-                className='space-y-6'
-              >
-                <div>
-                  <label className='block text-sm font-medium text-gray-700'>
-                    Bio
-                  </label>
-                  <textarea
-                    name='bio'
-                    rows={4}
-                    value={profileData.provider_info.bio || ""}
-                    onChange={handleProviderInfoChange}
-                    className='mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm text-gray-600'
-                    placeholder='Describe your services...'
-                  />
-                </div>
+            <div>
+              <label className='block text-sm font-medium text-gray-700'>
+                Service Types
+              </label>
+              <input
+                type='text'
+                name='service_types'
+                value={profileData.provider_info?.service_types || ""}
+                onChange={handleProviderInfoChange}
+                className='mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm'
+                placeholder='e.g., Haircut, Styling'
+              />
+            </div>
 
-                <div>
-                  <label className='block text-sm font-medium text-gray-700'>
-                    Phone Number
-                  </label>
-                  <input
-                    type='tel'
-                    name='phone'
-                    value={profileData.phone || ""}
-                    onChange={(e) =>
-                      setProfileData((prev) => ({
-                        ...prev,
-                        phone: e.target.value
-                      }))
-                    }
-                    className='mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm'
-                    placeholder='Enter your phone number'
-                  />
-                </div>
-
-                <div className='flex justify-end'>
-                  <button
-                    type='submit'
-                    disabled={isSaving}
-                    className='ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none disabled:opacity-50'
-                  >
-                    {isSaving ? "Saving..." : "Save Provider Info"}
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <p className='text-gray-500'>
-                No provider information available.
+            <div>
+              <label className='block text-sm font-medium text-gray-700'>
+                Referral Code
+              </label>
+              <input
+                type='text'
+                name='referral_code'
+                value={profileData.provider_info?.referral_code || ""}
+                disabled
+                className='mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm bg-gray-50'
+              />
+              <p className='text-xs text-gray-500 mt-1'>
+                Share this code with others to earn referral benefits
               </p>
-            )}
-          </div>
+            </div>
+
+            <div>
+              <label className='block text-sm font-medium text-gray-700'>
+                Rating
+              </label>
+              <input
+                type='number'
+                name='rating'
+                value={profileData.provider_info?.rating || 0}
+                disabled
+                className='mt-1 block w-full border-gray-300 rounded-md shadow-sm sm:text-sm bg-gray-50'
+              />
+            </div>
+
+            <div className='flex justify-end'>
+              <button
+                type='submit'
+                disabled={isSaving}
+                className='ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md bg-green-600 hover:bg-green-700 text-white disabled:opacity-50'
+              >
+                {isSaving ? "Saving..." : "Save Provider Info"}
+              </button>
+            </div>
+          </form>
         </div>
       )}
 
