@@ -13,3 +13,16 @@ export async function logProviderActivity(
     [provider_id, activity_type, metadata]
   );
 }
+
+export async function getProviderActivities(provider_id) {
+  const { rows } = await query(
+    `
+    SELECT activity_id, activity_type, metadata, created_at
+    FROM provider_activity_logs
+    WHERE provider_id = $1
+    ORDER BY created_at DESC
+  `,
+    [provider_id]
+  );
+  return rows;
+}
