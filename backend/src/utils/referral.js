@@ -1,4 +1,5 @@
-export function generateReferralCode(length = 8) {
+// Utility function to generate a random referral code //utils/referral.js
+export function generateReferralCode (length=8) {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let code = "";
   for (let i = 0; i < length; i++) {
