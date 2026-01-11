@@ -10,7 +10,7 @@ import { query } from "../config/db.js";
 export async function createProvider(req, res, next) {
   try {
     const { bio, phone } = req.body;
-    const user_id = req.user?.sub;
+    const user_id = req.user?.user_id;
 
     if (!user_id) {
       return res.status(401).json({
@@ -53,7 +53,7 @@ export async function createProvider(req, res, next) {
 export async function updateProvider(req, res, next) {
   try {
     const { bio, phone } = req.body;
-    const user_id = req.user?.sub;
+    const user_id = req.user?.user_id;
 
     if (!user_id) {
       return res.status(401).json({
@@ -89,7 +89,7 @@ export async function updateProvider(req, res, next) {
 
 export async function getCurrentProvider(req, res, next) {
   try {
-    const user_id = req.user?.sub;
+    const user_id = req.user?.user_id;
     if (!user_id) {
       return res.status(401).json({
         success: false,
