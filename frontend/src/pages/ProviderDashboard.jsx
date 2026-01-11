@@ -16,6 +16,7 @@ export default function ProviderDashboard() {
   const [activeTab, setActiveTab] = useState("services");
   const [appointments, setAppointments] = useState([]);
   const [bookingLink, setBookingLink] = useState("");
+  const [profileComplete, setProfileComplete] = useState(false);
 
   // Debug logging
   console.log("ProviderDashboard render:", {
@@ -37,24 +38,30 @@ export default function ProviderDashboard() {
     const fetchData = async (providerId) => {
       console.log("Fetching data for providerId:", providerId);
       try {
-        const [servicesRes, slotsRes, appointmentsRes, linkRes] =
+        const [servicesRes, slotsRes, appointmentsRes, linkRes, profileRes] =
           await Promise.all([
             api.get(`/services/provider/${providerId}`),
             api.get(`/slots/provider/${providerId}`),
             api.get("/appointments/list"),
-            api.get(`/providers/${providerId}/booking-link`)
+            api.get(`/providers/${providerId}/booking-link`),
+            api.get("/providers/me")
           ]);
 
         console.log("Fetch responses:", {
           servicesRes,
           slotsRes,
           appointmentsRes,
-          linkRes
+          linkRes,
+          profileRes
         });
         setServices(servicesRes.data.data);
         setTimeSlots(slotsRes.data.data);
         setAppointments(appointmentsRes.data.data || []);
         setBookingLink(linkRes.data.data.booking_link);
+
+        // Check if profile is complete (has bio and phone)
+        const profile = profileRes.data.data;
+        setProfileComplete(profile.bio && profile.phone);
       } catch (error) {
         console.error("Error loading dashboard data:", error);
         toast.error("Something went wrong");
@@ -149,6 +156,29 @@ export default function ProviderDashboard() {
           schedule.
         </p>
       </div>
+
+      {/* Onboarding Progress */}
+      {!profileComplete && (
+        <div className='mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4'>
+          <div className='flex items-center justify-between'>
+            <div>
+              <h3 className='text-sm font-medium text-blue-900'>
+                Complete Your Business Profile
+              </h3>
+              <p className='text-sm text-blue-700 mt-1'>
+                Add your business description and contact information to attract
+                more clients.
+              </p>
+            </div>
+            <button
+              onClick={() => (window.location.href = "/provider/profile")}
+              className='bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700'
+            >
+              Complete Profile
+            </button>
+          </div>
+        </div>
+      )}
 
       {loading ? (
         <div className='flex justify-center items-center py-12'>

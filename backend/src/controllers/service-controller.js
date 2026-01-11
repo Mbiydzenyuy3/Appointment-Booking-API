@@ -32,7 +32,7 @@ export async function create(req, res, next) {
     if (!provider?.provider_id) {
       return res.status(403).json({
         success: false,
-        message: "Please create a business profile first."
+        message: "Provider profile not found. Please contact support."
       });
     }
 
