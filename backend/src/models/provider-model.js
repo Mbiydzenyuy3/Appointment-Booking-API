@@ -4,18 +4,25 @@ import { logError } from "../utils/logger.js";
 import crypto from "crypto";
 
 const ProviderModel = {
-  async create({ user_id, bio, phone }) {
+  async create({ user_id, bio }) {
     try {
       const bookingSlug = crypto.randomBytes(16).toString("hex");
 
       const { rows } = await query(
         `
-        INSERT INTO providers (user_id, bio, phone, booking_slug, created_at, updated_at)
-        VALUES ($1, $2, $3, $4, NOW(), NOW())
+        INSERT INTO providers (
+          user_id,
+          bio,
+          booking_slug,
+          created_at,
+          updated_at
+        )
+        VALUES ($1, $2, $3, NOW(), NOW())
         RETURNING *;
         `,
-        [user_id, bio || "", phone || "", bookingSlug]
+        [user_id, bio || "", bookingSlug]
       );
+
       return rows[0];
     } catch (err) {
       logError("DB Error (create provider):", err);
@@ -23,13 +30,19 @@ const ProviderModel = {
     }
   },
 
-  async updateByUserId(user_id, { bio, phone }) {
+  async updateByUserId(user_id, { bio }) {
     try {
       const { rows } = await query(
-        `UPDATE providers SET bio = $1, phone = $2, updated_at = CURRENT_TIMESTAMP
-         WHERE user_id = $3 RETURNING *`,
-        [bio, phone, user_id]
+        `
+        UPDATE providers
+        SET bio = $1,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE user_id = $2
+        RETURNING *;
+        `,
+        [bio || "", user_id]
       );
+
       return rows[0];
     } catch (err) {
       logError("DB Error (update provider):", err);

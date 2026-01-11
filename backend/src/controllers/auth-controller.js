@@ -63,8 +63,7 @@ export async function register(req, res, next) {
       try {
         const provider = await ProviderModel.create({
           user_id: userId,
-          bio: "",
-          phone: null
+          bio: ""
         });
         providerId = provider.provider_id;
       } catch (providerError) {
