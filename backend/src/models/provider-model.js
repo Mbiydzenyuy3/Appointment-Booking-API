@@ -1,4 +1,4 @@
-// src/models/provider-model.js - Simplified for MVP
+// src/models/provider-model.js
 import { query } from "../config/db.js";
 import { logError } from "../utils/logger.js";
 import crypto from "crypto";
