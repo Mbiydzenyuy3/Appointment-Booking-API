@@ -46,7 +46,7 @@ router.get(
 );
 
 router.put(
-  "/update",
+  "/me",
   authMiddleware,
   requireProvider,
   validate(providerSchema),
