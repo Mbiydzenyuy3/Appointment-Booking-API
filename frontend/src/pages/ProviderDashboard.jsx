@@ -67,12 +67,6 @@ export default function ProviderDashboard() {
   }, [user]);
 
   const handleCreateService = async (newService) => {
-    const token = sessionStorage.getItem("token");
-    if (!token) {
-      toast.error("You are not logged in. Please log in again.");
-      return;
-    }
-
     try {
       const res = await api.post("/services/create", newService);
       setServices((prev) => [...prev, res.data.data]);
@@ -80,22 +74,10 @@ export default function ProviderDashboard() {
         "Great! Your service has been created and is now available for booking."
       );
     } catch (error) {
-      console.error("Create service error:", error);
-
       if (error.response?.status === 401) {
-        toast.error("Sign in failed. Please try again.");
+        toast.error("Session expired. Please log in again.");
       } else if (error.response?.status === 403) {
         toast.error("You don't have permission to create services.");
-      } else if (
-        error.response?.status === 400 &&
-        error.response?.data?.errors
-      ) {
-        const validationErrors = error.response.data.errors;
-        if (validationErrors.length > 0) {
-          toast.error(`Validation error: ${validationErrors.join(", ")}`);
-        } else {
-          toast.error(error.response?.data?.message || "Invalid service data");
-        }
       } else {
         toast.error(error.response?.data?.message || "Something went wrong");
       }
