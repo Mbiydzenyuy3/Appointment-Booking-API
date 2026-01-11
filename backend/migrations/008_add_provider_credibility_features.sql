@@ -9,9 +9,9 @@ ADD COLUMN years_of_experience INTEGER DEFAULT 0;
 
 -- Create reviews table for detailed reviews and ratings
 CREATE TABLE provider_reviews (
-    review_id SERIAL PRIMARY KEY,
-    provider_id INTEGER REFERENCES providers(provider_id) ON DELETE CASCADE,
-    user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
+    review_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    provider_id UUID REFERENCES providers(provider_id) ON DELETE CASCADE,
+    user_id UUID REFERENCES users(user_id) ON DELETE CASCADE,
     rating DECIMAL(3,2) NOT NULL CHECK (rating >= 1.0 AND rating <= 5.0),
     review_text TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

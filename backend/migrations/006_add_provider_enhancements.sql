@@ -16,9 +16,9 @@ ADD COLUMN is_online BOOLEAN DEFAULT FALSE;
 
 -- Create referrals table
 CREATE TABLE referrals (
-    referral_id SERIAL PRIMARY KEY,
-    referrer_provider_id INTEGER REFERENCES providers(provider_id) ON DELETE CASCADE,
-    referred_provider_id INTEGER REFERENCES providers(provider_id) ON DELETE CASCADE,
+    referral_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    referrer_provider_id UUID REFERENCES providers(provider_id) ON DELETE CASCADE,
+    referred_provider_id UUID REFERENCES providers(provider_id) ON DELETE CASCADE,
     referral_code_used VARCHAR(255),
     status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('pending', 'completed', 'expired')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -27,8 +27,8 @@ CREATE TABLE referrals (
 
 -- Create provider_activity_log table for activity signals
 CREATE TABLE provider_activity_log (
-    activity_id SERIAL PRIMARY KEY,
-    provider_id INTEGER REFERENCES providers(provider_id) ON DELETE CASCADE,
+    activity_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    provider_id UUID REFERENCES providers(provider_id) ON DELETE CASCADE,
     activity_type VARCHAR(100), -- 'login', 'profile_update', 'booking_confirmed', etc.
     activity_data JSONB DEFAULT '{}',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

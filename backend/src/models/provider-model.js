@@ -6,7 +6,7 @@ import crypto from "crypto";
 const ProviderModel = {
   async create({ user_id, bio, phone }) {
     try {
-      const bookingSlug = crypto.randomBytes(8).toString("hex");
+      const bookingSlug = crypto.randomBytes(16).toString("hex");
 
       const { rows } = await query(
         `
