@@ -20,3 +20,22 @@ export async function updateProviderRating(provider_id) {
     [provider_id]
   );
 }
+
+export async function updateCredibilityMetrics(provider_id, metrics) {
+  // Assuming metrics is an object like { response_rate: 95, completed_jobs: 10 }
+  const fields = Object.keys(metrics);
+  if (fields.length === 0) return;
+
+  const setClause = fields
+    .map((key, index) => `${key} = $${index + 2}`)
+    .join(", ");
+
+  await query(
+    `
+    UPDATE providers
+    SET ${setClause}
+    WHERE provider_id = $1
+  `,
+    [provider_id, ...Object.values(metrics)]
+  );
+}
