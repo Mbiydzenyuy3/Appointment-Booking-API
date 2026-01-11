@@ -2,7 +2,7 @@
 import test from "node:test";
 import assert from "node:assert";
 import request from "supertest";
-import { app } from "../../app.js";
+import app from "../../app.js";
 
 test("Booking appointment fails for fake slot", async () => {
   const fakeToken = "Bearer invalidtoken";
@@ -14,7 +14,7 @@ test("Booking appointment fails for fake slot", async () => {
       timeslotId: "non-existent-id",
       appointmentDate: "2025-05-23",
       appointmentTime: "10:00",
-      serviceId: "non-existent-service",
+      serviceId: "non-existent-service"
     });
 
   assert.ok(res.statusCode >= 400);

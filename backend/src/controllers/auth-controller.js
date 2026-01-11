@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { logError, logInfo } from "../utils/logger.js";
 import { query } from "../config/db.js";
+import ProviderModel from "../models/provider-model.js";
 
 // Controller function for user registration
 export async function register(req, res, next) {
@@ -57,15 +58,26 @@ export async function register(req, res, next) {
 
     let providerId = null;
 
+    // Create provider profile if user_type is provider
     if (user_type === "provider") {
-      const providerInsertResult = await query(
-        `INSERT INTO providers (user_id, bio)
-         VALUES ($1, $2)
-         RETURNING provider_id`,
-        [userId, ""]
-      );
-
-      providerId = providerInsertResult.rows[0].provider_id;
+      try {
+        const provider = await ProviderModel.create({
+          user_id: userId,
+          bio: "",
+          phone: null
+        });
+        providerId = provider.provider_id;
+      } catch (providerError) {
+        logError(
+          "Error creating provider profile during registration:",
+          providerError
+        );
+        await query("ROLLBACK");
+        return res.status(500).json({
+          success: false,
+          message: "Failed to create provider profile. Please try again."
+        });
+      }
     }
 
     await query("COMMIT");
@@ -89,7 +101,8 @@ export async function register(req, res, next) {
         user_id: userId,
         provider_id: providerId,
         email,
-        user_type
+        user_type,
+        name
       }
     });
   } catch (err) {

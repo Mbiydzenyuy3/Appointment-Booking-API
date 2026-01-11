@@ -2,7 +2,7 @@
 import test from "node:test";
 import assert from "node:assert";
 import request from "supertest";
-import { app } from "../../app.js";
+import app from "../../app.js";
 
 let providerToken;
 let serviceId;

@@ -14,9 +14,7 @@ const router = express.Router();
 
 router.get("/", ProviderController.getAllProviders);
 
-router.get("/top", ProviderController.getTopProvidersController);
-
-router.get("/slug/:bookingSlug", ProviderController.getProviderBySlug);
+router.get("/slug/:bookingSlug", ProviderController.getProviderProfile);
 
 router.get("/profile/:bookingSlug", ProviderController.getProviderProfile);
 
@@ -71,7 +69,7 @@ router.post(
   "/log-activity",
   authMiddleware,
   requireProvider,
-  ProviderController.logProviderActivity
+  ProviderController.logActivity
 );
 
 router.post(

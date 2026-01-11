@@ -1,99 +1,87 @@
 // src/controllers/provider-controller.js
 import ProviderModel from "../models/provider-model.js";
+import ReviewModel from "../models/review-model.js";
+import { updateProviderRating } from "../models/provider-metrics-model.js";
+import { logProviderActivity } from "../models/provider-activity-model.js";
+
 import {
   getProviderByBookingSlug,
   listProviders
 } from "../services/provider-service.js";
+
+import { generateReferralCode } from "../utils/referral.js";
 import { logError } from "../utils/logger.js";
 import { query } from "../config/db.js";
 
+const FRONTEND_URL =
+  process.env.FRONTEND_URL ||
+  "https://appointment-booking-api-1-7zro.onrender.com";
+
+/* ============================================================
+   PROVIDER PROFILE
+   ============================================================ */
+
 export async function createProvider(req, res, next) {
   try {
-    const { bio, phone } = req.body;
     const user_id = req.user?.user_id;
+    const user_type = req.user?.user_type;
+    const { bio = "", phone = null, hourly_rate = null } = req.body;
 
     if (!user_id) {
       return res.status(401).json({
         success: false,
-        message: "Please log in to create a business profile."
+        error_code: "UNAUTHORIZED"
+      });
+    }
+
+    if (user_type !== "provider") {
+      return res.status(403).json({
+        success: false,
+        error_code: "FORBIDDEN",
+        message: "Only provider users can create business profiles."
       });
     }
 
     const existing = await ProviderModel.findByUserId(user_id);
-
     if (existing) {
       return res.status(409).json({
         success: false,
-        message: "You already have a business profile."
+        error_code: "PROVIDER_ALREADY_EXISTS",
+        message: "Business profile already exists."
       });
     }
 
-    const newProvider = await ProviderModel.create({
+    const provider = await ProviderModel.create({
       user_id,
-      bio: bio || "",
-      phone: phone || ""
+      bio,
+      phone,
+      hourly_rate,
+      referral_code: generateReferralCode()
     });
 
-    return res.status(201).json({
+    await logProviderActivity(provider.provider_id, "provider_created");
+
+    res.status(201).json({
       success: true,
-      message: "Your business profile has been created successfully!",
       data: {
-        ...newProvider,
-        booking_link: `${
-          process.env.FRONTEND_URL || "http://localhost:5173"
-        }/book/${newProvider.booking_slug}`
+        ...provider,
+        booking_link: `${FRONTEND_URL}/book/${provider.booking_slug}`
       }
     });
   } catch (err) {
-    logError("Error creating provider profile", err);
+    logError("Create provider failed", err);
     next(err);
   }
 }
 
 export async function updateProvider(req, res, next) {
   try {
-    const { bio, phone } = req.body;
     const user_id = req.user?.user_id;
 
     if (!user_id) {
       return res.status(401).json({
         success: false,
-        message: "Please log in to update your profile."
-      });
-    }
-
-    const existing = await ProviderModel.findByUserId(user_id);
-
-    if (!existing) {
-      return res.status(404).json({
-        success: false,
-        message: "Business profile not found."
-      });
-    }
-
-    const updated = await ProviderModel.updateByUserId(user_id, {
-      bio,
-      phone
-    });
-
-    return res.json({
-      success: true,
-      message: "Your business profile has been updated successfully.",
-      data: updated
-    });
-  } catch (err) {
-    logError("Error updating provider profile", err);
-    next(err);
-  }
-}
-
-export async function getCurrentProvider(req, res, next) {
-  try {
-    const user_id = req.user?.user_id;
-    if (!user_id) {
-      return res.status(401).json({
-        success: false,
-        message: "Please log in to view your profile."
+        error_code: "UNAUTHORIZED"
       });
     }
 
@@ -101,166 +89,196 @@ export async function getCurrentProvider(req, res, next) {
     if (!provider) {
       return res.status(404).json({
         success: false,
+        error_code: "PROVIDER_NOT_FOUND"
+      });
+    }
+
+    const updated = await ProviderModel.updateByUserId(user_id, req.body);
+
+    await logProviderActivity(provider.provider_id, "provider_updated", {
+      fields: Object.keys(req.body)
+    });
+
+    res.json({ success: true, data: updated });
+  } catch (err) {
+    logError("Update provider failed", err);
+    next(err);
+  }
+}
+
+export async function getCurrentProvider(req, res, next) {
+  try {
+    const user_id = req.user?.user_id;
+
+    if (!user_id) {
+      return res.status(401).json({
+        success: false,
+        error_code: "UNAUTHORIZED"
+      });
+    }
+
+    const provider = await ProviderModel.findByUserId(user_id);
+    if (!provider) {
+      return res.status(404).json({
+        success: false,
+        error_code: "PROVIDER_NOT_FOUND",
         message: "Business profile not found."
       });
     }
 
-    return res.json({ success: true, data: provider });
+    res.json({ success: true, data: provider });
   } catch (err) {
-    logError("Error getting current provider", err);
     next(err);
   }
 }
 
-export async function getProviderBySlug(req, res, next) {
-  try {
-    const { bookingSlug } = req.params;
-    const provider = await getProviderByBookingSlug(bookingSlug);
-
-    return res.json({
-      success: true,
-      data: provider
-    });
-  } catch (err) {
-    logError("Error getting provider by slug", err);
-    if (err.message === "Provider not found") {
-      return res.status(404).json({
-        success: false,
-        message: "Business not found."
-      });
-    }
-    next(err);
-  }
-}
+/* ============================================================
+   PUBLIC PROVIDER
+   ============================================================ */
 
 export async function getProviderProfile(req, res, next) {
   try {
-    const { bookingSlug } = req.params;
+    const provider = await getProviderByBookingSlug(req.params.bookingSlug);
 
-    // Get provider details - try booking_slug first, then provider_id if it's a UUID
-    let provider;
-    try {
-      provider = await getProviderByBookingSlug(bookingSlug);
-    } catch (err) {
-      if (err.message === "Provider not found") {
-        // Check if bookingSlug is a valid UUID (provider_id)
-        const uuidRegex =
-          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-        if (uuidRegex.test(bookingSlug)) {
-          provider = await ProviderModel.findById(bookingSlug);
-        }
-      } else {
-        throw err;
-      }
-    }
-    if (!provider) {
-      return res.status(404).json({
-        success: false,
-        message: "Business not found."
-      });
-    }
-
-    // Get provider's services
-    const servicesQuery = await query(
+    const { rows: services } = await query(
       `
-      SELECT s.service_id, s.service_name, s.description, s.duration_minutes, s.price
-      FROM services s
-      WHERE s.provider_id = $1
-      ORDER BY s.service_name
+      SELECT service_id, service_name, description, duration_minutes, price
+      FROM services
+      WHERE provider_id = $1
+      ORDER BY service_name
       `,
       [provider.provider_id]
     );
 
-    return res.json({
+    res.json({
       success: true,
-      data: {
-        ...provider,
-        services: servicesQuery.rows
-      }
+      data: { ...provider, services }
     });
   } catch (err) {
-    logError("Error getting provider profile", err);
     next(err);
   }
 }
 
-export async function getBookingLink(req, res, next) {
-  try {
-    const { providerId } = req.params;
+/* ============================================================
+   REVIEWS
+   ============================================================ */
 
-    // Verify provider exists
-    const provider = await ProviderModel.findById(providerId);
-    if (!provider) {
-      return res.status(404).json({
+export async function addReview(req, res, next) {
+  try {
+    const reviewer_user_id = req.user?.user_id;
+    const { provider_id, booking_id, rating, comment } = req.body;
+
+    if (!provider_id || !booking_id || rating == null) {
+      return res.status(400).json({
         success: false,
-        message: "Business not found."
+        error_code: "INVALID_INPUT"
       });
     }
 
-    // Generate personal booking link using booking slug
-    const baseUrl = process.env.FRONTEND_URL || "http://localhost:5173";
-    const bookingLink = `${baseUrl}/book/${provider.booking_slug}`;
+    // 🔒 Clamp rating defensively
+    if (rating < 1 || rating > 5) {
+      return res.status(400).json({
+        success: false,
+        error_code: "INVALID_RATING",
+        message: "Rating must be between 1 and 5."
+      });
+    }
 
-    return res.json({
-      success: true,
-      data: {
-        booking_link: bookingLink,
-        booking_slug: provider.booking_slug,
-        provider_name: provider.name || "Business",
-        provider_id: providerId
-      }
+    // 🔒 Verify booking ownership & completion
+    const booking = await query(
+      `
+      SELECT booking_id
+      FROM bookings
+      WHERE booking_id = $1
+        AND user_id = $2
+        AND status = 'completed'
+      `,
+      [booking_id, reviewer_user_id]
+    );
+
+    if (!booking.rowCount) {
+      return res.status(403).json({
+        success: false,
+        error_code: "REVIEW_NOT_ALLOWED"
+      });
+    }
+
+    // 🔒 Prevent duplicate reviews
+    const existingReview = await ReviewModel.findByBooking(booking_id);
+    if (existingReview) {
+      return res.status(409).json({
+        success: false,
+        error_code: "REVIEW_ALREADY_EXISTS"
+      });
+    }
+
+    const review = await ReviewModel.create({
+      provider_id,
+      booking_id,
+      reviewer_user_id,
+      rating,
+      comment
     });
+
+    await updateProviderRating(provider_id);
+    await logProviderActivity(provider_id, "review_added", { rating });
+
+    res.status(201).json({ success: true, data: review });
   } catch (err) {
-    logError("Error getting booking link", err);
+    logError("Add review failed", err);
     next(err);
   }
 }
 
-// Stub implementations for missing provider controller functions
+export async function getReviews(req, res, next) {
+  try {
+    const reviews = await ReviewModel.findByProvider(req.params.provider_id);
+    res.json({ success: true, data: reviews });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/* ============================================================
+   DISCOVERY
+   ============================================================ */
+
 export async function getAllProviders(req, res, next) {
   try {
-    const limit = parseInt(req.query.limit) || 10;
-    const offset = parseInt(req.query.offset) || 0;
+    const limit = Number(req.query.limit) || 10;
+    const offset = Number(req.query.offset) || 0;
 
     const providers = await listProviders({ limit, offset });
 
-    return res.json({
+    res.json({
       success: true,
       data: providers,
       pagination: { limit, offset }
     });
   } catch (err) {
-    logError("Error getting all providers", err);
     next(err);
   }
 }
 
-export async function getTopProvidersController(req, res, next) {
-  // TODO: Implement get top providers functionality
-  res.status(501).json({
-    success: false,
-    message: "Get top providers functionality not implemented yet"
-  });
-}
+/* ============================================================
+   STUB IMPLEMENTATIONS
+   ============================================================ */
 
 export async function getReferralCode(req, res, next) {
-  // TODO: Implement get referral code functionality
   res.status(501).json({
     success: false,
-    message: "Get referral code functionality not implemented yet"
+    message: "Referral code functionality not implemented yet"
   });
 }
 
 export async function useReferralCode(req, res, next) {
-  // TODO: Implement use referral code functionality
   res.status(501).json({
     success: false,
     message: "Use referral code functionality not implemented yet"
   });
 }
 
-export async function logProviderActivity(req, res, next) {
-  // TODO: Implement log provider activity functionality
+export async function logActivity(req, res, next) {
   res.status(501).json({
     success: false,
     message: "Log provider activity functionality not implemented yet"
@@ -268,31 +286,13 @@ export async function logProviderActivity(req, res, next) {
 }
 
 export async function updateCredibilityMetrics(req, res, next) {
-  // TODO: Implement update credibility metrics functionality
   res.status(501).json({
     success: false,
     message: "Update credibility metrics functionality not implemented yet"
   });
 }
 
-export async function addReview(req, res, next) {
-  // TODO: Implement add review functionality
-  res.status(501).json({
-    success: false,
-    message: "Add review functionality not implemented yet"
-  });
-}
-
-export async function getReviews(req, res, next) {
-  // TODO: Implement get reviews functionality
-  res.status(501).json({
-    success: false,
-    message: "Get reviews functionality not implemented yet"
-  });
-}
-
 export async function updateReview(req, res, next) {
-  // TODO: Implement update review functionality
   res.status(501).json({
     success: false,
     message: "Update review functionality not implemented yet"
@@ -300,9 +300,15 @@ export async function updateReview(req, res, next) {
 }
 
 export async function deleteReview(req, res, next) {
-  // TODO: Implement delete review functionality
   res.status(501).json({
     success: false,
     message: "Delete review functionality not implemented yet"
+  });
+}
+
+export async function getBookingLink(req, res, next) {
+  res.status(501).json({
+    success: false,
+    message: "Get booking link functionality not implemented yet"
   });
 }
