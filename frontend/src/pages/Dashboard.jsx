@@ -72,8 +72,8 @@ const UserDashboard = () => {
         Array.isArray(servicesRes.data.data) ? servicesRes.data.data : []
       ).map((s) => ({
         ...s,
-        service_name: s.name,
-        duration_minutes: s.duration,
+        service_name: s.service_name,
+        duration_minutes: s.duration_minutes,
         providerId: s.provider_id || "default-provider-id"
       }));
       setServices(servicesWithProvider);
@@ -303,19 +303,6 @@ const UserDashboard = () => {
                           minute: "2-digit"
                         })}
                       </p>
-                      <div className='flex items-center justify-between'>
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            appt.status === "confirmed"
-                              ? "bg-green-100 text-green-800"
-                              : appt.status === "pending"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-gray-100 text-gray-800"
-                          }`}
-                        >
-                          {appt.status}
-                        </span>
-                      </div>
                     </div>
                   </div>
 

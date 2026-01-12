@@ -7,16 +7,22 @@ export async function createService({
   service_name,
   description,
   price,
-  duration_minutes
+  duration_minutes,
+  location,
+  additional_description,
+  image_url
 }) {
   try {
-    const queryText = `INSERT INTO services (provider_id, service_name, description, price, duration_minutes, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, NOW(), NOW()) RETURNING *`;
+    const queryText = `INSERT INTO services (provider_id, service_name, description, price, duration_minutes, location, additional_description, image_url, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW()) RETURNING *`;
     const params = [
       providerId,
       service_name,
       description,
       price,
-      duration_minutes
+      duration_minutes,
+      location,
+      additional_description,
+      image_url
     ];
 
     const result = await query(queryText, params);

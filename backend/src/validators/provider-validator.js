@@ -2,13 +2,14 @@
 import Joi from "joi";
 
 export const providerSchema = Joi.object({
-  bio: Joi.string().max(500).required(),
+  bio: Joi.string().max(500).optional(),
   rating: Joi.number().min(0).max(5).optional(),
-  referral_code: Joi.string().length(12).optional(),
+  referral_code: Joi.string().length(20).optional(),
   name: Joi.string().optional(),
   phone: Joi.string().optional(),
   address: Joi.string().optional(),
-  profile_picture: Joi.string().uri().optional()
+  profile_picture: Joi.string().uri().optional(),
+  hourly_rate: Joi.number().min(0).optional()
 });
 
 export const availabilitySchema = Joi.object({
@@ -38,5 +39,5 @@ export function providerValidatorMiddleware(req, res, next) {
     });
   }
 
-  return next(); // ✅ Only called if no validation errors
+  return next();
 }

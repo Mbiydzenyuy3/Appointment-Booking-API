@@ -45,14 +45,24 @@ export async function getProviderByBookingSlug(booking_slug) {
     let provider = await ProviderModel.findByBookingSlug(booking_slug);
     if (!provider) {
       // Try if it's actually a provider_id
-      provider = await ProviderModel.findById(booking_slug);
+      // Check if it looks like a UUID to prevent DB errors
+      const isUUID =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          booking_slug
+        );
+      if (isUUID) {
+        provider = await ProviderModel.findById(booking_slug);
+      }
     }
     if (!provider) {
-      throw new Error("Provider not found");
+      const error = new Error("Provider not found");
+      error.statusCode = 404;
+      throw error;
     }
     return provider;
   } catch (err) {
     logError("Service error - getting provider by booking slug", err);
+    if (err.statusCode) throw err;
     throw new Error(err.message || "Unable to fetch provider.");
   }
 }

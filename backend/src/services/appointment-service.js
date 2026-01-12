@@ -117,7 +117,7 @@ export async function cancel(appointmentId, userId, userType) {
       appointmentId
     ]);
     await client.query(
-      "UPDATE time_slots SET is_booked = false, is_available = true WHERE timeslot_id = $1",
+      "UPDATE time_slots SET is_booked = false WHERE timeslot_id = $1",
       [appointment.timeslot_id]
     );
 
@@ -220,16 +220,16 @@ export async function list(
 
     // Status filter removed as status column was dropped in MVP simplification
 
-    // Note: Date filters commented out as appointment_date may not exist in deployed DB
-    // if (startDate) {
-    //   query += ` AND a.appointment_date >= $${paramIndex++}`;
-    //   params.push(startDate);
-    // }
+    // Date filters
+    if (startDate) {
+      query += ` AND a.appointment_date >= $${paramIndex++}`;
+      params.push(startDate);
+    }
 
-    // if (endDate) {
-    //   query += ` AND a.appointment_date <= $${paramIndex++}`;
-    //   params.push(endDate);
-    // }
+    if (endDate) {
+      query += ` AND a.appointment_date <= $${paramIndex++}`;
+      params.push(endDate);
+    }
 
     query += ` ORDER BY a.created_at DESC LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
     params.push(limit, offset);

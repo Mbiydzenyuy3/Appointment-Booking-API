@@ -63,7 +63,10 @@ export async function register(req, res, next) {
       try {
         const provider = await ProviderModel.create({
           user_id: userId,
-          bio: ""
+          bio: "",
+          phone: null,
+          hourly_rate: null,
+          referral_code: null
         });
         providerId = provider.provider_id;
       } catch (providerError) {
@@ -86,7 +89,8 @@ export async function register(req, res, next) {
         sub: userId,
         email,
         user_type,
-        provider_id: providerId
+        provider_id: providerId,
+        name
       },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
@@ -163,7 +167,8 @@ export async function login(req, res, next) {
         sub: user.user_id,
         email: user.email,
         user_type: user.user_type,
-        provider_id: providerId
+        provider_id: providerId,
+        name: user.name
       },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
@@ -213,7 +218,7 @@ export async function getUserProfile(req, res, next) {
     let providerInfo = null;
     if (user.user_type === "provider") {
       const providerResult = await query(
-        "SELECT provider_id, bio, booking_slug FROM providers WHERE user_id = $1",
+        "SELECT provider_id, bio, phone, hourly_rate, referral_code, booking_slug FROM providers WHERE user_id = $1",
         [userId]
       );
 
@@ -253,11 +258,38 @@ export async function resetPassword(req, res, next) {
 }
 
 export async function updateUserProfile(req, res, next) {
-  // TODO: Implement update user profile functionality
-  res.status(501).json({
-    success: false,
-    message: "Update user profile functionality not implemented yet"
-  });
+  try {
+    const userId = req.user.user_id;
+    const { name } = req.body;
+
+    if (!name || name.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Name is required and cannot be empty."
+      });
+    }
+
+    const { rows } = await query(
+      `UPDATE users SET name = $1, updated_at = NOW() WHERE user_id = $2 RETURNING user_id, name, email, user_type, updated_at`,
+      [name.trim(), userId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found."
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully.",
+      data: rows[0]
+    });
+  } catch (err) {
+    logError("Error updating user profile", err);
+    next(err);
+  }
 }
 
 export async function updateProviderProfile(req, res, next) {
@@ -269,11 +301,66 @@ export async function updateProviderProfile(req, res, next) {
 }
 
 export async function changePassword(req, res, next) {
-  // TODO: Implement change password functionality
-  res.status(501).json({
-    success: false,
-    message: "Change password functionality not implemented yet"
-  });
+  try {
+    const userId = req.user.user_id;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Current password and new password are required."
+      });
+    }
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({
+        success: false,
+        message: "New password must be at least 8 characters long."
+      });
+    }
+
+    // Get current user password
+    const { rows } = await query(
+      `SELECT password FROM users WHERE user_id = $1`,
+      [userId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found."
+      });
+    }
+
+    const isCurrentPasswordValid = await bcrypt.compare(
+      currentPassword,
+      rows[0].password
+    );
+
+    if (!isCurrentPasswordValid) {
+      return res.status(400).json({
+        success: false,
+        message: "Current password is incorrect."
+      });
+    }
+
+    // Hash new password
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password
+    await query(
+      `UPDATE users SET password = $1, updated_at = NOW() WHERE user_id = $2`,
+      [hashedNewPassword, userId]
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Password changed successfully."
+    });
+  } catch (err) {
+    logError("Error changing password", err);
+    next(err);
+  }
 }
 
 export async function deleteAccount(req, res, next) {

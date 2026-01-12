@@ -45,18 +45,7 @@ export default function AppointmentPage() {
     fetchAppointments();
   }, [isClientView, user]);
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "confirmed":
-        return "bg-green-100 text-green-800";
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "cancelled":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
+  // Status display removed as status column was dropped in MVP simplification
 
   const handleCancel = async (appointmentId) => {
     if (!window.confirm("Are you sure you want to cancel this appointment?"))
@@ -124,13 +113,6 @@ export default function AppointmentPage() {
                     <h3 className='text-lg font-semibold text-gray-900 truncate'>
                       {appointment.service_name}
                     </h3>
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
-                        appointment.status
-                      )}`}
-                    >
-                      {appointment.status}
-                    </span>
                   </div>
 
                   <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-600'>

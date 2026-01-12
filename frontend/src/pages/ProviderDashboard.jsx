@@ -30,13 +30,11 @@ export default function ProviderDashboard() {
       provider_id: user?.provider_id
     });
     if (!user?.provider_id) {
-      console.log("No provider_id, skipping fetch");
       setLoading(false);
       return;
     }
 
     const fetchData = async (providerId) => {
-      console.log("Fetching data for providerId:", providerId);
       try {
         const [servicesRes, slotsRes, appointmentsRes, linkRes, profileRes] =
           await Promise.all([
@@ -434,7 +432,48 @@ export default function ProviderDashboard() {
                       </p>
                     </div>
                   ) : (
-                    <Appointments appointments={appointments} />
+                    <div className='space-y-4'>
+                      {appointments.map((appt) => (
+                        <div
+                          key={appt.appointment_id}
+                          className='bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 hover-lift'
+                        >
+                          <div className='flex flex-col sm:flex-row sm:items-center gap-4'>
+                            <div className='flex-1 min-w-0'>
+                              <h3 className='text-lg font-semibold text-gray-900 truncate'>
+                                {appt.service_name}
+                              </h3>
+                              <div className='mt-2 space-y-1 text-sm text-gray-600'>
+                                <p className='flex items-center'>
+                                  <svg
+                                    className='w-4 h-4 mr-2 text-gray-400'
+                                    fill='currentColor'
+                                    viewBox='0 0 20 20'
+                                  >
+                                    <path
+                                      fillRule='evenodd'
+                                      d='M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z'
+                                      clipRule='evenodd'
+                                    />
+                                  </svg>
+                                  {new Date(appt.created_at).toLocaleString(
+                                    "en-US",
+                                    {
+                                      weekday: "short",
+                                      month: "short",
+                                      day: "numeric",
+                                      hour: "2-digit",
+                                      minute: "2-digit"
+                                    }
+                                  )}
+                                </p>
+                                <p>Client: {appt.client_name}</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
               </div>
@@ -546,7 +585,48 @@ export default function ProviderDashboard() {
                         </p>
                       </div>
                     ) : (
-                      <Appointments appointments={appointments} />
+                      <div className='space-y-4'>
+                        {appointments.map((appt) => (
+                          <div
+                            key={appt.appointment_id}
+                            className='bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover-lift'
+                          >
+                            <div className='flex flex-col gap-4'>
+                              <div className='min-w-0'>
+                                <h3 className='text-lg font-semibold text-gray-900 truncate'>
+                                  {appt.service_name}
+                                </h3>
+                                <div className='mt-2 space-y-1 text-sm text-gray-600'>
+                                  <p className='flex items-center'>
+                                    <svg
+                                      className='w-4 h-4 mr-2 text-gray-400'
+                                      fill='currentColor'
+                                      viewBox='0 0 20 20'
+                                    >
+                                      <path
+                                        fillRule='evenodd'
+                                        d='M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z'
+                                        clipRule='evenodd'
+                                      />
+                                    </svg>
+                                    {new Date(appt.created_at).toLocaleString(
+                                      "en-US",
+                                      {
+                                        weekday: "short",
+                                        month: "short",
+                                        day: "numeric",
+                                        hour: "2-digit",
+                                        minute: "2-digit"
+                                      }
+                                    )}
+                                  </p>
+                                  <p>Client: {appt.client_name}</p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
                 </div>

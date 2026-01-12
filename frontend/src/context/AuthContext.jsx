@@ -14,22 +14,19 @@ export const Provider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const token = sessionStorage.getItem("token");
-    console.log("AuthContext useEffect - token from sessionStorage:", token);
+    const token = localStorage.getItem("token");
 
     // ✅ Ensure token is valid before decoding
     if (token) {
       try {
         const decoded = jwtDecode(token);
-        console.log("Decoded token:", decoded);
         setUser(decoded);
       } catch (err) {
         console.error("Invalid token:", err);
-        sessionStorage.removeItem("token");
+        localStorage.removeItem("token");
         setUser(null);
       }
     } else {
-      console.log("No token in sessionStorage");
       setUser(null);
     }
 
@@ -42,7 +39,6 @@ export const Provider = ({ children }) => {
       const { token } = response.data;
 
       if (token) {
-        sessionStorage.setItem("token", token);
         try {
           const decoded = jwtDecode(token);
           setUser(decoded);
@@ -52,7 +48,7 @@ export const Provider = ({ children }) => {
 
           return { success: true, user_type: decoded.user_type };
         } catch {
-          sessionStorage.removeItem("token");
+          localStorage.removeItem("token");
           return { success: false, message: "Invalid token received" };
         }
       } else {
@@ -79,10 +75,8 @@ export const Provider = ({ children }) => {
       const response = await api.post("/auth/register", userData);
       const { token } = response.data;
 
-      console.log("Token received on registration:", token);
-
       if (token) {
-        sessionStorage.setItem("token", token);
+        localStorage.setItem("token", token);
         try {
           const decoded = jwtDecode(token);
           setUser(decoded);
@@ -93,7 +87,7 @@ export const Provider = ({ children }) => {
           return { success: true, user_type: decoded.user_type };
         } catch (decodeError) {
           console.error("Token decode error:", decodeError);
-          sessionStorage.removeItem("token");
+          localStorage.removeItem("token");
           return { success: false, message: "Invalid token received" };
         }
       } else {
@@ -117,7 +111,7 @@ export const Provider = ({ children }) => {
   };
 
   const logout = () => {
-    sessionStorage.removeItem("token");
+    localStorage.removeItem("token");
     setUser(null);
   };
 

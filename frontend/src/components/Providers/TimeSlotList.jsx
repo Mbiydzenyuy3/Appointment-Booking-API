@@ -138,7 +138,7 @@ export default function TimeSlotList({ timeslots = [], onDelete }) {
                   slot.start_time,
                   slot.end_time
                 );
-                const isBooked = slot.is_booked || !slot.is_available;
+                const isBooked = slot.is_booked;
 
                 return (
                   <div
@@ -314,15 +314,13 @@ export default function TimeSlotList({ timeslots = [], onDelete }) {
             <h4 className='font-medium text-green-800'>Availability Summary</h4>
             <p className='text-sm text-green-600 mt-1'>
               Total: {timeslots.length} times • Available:{" "}
-              {timeslots.filter((s) => !s.is_booked && s.is_available).length} •
-              Booked:{" "}
-              {timeslots.filter((s) => s.is_booked || !s.is_available).length}
+              {timeslots.filter((s) => !s.is_booked).length} • Booked:{" "}
+              {timeslots.filter((s) => s.is_booked).length}
             </p>
           </div>
           <div className='text-right'>
             <p className='text-sm text-green-600'>
-              {timeslots.filter((s) => !s.is_booked && s.is_available).length >
-              0
+              {timeslots.filter((s) => !s.is_booked).length > 0
                 ? "You have available slots for booking"
                 : "All slots are currently booked"}
             </p>

@@ -51,9 +51,7 @@ export default function UserProfile() {
             profile_picture: "",
             user_type: "provider",
             provider_info: {
-              bio: data.bio || "",
-              hourly_rate: "",
-              service_types: ""
+              bio: data.bio || ""
             }
           });
         } else {
@@ -109,18 +107,14 @@ export default function UserProfile() {
 
     try {
       const updateData = {
-        name: profileData.name,
-        phone: profileData.phone,
-        address: profileData.address,
-        bio: profileData.bio,
-        profile_picture: profileData.profile_picture
+        name: profileData.name
       };
 
       const response = await api.put("/auth/profile", updateData);
 
       if (response.data.success) {
         toast.success("Profile updated successfully!");
-        fetchProfile(); // Refresh profile data
+        fetchProfile();
       }
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -144,7 +138,7 @@ export default function UserProfile() {
 
       if (response.data.success) {
         toast.success("Provider profile updated successfully!");
-        fetchProfile(); // Refresh profile data
+        fetchProfile();
       }
     } catch (error) {
       console.error("Error updating provider profile:", error);
@@ -164,8 +158,8 @@ export default function UserProfile() {
       return;
     }
 
-    if (passwordData.newPassword.length < 6) {
-      toast.error("New password must be at least 6 characters long");
+    if (passwordData.newPassword.length < 8) {
+      toast.error("New password must be at least 8 characters long");
       return;
     }
 
@@ -366,20 +360,6 @@ export default function UserProfile() {
 
                 <div>
                   <label className='block text-sm font-medium text-gray-700'>
-                    Phone Number
-                  </label>
-                  <input
-                    type='tel'
-                    name='phone'
-                    value={profileData.phone}
-                    onChange={handleInputChange}
-                    className='mt-1 block w-full  text-gray-600 border-gray-300 rounded-md shadow-sm   sm:text-sm'
-                    placeholder='Enter your phone number'
-                  />
-                </div>
-
-                <div>
-                  <label className='block text-sm font-medium text-gray-700'>
                     Account Type
                   </label>
                   <input
@@ -389,60 +369,6 @@ export default function UserProfile() {
                     className='mt-1 block w-full border-gray-300 rounded-md shadow-sm bg-gray-50 sm:text-sm capitalize'
                   />
                 </div>
-              </div>
-
-              <div>
-                <label className='block text-sm font-medium text-gray-700'>
-                  Address
-                </label>
-                <textarea
-                  name='address'
-                  rows={3}
-                  value={profileData.address}
-                  onChange={handleInputChange}
-                  className='mt-1 block w-full text-gray-600 border-gray-300 rounded-md shadow-sm   sm:text-sm'
-                  placeholder='Enter your address'
-                />
-              </div>
-
-              <div>
-                <label className='block text-sm font-medium text-gray-700'>
-                  Bio
-                </label>
-                <textarea
-                  name='bio'
-                  rows={4}
-                  value={profileData.bio}
-                  onChange={handleInputChange}
-                  className='mt-1 block w-full  text-gray-600 border-gray-300 rounded-md shadow-sm   sm:text-sm'
-                  placeholder='Tell us about yourself...'
-                />
-              </div>
-
-              <div>
-                <label className='block text-sm font-medium text-gray-700'>
-                  Profile Picture URL
-                </label>
-                <input
-                  type='url'
-                  name='profile_picture'
-                  value={profileData.profile_picture}
-                  onChange={handleInputChange}
-                  className='mt-1 block w-full  text-gray-600 border-gray-300 rounded-md shadow-sm   sm:text-sm'
-                  placeholder='https://example.com/profile-picture.jpg'
-                />
-                {profileData.profile_picture && (
-                  <div className='mt-2'>
-                    <img
-                      src={profileData.profile_picture}
-                      alt='Profile'
-                      className='h-20 w-20 rounded-full object-cover'
-                      onError={(e) => {
-                        e.target.style.display = "none";
-                      }}
-                    />
-                  </div>
-                )}
               </div>
 
               <div className='flex justify-end'>

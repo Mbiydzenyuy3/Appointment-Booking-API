@@ -30,7 +30,7 @@ export async function getServiceById(serviceId) {
     const service = await ServiceModel.findById(serviceId);
     if (!service) {
       const err = new Error("Service not found");
-      err.status = 404;
+      err.statusCode = 404;
       throw err;
     }
     return service;
@@ -66,7 +66,7 @@ export async function deleteService(serviceId) {
     const deleted = await ServiceModel.deleteById(serviceId);
     if (!deleted) {
       const err = new Error("Service not found or already deleted");
-      err.status = 404;
+      err.statusCode = 404;
       throw err;
     }
     return deleted;
@@ -82,7 +82,7 @@ export async function updateService(serviceId, updates) {
     const updatedService = await ServiceModel.updateById(serviceId, updates);
     if (!updatedService) {
       const err = new Error("Service not found");
-      err.status = 404;
+      err.statusCode = 404;
       throw err;
     }
     return updatedService;

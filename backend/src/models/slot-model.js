@@ -31,7 +31,6 @@ export const createSlot = async ({
   `,
       [providerId, day, startTime, endTime]
     );
-    console.log("Exact duplicate check result:", exactDuplicate.rows.length);
 
     if (exactDuplicate.rows.length > 0) {
       throw new Error(
@@ -50,7 +49,6 @@ export const createSlot = async ({
       `,
       [providerId, day, startTime, endTime]
     );
-    console.log("Overlap check result:", overlapCheck.rows.length);
 
     if (overlapCheck.rows.length > 0) {
       throw new Error(
@@ -69,13 +67,10 @@ export const createSlot = async ({
       `,
       [providerId, serviceId, day, startTime, endTime]
     );
-    console.log("Insert result:", newSlotInsert.rows[0]);
 
     await client.query("COMMIT");
-    console.log("Transaction committed");
     return newSlotInsert.rows[0];
   } catch (err) {
-    console.log("Error in createSlot:", err);
     await client.query("ROLLBACK");
     throw new Error(err.message || "Slot creation failed");
   } finally {
@@ -89,7 +84,7 @@ export async function getSlotsByProviderId(providerId) {
 
   try {
     const result = await client.query(
-      `SELECT ts.*, s.service_name as name, s.description as service_description, s.price as service_price, s.duration_minutes as service_duration
+      `SELECT ts.*, s.service_name, s.description as service_description, s.price as service_price, s.duration_minutes as service_duration
        FROM time_slots ts
         LEFT JOIN services s ON ts.service_id = s.service_id
         WHERE ts.provider_id = $1
@@ -191,7 +186,7 @@ export async function getSlotById(slotId) {
 
   try {
     const result = await client.query(
-      `SELECT ts.*, s.service_name as name, s.description as service_description, s.price as service_price, s.duration_minutes as service_duration
+      `SELECT ts.*, s.service_name, s.description as service_description, s.price as service_price, s.duration_minutes as service_duration
         FROM time_slots ts
         LEFT JOIN services s ON ts.service_id = s.service_id
         WHERE ts.timeslot_id = $1`,

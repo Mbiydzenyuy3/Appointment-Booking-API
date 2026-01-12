@@ -4,7 +4,7 @@ import { logError } from "../utils/logger.js";
 import crypto from "crypto";
 
 const ProviderModel = {
-  async create({ user_id, bio }) {
+  async create({ user_id, bio, phone, hourly_rate, referral_code }) {
     try {
       const bookingSlug = crypto.randomBytes(16).toString("hex");
 
@@ -13,14 +13,24 @@ const ProviderModel = {
         INSERT INTO providers (
           user_id,
           bio,
+          phone,
+          hourly_rate,
+          referral_code,
           booking_slug,
           created_at,
           updated_at
         )
-        VALUES ($1, $2, $3, NOW(), NOW())
+        VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
         RETURNING *;
         `,
-        [user_id, bio || "", bookingSlug]
+        [
+          user_id,
+          bio || "",
+          phone || null,
+          hourly_rate || null,
+          referral_code || null,
+          bookingSlug
+        ]
       );
 
       return rows[0];
@@ -30,17 +40,20 @@ const ProviderModel = {
     }
   },
 
-  async updateByUserId(user_id, { bio }) {
+  async updateByUserId(user_id, { bio, phone, hourly_rate, referral_code }) {
     try {
       const { rows } = await query(
         `
         UPDATE providers
-        SET bio = $1,
+        SET bio = COALESCE($1, bio),
+            phone = COALESCE($2, phone),
+            hourly_rate = COALESCE($3, hourly_rate),
+            referral_code = COALESCE($4, referral_code),
             updated_at = CURRENT_TIMESTAMP
-        WHERE user_id = $2
+        WHERE user_id = $5
         RETURNING *;
         `,
-        [bio || "", user_id]
+        [bio, phone, hourly_rate, referral_code, user_id]
       );
 
       return rows[0];
