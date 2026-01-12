@@ -1,5 +1,13 @@
 -- Add missing columns to providers table for MVP
-ALTER TABLE providers
-ADD COLUMN IF NOT EXISTS phone VARCHAR(50),
-ADD COLUMN IF NOT EXISTS hourly_rate NUMERIC(10,2),
-ADD COLUMN IF NOT EXISTS referral_code VARCHAR(20);
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'providers' AND column_name = 'phone') THEN
+        ALTER TABLE providers ADD COLUMN phone VARCHAR(50);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'providers' AND column_name = 'hourly_rate') THEN
+        ALTER TABLE providers ADD COLUMN hourly_rate NUMERIC(10,2);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'providers' AND column_name = 'referral_code') THEN
+        ALTER TABLE providers ADD COLUMN referral_code VARCHAR(20);
+    END IF;
+END $$;

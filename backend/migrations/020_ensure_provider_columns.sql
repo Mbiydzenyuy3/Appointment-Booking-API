@@ -1,3 +1,12 @@
-ALTER TABLE providers ADD COLUMN IF NOT EXISTS phone VARCHAR(50);
-ALTER TABLE providers ADD COLUMN IF NOT EXISTS hourly_rate DECIMAL(10, 2);
-ALTER TABLE providers ADD COLUMN IF NOT EXISTS referral_code VARCHAR(50);
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'providers' AND column_name = 'phone') THEN
+        ALTER TABLE providers ADD COLUMN phone VARCHAR(50);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'providers' AND column_name = 'hourly_rate') THEN
+        ALTER TABLE providers ADD COLUMN hourly_rate DECIMAL(10, 2);
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'providers' AND column_name = 'referral_code') THEN
+        ALTER TABLE providers ADD COLUMN referral_code VARCHAR(50);
+    END IF;
+END $$;
