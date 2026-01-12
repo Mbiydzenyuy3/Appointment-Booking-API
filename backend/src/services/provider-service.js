@@ -22,8 +22,8 @@ export async function createProvider({ user_id, bio, phone, rating }) {
     return await ProviderModel.create({
       user_id,
       bio,
-      phone,
-      rating
+      phone: phone || null,
+      rating: rating || 0
     });
   } catch (err) {
     logError("Service error - creating provider", err);
