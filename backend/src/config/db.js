@@ -96,10 +96,14 @@ const initializeDbSchema = async () => {
       logInfo("⚠️ DEV MODE: Dropping tables (DB_RESET_ON_START=true)");
 
       await client.query(`
+        DROP TABLE IF EXISTS provider_reviews CASCADE;
+        DROP TABLE IF EXISTS provider_activity_logs CASCADE;
+        DROP TABLE IF EXISTS provider_activity_log CASCADE;
+        DROP TABLE IF EXISTS referrals CASCADE;
+        DROP TABLE IF EXISTS guest_sessions CASCADE;
         DROP TABLE IF EXISTS appointments CASCADE;
         DROP TABLE IF EXISTS time_slots CASCADE;
         DROP TABLE IF EXISTS services CASCADE;
-        DROP TABLE IF EXISTS provider_reviews CASCADE;
         DROP TABLE IF EXISTS providers CASCADE;
         DROP TABLE IF EXISTS users CASCADE;
       `);
@@ -148,6 +152,42 @@ const initializeDbSchema = async () => {
         image_url TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS time_slots (
+        timeslot_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        provider_id UUID NOT NULL REFERENCES providers(provider_id) ON DELETE CASCADE,
+        service_id UUID REFERENCES services(service_id) ON DELETE CASCADE,
+        day DATE,
+        start_time TIME NOT NULL,
+        end_time TIME NOT NULL,
+        is_booked BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS appointments (
+        appointment_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id UUID REFERENCES users(user_id) ON DELETE CASCADE,
+        provider_id UUID NOT NULL REFERENCES providers(provider_id) ON DELETE CASCADE,
+        service_id UUID REFERENCES services(service_id) ON DELETE SET NULL,
+        timeslot_id UUID REFERENCES time_slots(timeslot_id) ON DELETE SET NULL,
+        appointment_date DATE,
+        appointment_time TIME,
+        guest_name VARCHAR(255),
+        guest_email VARCHAR(255),
+        guest_phone VARCHAR(50),
+        is_guest_booking BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT check_guest_or_user CHECK (
+          (user_id IS NOT NULL AND is_guest_booking = FALSE) OR
+          (user_id IS NULL AND is_guest_booking = TRUE AND guest_name IS NOT NULL AND guest_email IS NOT NULL)
+        )
       );
     `);
 
