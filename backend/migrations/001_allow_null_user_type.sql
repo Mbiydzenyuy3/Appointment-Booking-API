@@ -10,7 +10,7 @@ COMMENT ON COLUMN users.user_type IS 'Can be NULL for new Google OAuth users who
 
 -- Also update the check constraint to allow NULL values
 -- Note: This will only work if the constraint doesn't already exist with NOT NULL
-DO $
+DO $$
 BEGIN
   -- Drop existing constraint if it exists with NOT NULL
   IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'users_user_type_check') THEN
@@ -20,4 +20,4 @@ BEGIN
   -- Add new constraint that allows NULL
   ALTER TABLE users ADD CONSTRAINT users_user_type_check 
     CHECK (user_type IS NULL OR user_type IN ('client', 'provider'));
-END $;
+END $$;
