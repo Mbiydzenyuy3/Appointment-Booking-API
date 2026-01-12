@@ -87,6 +87,7 @@ const initializeDbSchema = async () => {
     await client.query("BEGIN");
 
     await client.query(`CREATE EXTENSION IF NOT EXISTS pgcrypto`);
+    await client.query(`CREATE EXTENSION IF NOT EXISTS btree_gist`);
 
     /* ---------------------------------------
        ⚠️ DEV-ONLY RESET
@@ -117,6 +118,8 @@ const initializeDbSchema = async () => {
         email VARCHAR(100) UNIQUE NOT NULL,
         password VARCHAR(255),
         user_type VARCHAR(20) CHECK (user_type IN ('client', 'provider')),
+        reset_password_token VARCHAR(255),
+        reset_password_expires TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
@@ -171,7 +174,8 @@ const initializeDbSchema = async () => {
         end_time TIME NOT NULL,
         is_booked BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT check_end_after_start CHECK (end_time > start_time)
       );
     `);
 
@@ -197,6 +201,7 @@ const initializeDbSchema = async () => {
         guest_email VARCHAR(255),
         guest_phone VARCHAR(50),
         is_guest_booking BOOLEAN DEFAULT FALSE,
+        status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'cancelled', 'completed', 'no_show')),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT check_guest_or_user CHECK (

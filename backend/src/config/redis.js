@@ -19,7 +19,18 @@ const redisConfig = {
 const redisClient = createClient({
   url: `redis://${redisConfig.host}:${redisConfig.port}`,
   password: redisConfig.password,
-  database: redisConfig.database
+  database: redisConfig.database,
+  socket: {
+    reconnectStrategy: (retries) => {
+      if (
+        redisConfig.maxRetriesPerRequest &&
+        retries > redisConfig.maxRetriesPerRequest
+      ) {
+        return new Error("Max retries reached");
+      }
+      return Math.min(retries * 50, 2000);
+    }
+  }
 });
 
 // Cache configuration
