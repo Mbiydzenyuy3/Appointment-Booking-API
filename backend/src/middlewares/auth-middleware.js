@@ -1,8 +1,9 @@
 // middlewares/auth-middleware.js
 import jwt from "jsonwebtoken";
 import { logError, logInfo, logDebug } from "../utils/logger.js";
+import { query } from "../config/db.js";
 
-const authMiddleware = (req, res, next) => {
+const authMiddleware = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader?.startsWith("Bearer ")) {
@@ -21,11 +22,23 @@ const authMiddleware = (req, res, next) => {
       return res.status(401).json({ message: "Invalid token payload." });
     }
 
+    // Validate user exists in database
+    const userResult = await query(
+      "SELECT user_id, user_type, email FROM users WHERE user_id = $1",
+      [decoded.sub]
+    );
+    if (userResult.rowCount === 0) {
+      logInfo("Auth middleware: User not found in database");
+      return res.status(401).json({ message: "User not found." });
+    }
+
+    const user = userResult.rows[0];
+
     req.user = {
-      user_id: decoded.sub,
-      user_type: decoded.user_type,
+      user_id: user.user_id,
+      user_type: user.user_type,
       provider_id: decoded.provider_id || null,
-      email: decoded.email || null
+      email: user.email
     };
 
     logDebug(

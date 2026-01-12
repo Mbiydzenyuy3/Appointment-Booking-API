@@ -192,7 +192,7 @@ export async function login(req, res, next) {
 // Controller function to get user profile
 export async function getUserProfile(req, res, next) {
   try {
-    const userId = req.user.sub;
+    const userId = req.user.user_id;
 
     const userResult = await query(
       `SELECT user_id, name, email, user_type, created_at

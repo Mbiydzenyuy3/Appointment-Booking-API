@@ -124,7 +124,7 @@ export async function update(req, res, next) {
       price,
       durationMinutes: duration_minutes
     } = req.body;
-    const userId = req.user?.sub;
+    const userId = req.user?.user_id;
 
     if (!service_name || !description || !price || !duration_minutes) {
       return res.status(400).json({

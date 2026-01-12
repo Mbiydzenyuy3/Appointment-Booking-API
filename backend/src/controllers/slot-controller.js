@@ -6,7 +6,7 @@ import { query } from "../config/db.js";
 export async function create(req, res, next) {
   try {
     const { day, startTime, endTime, serviceId } = req.body;
-    const userId = req.user?.sub;
+    const userId = req.user?.user_id;
 
     if (!day || !startTime || !endTime || !serviceId) {
       return res.status(400).json({
