@@ -1,284 +1,213 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import { logError, logInfo } from "../utils/logger.js";
-import { query } from "../config/db.js";
+import { query, withTransaction } from "../config/db.js";
 import ProviderModel from "../models/provider-model.js";
 
-// Controller function for user registration
+/* ---------------------------------------
+   AUTH HELPERS
+---------------------------------------- */
+const generateToken = (user) => {
+  return jwt.sign(
+    {
+      sub: user.user_id,
+      email: user.email,
+      user_type: user.user_type,
+      provider_id: user.provider_id || null,
+      name: user.name
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: "7d" }
+  );
+};
+
+/* ---------------------------------------
+   REGISTER
+---------------------------------------- */
 export async function register(req, res, next) {
   const { name, email, password, user_type } = req.body;
 
   if (!name || !email || !password || !user_type) {
-    return res.status(400).json({
-      success: false,
-      message: "Please provide your name, email, password, and account type."
-    });
+    return res
+      .status(400)
+      .json({ success: false, message: "All fields are required." });
   }
 
   if (!["client", "provider"].includes(user_type)) {
-    return res.status(400).json({
-      success: false,
-      message: "Account type must be 'client' or 'provider'."
-    });
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid account type." });
   }
 
   if (password.length < 8) {
     return res.status(400).json({
       success: false,
-      message: "Password must be at least 8 characters long."
+      message: "Password must be at least 8 characters."
     });
   }
 
-  const client = await query("BEGIN");
-
   try {
-    const existingUser = await query("SELECT 1 FROM users WHERE email = $1", [
-      email
-    ]);
+    const result = await withTransaction(async (client) => {
+      const exists = await client.query(
+        "SELECT 1 FROM users WHERE email = $1",
+        [email]
+      );
+      if (exists.rowCount > 0) throw new Error("EMAIL_EXISTS");
 
-    if (existingUser.rowCount > 0) {
-      await query("ROLLBACK");
-      return res.status(400).json({
-        success: false,
-        message:
-          "This email is already registered. Please try logging in instead."
-      });
-    }
+      const hashedPassword = await bcrypt.hash(password, 10);
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+      const userResult = await client.query(
+        `INSERT INTO users (name, email, password, user_type)
+         VALUES ($1,$2,$3,$4)
+         RETURNING user_id, name, email, user_type`,
+        [name, email, hashedPassword, user_type]
+      );
 
-    const userInsertResult = await query(
-      `INSERT INTO users (name, email, password, user_type)
-       VALUES ($1, $2, $3, $4)
-       RETURNING user_id`,
-      [name, email, hashedPassword, user_type]
-    );
+      const user = userResult.rows[0];
 
-    const userId = userInsertResult.rows[0].user_id;
-
-    let providerId = null;
-
-    // Create provider profile if user_type is provider
-    if (user_type === "provider") {
-      try {
-        const provider = await ProviderModel.create({
-          user_id: userId,
-          bio: "",
-          phone: null,
-          hourly_rate: null,
-          referral_code: null
-        });
-        providerId = provider.provider_id;
-      } catch (providerError) {
-        logError(
-          "Error creating provider profile during registration:",
-          providerError
+      let provider = null;
+      if (user_type === "provider") {
+        provider = await ProviderModel.create(
+          { user_id: user.user_id },
+          client
         );
-        await query("ROLLBACK");
-        return res.status(500).json({
-          success: false,
-          message: "Failed to create provider profile. Please try again."
-        });
       }
-    }
 
-    await query("COMMIT");
+      return { ...user, provider_id: provider?.provider_id || null };
+    });
 
-    const token = jwt.sign(
-      {
-        sub: userId,
-        email,
-        user_type,
-        provider_id: providerId,
-        name
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
+    const token = generateToken(result);
 
     res.status(201).json({
       success: true,
-      message: "Welcome! Your account has been created successfully.",
+      message: "Account created successfully!",
       token,
-      data: {
-        user_id: userId,
-        provider_id: providerId,
-        email,
-        user_type,
-        name
-      }
+      data: result
     });
   } catch (err) {
-    await query("ROLLBACK");
-    logError("Error during registration:", err);
+    if (err.message === "EMAIL_EXISTS") {
+      return res
+        .status(400)
+        .json({ success: false, message: "Email already registered." });
+    }
+
+    logError("Registration failed:", err);
     next(err);
   }
 }
 
-// Controller function for user login
+/* ---------------------------------------
+   LOGIN
+---------------------------------------- */
 export async function login(req, res, next) {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return res.status(400).json({
-      success: false,
-      message: "Please enter your email and password."
-    });
+    return res
+      .status(400)
+      .json({ success: false, message: "Email and password required." });
   }
 
   try {
-    const userResult = await query("SELECT * FROM users WHERE email = $1", [
+    const { rows } = await query("SELECT * FROM users WHERE email = $1", [
       email
     ]);
+    if (rows.length === 0)
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid credentials." });
 
-    if (userResult.rowCount === 0) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid email or password."
-      });
-    }
+    const user = rows[0];
+    const isValid = await bcrypt.compare(password, user.password);
 
-    const user = userResult.rows[0];
+    if (!isValid)
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid credentials." });
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-
-    if (!isPasswordValid) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid email or password."
-      });
-    }
-
+    // Include provider info if applicable
     let providerId = null;
-
     if (user.user_type === "provider") {
-      const providerResult = await query(
-        "SELECT provider_id FROM providers WHERE user_id = $1",
-        [user.user_id]
-      );
-
-      if (providerResult.rowCount > 0) {
-        providerId = providerResult.rows[0].provider_id;
-      }
+      const provider = await ProviderModel.findByUserId(user.user_id);
+      providerId = provider?.provider_id || null;
     }
 
-    const token = jwt.sign(
-      {
-        sub: user.user_id,
-        email: user.email,
-        user_type: user.user_type,
-        provider_id: providerId,
-        name: user.name
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
+    const token = generateToken({ ...user, provider_id: providerId });
 
-    logInfo("User logged in", user.email);
-
-    return res.status(200).json({
-      success: true,
-      token,
-      message: "Login successful!",
-      data: {
-        user_id: user.user_id,
-        provider_id: providerId,
-        email: user.email,
-        user_type: user.user_type,
-        name: user.name
-      }
-    });
-  } catch (err) {
-    logError("Error logging in user", err);
-    next(err);
-  }
-}
-
-// Controller function to get user profile
-export async function getUserProfile(req, res, next) {
-  try {
-    const userId = req.user.user_id;
-
-    const userResult = await query(
-      `SELECT user_id, name, email, user_type, created_at
-       FROM users WHERE user_id = $1`,
-      [userId]
-    );
-
-    if (userResult.rowCount === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "Account not found."
-      });
-    }
-
-    const user = userResult.rows[0];
-
-    let providerInfo = null;
-    if (user.user_type === "provider") {
-      const providerResult = await query(
-        "SELECT provider_id, bio, phone, hourly_rate, referral_code, booking_slug FROM providers WHERE user_id = $1",
-        [userId]
-      );
-
-      if (providerResult.rowCount > 0) {
-        providerInfo = providerResult.rows[0];
-      }
-    }
+    logInfo("User logged in:", user.email);
 
     res.status(200).json({
       success: true,
-      data: {
-        ...user,
-        provider_info: providerInfo
-      }
+      message: "Login successful",
+      token,
+      data: { ...user, provider_id: providerId }
     });
   } catch (err) {
-    logError("Error getting user profile", err);
+    logError("Login error:", err);
     next(err);
   }
 }
 
-// Stub implementations for missing auth functions
-export async function forgotPassword(req, res, next) {
-  // TODO: Implement forgot password functionality
-  res.status(501).json({
-    success: false,
-    message: "Forgot password functionality not implemented yet"
-  });
-}
+/* ---------------------------------------
+   GET USER PROFILE
+---------------------------------------- */
+export async function getUserProfile(req, res, next) {
+  const userId = req.user.user_id;
 
-export async function resetPassword(req, res, next) {
-  // TODO: Implement reset password functionality
-  res.status(501).json({
-    success: false,
-    message: "Reset password functionality not implemented yet"
-  });
-}
-
-export async function updateUserProfile(req, res, next) {
   try {
-    const userId = req.user.user_id;
-    const { name } = req.body;
+    const { rows } = await query(
+      "SELECT user_id, name, email, user_type, created_at, updated_at FROM users WHERE user_id = $1",
+      [userId]
+    );
 
-    if (!name || name.trim().length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Name is required and cannot be empty."
-      });
+    if (!rows.length)
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found." });
+
+    const user = rows[0];
+
+    let providerInfo = null;
+    if (user.user_type === "provider") {
+      const providerRows = await query(
+        "SELECT provider_id, bio, phone, hourly_rate, referral_code, booking_slug FROM providers WHERE user_id = $1",
+        [userId]
+      );
+      providerInfo = providerRows[0] || null;
     }
 
+    res
+      .status(200)
+      .json({ success: true, data: { ...user, provider_info: providerInfo } });
+  } catch (err) {
+    logError("Get profile error:", err);
+    next(err);
+  }
+}
+
+/* ---------------------------------------
+   UPDATE USER PROFILE
+---------------------------------------- */
+export async function updateUserProfile(req, res, next) {
+  const userId = req.user.user_id;
+  const { name } = req.body;
+
+  if (!name || !name.trim())
+    return res
+      .status(400)
+      .json({ success: false, message: "Name cannot be empty." });
+
+  try {
     const { rows } = await query(
-      `UPDATE users SET name = $1, updated_at = NOW() WHERE user_id = $2 RETURNING user_id, name, email, user_type, updated_at`,
+      "UPDATE users SET name=$1, updated_at=NOW() WHERE user_id=$2 RETURNING user_id, name, email, user_type, updated_at",
       [name.trim(), userId]
     );
 
-    if (rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found."
-      });
-    }
+    if (!rows.length)
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found." });
 
     res.status(200).json({
       success: true,
@@ -286,110 +215,300 @@ export async function updateUserProfile(req, res, next) {
       data: rows[0]
     });
   } catch (err) {
-    logError("Error updating user profile", err);
+    logError("Update profile error:", err);
     next(err);
   }
 }
 
+/* ---------------------------------------
+   UPDATE PROVIDER PROFILE
+---------------------------------------- */
 export async function updateProviderProfile(req, res, next) {
-  // TODO: Implement update provider profile functionality
-  res.status(501).json({
-    success: false,
-    message: "Update provider profile functionality not implemented yet"
-  });
-}
+  const userId = req.user.user_id;
+  const { bio, phone, hourly_rate, referral_code } = req.body;
 
-export async function changePassword(req, res, next) {
   try {
-    const userId = req.user.user_id;
-    const { currentPassword, newPassword } = req.body;
-
-    if (!currentPassword || !newPassword) {
-      return res.status(400).json({
-        success: false,
-        message: "Current password and new password are required."
-      });
-    }
-
-    if (newPassword.length < 8) {
-      return res.status(400).json({
-        success: false,
-        message: "New password must be at least 8 characters long."
-      });
-    }
-
-    // Get current user password
-    const { rows } = await query(
-      `SELECT password FROM users WHERE user_id = $1`,
-      [userId]
-    );
-
-    if (rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found."
-      });
-    }
-
-    const isCurrentPasswordValid = await bcrypt.compare(
-      currentPassword,
-      rows[0].password
-    );
-
-    if (!isCurrentPasswordValid) {
-      return res.status(400).json({
-        success: false,
-        message: "Current password is incorrect."
-      });
-    }
-
-    // Hash new password
-    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-
-    // Update password
-    await query(
-      `UPDATE users SET password = $1, updated_at = NOW() WHERE user_id = $2`,
-      [hashedNewPassword, userId]
-    );
+    const provider = await ProviderModel.updateByUserId(userId, {
+      bio,
+      phone,
+      hourly_rate,
+      referral_code
+    });
+    if (!provider)
+      return res
+        .status(404)
+        .json({ success: false, message: "Provider profile not found." });
 
     res.status(200).json({
       success: true,
-      message: "Password changed successfully."
+      message: "Provider profile updated.",
+      data: provider
     });
   } catch (err) {
-    logError("Error changing password", err);
+    logError("Update provider error:", err);
     next(err);
   }
 }
 
+/* ---------------------------------------
+   FORGOT PASSWORD
+---------------------------------------- */
+export async function forgotPassword(req, res, next) {
+  const { email } = req.body;
+
+  if (!email)
+    return res
+      .status(400)
+      .json({ success: false, message: "Email is required." });
+
+  try {
+    const { rows } = await query("SELECT user_id FROM users WHERE email=$1", [
+      email
+    ]);
+    if (!rows.length)
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found." });
+
+    const userId = rows[0].user_id;
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const expires = new Date(Date.now() + 3600 * 1000); // 1 hour
+
+    await query(
+      "UPDATE users SET reset_password_token=$1, reset_password_expires=$2 WHERE user_id=$3",
+      [resetToken, expires, userId]
+    );
+
+    // TODO: Send token via email
+    logInfo(`Password reset token for ${email}: ${resetToken}`);
+
+    res.status(200).json({
+      success: true,
+      message: "Password reset token generated. Please check your email.",
+      resetToken // remove this in production
+    });
+  } catch (err) {
+    logError("Forgot password error:", err);
+    next(err);
+  }
+}
+
+/* ---------------------------------------
+   RESET PASSWORD
+---------------------------------------- */
+export async function resetPassword(req, res, next) {
+  const { token, newPassword } = req.body;
+
+  if (!token || !newPassword)
+    return res
+      .status(400)
+      .json({
+        success: false,
+        message: "Token and new password are required."
+      });
+  if (newPassword.length < 8)
+    return res
+      .status(400)
+      .json({
+        success: false,
+        message: "Password must be at least 8 characters long."
+      });
+
+  try {
+    const { rows } = await query(
+      "SELECT user_id, reset_password_expires FROM users WHERE reset_password_token=$1",
+      [token]
+    );
+
+    if (!rows.length)
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid reset token." });
+
+    const user = rows[0];
+    if (new Date(user.reset_password_expires) < new Date()) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Reset token has expired." });
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+
+    await query(
+      "UPDATE users SET password=$1, reset_password_token=NULL, reset_password_expires=NULL, updated_at=NOW() WHERE user_id=$2",
+      [hashed, user.user_id]
+    );
+
+    res
+      .status(200)
+      .json({
+        success: true,
+        message: "Password has been reset successfully."
+      });
+  } catch (err) {
+    logError("Reset password error:", err);
+    next(err);
+  }
+}
+
+/* ---------------------------------------
+   CHANGE PASSWORD
+---------------------------------------- */
+export async function changePassword(req, res, next) {
+  const userId = req.user.user_id;
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword)
+    return res
+      .status(400)
+      .json({ success: false, message: "Both passwords required." });
+  if (newPassword.length < 8)
+    return res
+      .status(400)
+      .json({ success: false, message: "Password too short." });
+
+  try {
+    const { rows } = await query(
+      "SELECT password FROM users WHERE user_id=$1",
+      [userId]
+    );
+    if (!rows.length)
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found." });
+
+    const valid = await bcrypt.compare(currentPassword, rows[0].password);
+    if (!valid)
+      return res
+        .status(400)
+        .json({ success: false, message: "Current password incorrect." });
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await query(
+      "UPDATE users SET password=$1, updated_at=NOW() WHERE user_id=$2",
+      [hashed, userId]
+    );
+
+    res
+      .status(200)
+      .json({ success: true, message: "Password changed successfully." });
+  } catch (err) {
+    logError("Change password error:", err);
+    next(err);
+  }
+}
+
+/* ---------------------------------------
+   DELETE ACCOUNT
+---------------------------------------- */
 export async function deleteAccount(req, res, next) {
-  // TODO: Implement delete account functionality
-  res.status(501).json({
-    success: false,
-    message: "Delete account functionality not implemented yet"
-  });
+  const userId = req.user.user_id;
+
+  try {
+    await query("DELETE FROM users WHERE user_id=$1", [userId]);
+    res
+      .status(200)
+      .json({ success: true, message: "Account deleted successfully." });
+  } catch (err) {
+    logError("Delete account error:", err);
+    next(err);
+  }
 }
 
+/* ---------------------------------------
+   UPDATE USER TYPE
+---------------------------------------- */
 export async function updateUserType(req, res, next) {
-  // TODO: Implement update user type functionality
-  res.status(501).json({
-    success: false,
-    message: "Update user type functionality not implemented yet"
-  });
+  const userId = req.user.user_id;
+  const { user_type } = req.body;
+
+  if (!["client", "provider"].includes(user_type)) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid user type." });
+  }
+
+  try {
+    const { rows } = await query(
+      "UPDATE users SET user_type=$1, updated_at=NOW() WHERE user_id=$2 RETURNING user_id, name, email, user_type",
+      [user_type, userId]
+    );
+    res
+      .status(200)
+      .json({ success: true, message: "User type updated.", data: rows[0] });
+  } catch (err) {
+    logError("Update user type error:", err);
+    next(err);
+  }
 }
 
+/* ---------------------------------------
+   CONVERT GUEST TO REGISTERED USER
+---------------------------------------- */
 export async function convertGuestToUser(req, res, next) {
-  // TODO: Implement convert guest to user functionality
-  res.status(501).json({
-    success: false,
-    message: "Convert guest to user functionality not implemented yet"
-  });
+  const { guest_email, name, password } = req.body;
+
+  if (!guest_email || !name || !password) {
+    return res
+      .status(400)
+      .json({ success: false, message: "All fields required." });
+  }
+
+  try {
+    const existing = await query("SELECT 1 FROM users WHERE email=$1", [
+      guest_email
+    ]);
+    if (existing.rowCount > 0)
+      return res
+        .status(400)
+        .json({ success: false, message: "Email already exists." });
+
+    const hashed = await bcrypt.hash(password, 10);
+
+    const { rows } = await query(
+      "INSERT INTO users (name,email,password,user_type) VALUES ($1,$2,$3,'client') RETURNING user_id,name,email,user_type",
+      [name, guest_email, hashed]
+    );
+
+    const token = generateToken(rows[0]);
+
+    res.status(201).json({
+      success: true,
+      message: "Guest converted to user.",
+      token,
+      data: rows[0]
+    });
+  } catch (err) {
+    logError("Convert guest error:", err);
+    next(err);
+  }
 }
 
+/* ---------------------------------------
+   GOOGLE OAUTH CALLBACK
+---------------------------------------- */
 export async function googleAuthCallback(req, res, next) {
-  // TODO: Implement Google OAuth callback functionality
-  res.status(501).json({
-    success: false,
-    message: "Google OAuth callback functionality not implemented yet"
-  });
+  try {
+    const { email, name } = req.user; // Assuming passport middleware sets req.user
+
+    let user = await query("SELECT * FROM users WHERE email=$1", [email]);
+
+    if (!user.rows.length) {
+      const { rows } = await query(
+        "INSERT INTO users (name,email,user_type) VALUES ($1,$2,'client') RETURNING user_id,name,email,user_type",
+        [name, email]
+      );
+      user = rows[0];
+    } else {
+      user = user.rows[0];
+    }
+
+    const token = generateToken(user);
+    res
+      .status(200)
+      .json({ success: true, message: "Login successful.", token, data: user });
+  } catch (err) {
+    logError("Google auth callback error:", err);
+    next(err);
+  }
 }
