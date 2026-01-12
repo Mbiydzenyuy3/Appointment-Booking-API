@@ -16,17 +16,41 @@ export async function create(req, res, next) {
     }
 
     // Get provider_id from user
-    const providerResult = await query(
+    let providerResult = await query(
       "SELECT provider_id FROM providers WHERE user_id = $1",
       [userId]
     );
+    let providerId;
     if (providerResult.rowCount === 0) {
-      return res.status(403).json({
-        success: false,
-        message: "Please create a business profile first."
-      });
+      // If user is a provider but profile doesn't exist, create it
+      if (req.user.user_type === "provider") {
+        try {
+          const ProviderModel = (await import("../models/provider-model.js"))
+            .default;
+          const provider = await ProviderModel.create({
+            user_id: userId,
+            bio: ""
+          });
+          providerId = provider.provider_id;
+        } catch (createError) {
+          logError(
+            "Error creating provider profile during slot creation:",
+            createError
+          );
+          return res.status(500).json({
+            success: false,
+            message: "Failed to create provider profile. Please try again."
+          });
+        }
+      } else {
+        return res.status(403).json({
+          success: false,
+          message: "Please create a business profile first."
+        });
+      }
+    } else {
+      providerId = providerResult.rows[0].provider_id;
     }
-    const providerId = providerResult.rows[0].provider_id;
 
     // Verify service belongs to provider
     const serviceCheck = await query(
@@ -87,17 +111,41 @@ export async function update(req, res, next) {
     const slotId = req.params.slotId;
 
     // Get provider_id
-    const providerResult = await query(
+    let providerResult = await query(
       "SELECT provider_id FROM providers WHERE user_id = $1",
       [userId]
     );
+    let providerId;
     if (providerResult.rowCount === 0) {
-      return res.status(403).json({
-        success: false,
-        message: "Please create a business profile first."
-      });
+      // If user is a provider but profile doesn't exist, create it
+      if (req.user.user_type === "provider") {
+        try {
+          const ProviderModel = (await import("../models/provider-model.js"))
+            .default;
+          const provider = await ProviderModel.create({
+            user_id: userId,
+            bio: ""
+          });
+          providerId = provider.provider_id;
+        } catch (createError) {
+          logError(
+            "Error creating provider profile during slot update:",
+            createError
+          );
+          return res.status(500).json({
+            success: false,
+            message: "Failed to create provider profile. Please try again."
+          });
+        }
+      } else {
+        return res.status(403).json({
+          success: false,
+          message: "Please create a business profile first."
+        });
+      }
+    } else {
+      providerId = providerResult.rows[0].provider_id;
     }
-    const providerId = providerResult.rows[0].provider_id;
 
     const updated = await SlotService.update(slotId, req.body, providerId);
 
@@ -124,17 +172,41 @@ export async function remove(req, res, next) {
     const slotId = req.params.slotId;
 
     // Get provider_id
-    const providerResult = await query(
+    let providerResult = await query(
       "SELECT provider_id FROM providers WHERE user_id = $1",
       [userId]
     );
+    let providerId;
     if (providerResult.rowCount === 0) {
-      return res.status(403).json({
-        success: false,
-        message: "Please create a business profile first."
-      });
+      // If user is a provider but profile doesn't exist, create it
+      if (req.user.user_type === "provider") {
+        try {
+          const ProviderModel = (await import("../models/provider-model.js"))
+            .default;
+          const provider = await ProviderModel.create({
+            user_id: userId,
+            bio: ""
+          });
+          providerId = provider.provider_id;
+        } catch (createError) {
+          logError(
+            "Error creating provider profile during slot delete:",
+            createError
+          );
+          return res.status(500).json({
+            success: false,
+            message: "Failed to create provider profile. Please try again."
+          });
+        }
+      } else {
+        return res.status(403).json({
+          success: false,
+          message: "Please create a business profile first."
+        });
+      }
+    } else {
+      providerId = providerResult.rows[0].provider_id;
     }
-    const providerId = providerResult.rows[0].provider_id;
 
     const deleted = await SlotService.remove(slotId, providerId);
 

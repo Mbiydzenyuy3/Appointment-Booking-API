@@ -28,12 +28,31 @@ export async function create(req, res, next) {
       });
     }
 
-    const provider = await ProviderModel.findByUserId(userId);
+    let provider = await ProviderModel.findByUserId(userId);
     if (!provider?.provider_id) {
-      return res.status(403).json({
-        success: false,
-        message: "Provider profile not found. Please contact support."
-      });
+      // If user is a provider but profile doesn't exist, create it
+      if (req.user.user_type === "provider") {
+        try {
+          provider = await ProviderModel.create({
+            user_id: userId,
+            bio: ""
+          });
+        } catch (createError) {
+          logError(
+            "Error creating provider profile during service creation:",
+            createError
+          );
+          return res.status(500).json({
+            success: false,
+            message: "Failed to create provider profile. Please try again."
+          });
+        }
+      } else {
+        return res.status(403).json({
+          success: false,
+          message: "Provider profile not found. Please contact support."
+        });
+      }
     }
 
     const providerId = provider.provider_id;
@@ -123,12 +142,31 @@ export async function update(req, res, next) {
     }
 
     // Verify provider ownership
-    const provider = await ProviderModel.findByUserId(userId);
+    let provider = await ProviderModel.findByUserId(userId);
     if (!provider?.provider_id) {
-      return res.status(403).json({
-        success: false,
-        message: "Please create a business profile first."
-      });
+      // If user is a provider but profile doesn't exist, create it
+      if (req.user.user_type === "provider") {
+        try {
+          provider = await ProviderModel.create({
+            user_id: userId,
+            bio: ""
+          });
+        } catch (createError) {
+          logError(
+            "Error creating provider profile during service update:",
+            createError
+          );
+          return res.status(500).json({
+            success: false,
+            message: "Failed to create provider profile. Please try again."
+          });
+        }
+      } else {
+        return res.status(403).json({
+          success: false,
+          message: "Please create a business profile first."
+        });
+      }
     }
 
     // Verify the service belongs to this provider
@@ -161,12 +199,31 @@ export async function remove(req, res, next) {
     const userId = req.user?.sub;
 
     // Verify provider ownership
-    const provider = await ProviderModel.findByUserId(userId);
+    let provider = await ProviderModel.findByUserId(userId);
     if (!provider?.provider_id) {
-      return res.status(403).json({
-        success: false,
-        message: "Please create a business profile first."
-      });
+      // If user is a provider but profile doesn't exist, create it
+      if (req.user.user_type === "provider") {
+        try {
+          provider = await ProviderModel.create({
+            user_id: userId,
+            bio: ""
+          });
+        } catch (createError) {
+          logError(
+            "Error creating provider profile during service delete:",
+            createError
+          );
+          return res.status(500).json({
+            success: false,
+            message: "Failed to create provider profile. Please try again."
+          });
+        }
+      } else {
+        return res.status(403).json({
+          success: false,
+          message: "Please create a business profile first."
+        });
+      }
     }
 
     // Verify the service belongs to this provider

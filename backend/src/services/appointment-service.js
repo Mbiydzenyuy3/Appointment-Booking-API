@@ -83,11 +83,9 @@ export async function cancel(appointmentId, userId, userType) {
         a.timeslot_id,
         a.appointment_date,
         a.appointment_time,
-        a.status,
-        a.notes,
         a.created_at,
         a.updated_at,
-        s.name as service_name,
+        s.service_name as service_name,
         u.name as client_name,
         u.email as client_email,
         p.name as provider_name,
@@ -95,7 +93,8 @@ export async function cancel(appointmentId, userId, userType) {
       FROM appointments a
       LEFT JOIN services s ON a.service_id = s.service_id
       LEFT JOIN users u ON a.user_id = u.user_id
-      LEFT JOIN users p ON a.provider_id = p.user_id
+      LEFT JOIN providers pr ON a.provider_id = pr.provider_id
+      LEFT JOIN users p ON pr.user_id = p.user_id
       WHERE a.appointment_id = $1 FOR UPDATE
     `,
       [appointmentId]
@@ -179,11 +178,9 @@ export async function list(
            a.timeslot_id,
            a.appointment_date as date,
            a.appointment_time,
-           a.status,
-           a.notes,
            a.created_at,
            a.updated_at,
-           s.name as service_name,
+           s.service_name as service_name,
            s.price,
            COALESCE(s.duration, s.duration_minutes) as duration_minutes,
            u.name as client_name,
@@ -205,27 +202,23 @@ export async function list(
            a.timeslot_id,
            a.appointment_date as date,
            a.appointment_time,
-           a.status,
-           a.notes,
            a.created_at,
            a.updated_at,
-           s.name as service_name,
+           s.service_name as service_name,
            s.price,
            COALESCE(s.duration, s.duration_minutes) as duration_minutes,
            u.name as provider_name,
            u.email as provider_email
          FROM appointments a
          LEFT JOIN services s ON a.service_id = s.service_id
-         LEFT JOIN users u ON a.provider_id = u.user_id
+         LEFT JOIN providers pr ON a.provider_id = pr.provider_id
+         LEFT JOIN users u ON pr.user_id = u.user_id
          WHERE a.user_id = $1
        `;
       params.push(userId);
     }
 
-    if (status) {
-      query += ` AND a.status = $${paramIndex++}`;
-      params.push(status);
-    }
+    // Status filter removed as status column was dropped in MVP simplification
 
     // Note: Date filters commented out as appointment_date may not exist in deployed DB
     // if (startDate) {
