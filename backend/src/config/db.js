@@ -75,7 +75,7 @@ const initializeDbSchema = async () => {
     await client.query("CREATE EXTENSION IF NOT EXISTS pgcrypto");
 
     // Drop all existing tables to ensure clean slate (for development only)
-    if (NODE_ENV !== "production") {
+    if (NODE_ENV === "development") {
       logInfo("Dropping existing tables for clean schema initialization...");
       await client.query(`
         DROP TABLE IF EXISTS appointments CASCADE;
