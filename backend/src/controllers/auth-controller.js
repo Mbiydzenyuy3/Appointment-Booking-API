@@ -214,7 +214,6 @@ export async function getUserProfile(req, res, next) {
 
     const user = userResult.rows[0];
 
-    // Get provider info if applicable
     let providerInfo = null;
     if (user.user_type === "provider") {
       const providerResult = await query(
