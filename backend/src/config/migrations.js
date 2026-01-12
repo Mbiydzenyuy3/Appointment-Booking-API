@@ -1,4 +1,4 @@
-import { query } from "./db.js";
+import { query, pool } from "./db.js";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -25,6 +25,7 @@ export async function runMigrations() {
   // Get migration files
   // Path resolves to backend/migrations relative to src/config/
   const migrationDir = path.resolve(__dirname, "../../migrations");
+  logInfo(`Looking for migrations in: ${migrationDir}`);
 
   if (!fs.existsSync(migrationDir)) {
     logInfo("No migrations directory found, skipping migrations.");
@@ -34,27 +35,33 @@ export async function runMigrations() {
   const files = fs.readdirSync(migrationDir).sort();
   let migrationCount = 0;
 
-  for (const file of files) {
-    if (!appliedVersions.has(file) && file.endsWith(".sql")) {
-      logInfo(`Applying migration: ${file}`);
-      const sql = fs.readFileSync(path.join(migrationDir, file), "utf8");
+  const client = await pool.connect();
+  try {
+    for (const file of files) {
+      if (!appliedVersions.has(file) && file.endsWith(".sql")) {
+        logInfo(`Applying migration: ${file}`);
+        const sql = fs.readFileSync(path.join(migrationDir, file), "utf8");
 
-      // Simple transaction for each migration
-      await query("BEGIN");
-      try {
-        await query(sql);
-        await query("INSERT INTO schema_migrations (version) VALUES ($1)", [
-          file
-        ]);
-        await query("COMMIT");
-        migrationCount++;
-        logInfo(`Successfully applied migration: ${file}`);
-      } catch (err) {
-        await query("ROLLBACK");
-        logError(`Failed to apply migration ${file}`, err);
-        throw err;
+        // Simple transaction for each migration
+        await client.query("BEGIN");
+        try {
+          await client.query(sql);
+          await client.query(
+            "INSERT INTO schema_migrations (version) VALUES ($1)",
+            [file]
+          );
+          await client.query("COMMIT");
+          migrationCount++;
+          logInfo(`Successfully applied migration: ${file}`);
+        } catch (err) {
+          await client.query("ROLLBACK");
+          logError(`Failed to apply migration ${file}`, err);
+          throw err;
+        }
       }
     }
+  } finally {
+    client.release();
   }
 
   if (migrationCount === 0) {

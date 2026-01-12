@@ -7,6 +7,7 @@ import { logInfo, logError, logDebug } from "../utils/logger.js";
 const { Pool } = pg;
 
 const {
+  DATABASE_URL,
   DB_USER,
   DB_PASSWORD,
   DB_HOST,
@@ -19,25 +20,38 @@ const {
 /* ---------------------------------------
    ENV VALIDATION (NON-DESTRUCTIVE)
 ---------------------------------------- */
-const requiredVars = { DB_USER, DB_PASSWORD, DB_HOST, DB_NAME, DB_PORT };
-for (const [key, value] of Object.entries(requiredVars)) {
-  if (!value) {
-    logError(`❌ Missing environment variable: ${key}`);
+let poolConfig;
+
+if (DATABASE_URL) {
+  // Use DATABASE_URL if provided (e.g., on Render)
+  poolConfig = {
+    connectionString: DATABASE_URL,
+    connectionTimeoutMillis: 5000,
+    ssl: NODE_ENV === "production" ? { rejectUnauthorized: false } : false
+  };
+} else {
+  // Fallback to individual vars
+  const requiredVars = { DB_USER, DB_PASSWORD, DB_HOST, DB_NAME, DB_PORT };
+  for (const [key, value] of Object.entries(requiredVars)) {
+    if (!value) {
+      logError(`❌ Missing environment variable: ${key}`);
+    }
   }
+  poolConfig = {
+    user: DB_USER,
+    host: DB_HOST,
+    database: DB_NAME,
+    password: DB_PASSWORD,
+    port: Number(DB_PORT),
+    connectionTimeoutMillis: 5000,
+    ssl: NODE_ENV === "production" ? { rejectUnauthorized: false } : false
+  };
 }
 
 /* ---------------------------------------
    CONNECTION POOL
 ---------------------------------------- */
-const pool = new Pool({
-  user: DB_USER,
-  host: DB_HOST,
-  database: DB_NAME,
-  password: DB_PASSWORD,
-  port: Number(DB_PORT),
-  connectionTimeoutMillis: 5000,
-  ssl: NODE_ENV === "production" ? { rejectUnauthorized: false } : false
-});
+const pool = new Pool(poolConfig);
 
 pool.on("connect", () => {
   logInfo(`🔗 DB connected (${DB_NAME})`);
@@ -73,7 +87,7 @@ const initializeDbSchema = async () => {
 
     /* ---------------------------------------
        🚨 DESTRUCTIVE OPERATION (OPT-IN ONLY)
-    ---------------------------------------- */
+     ---------------------------------------- */
     if (DB_RESET_ON_START === "true") {
       if (NODE_ENV === "production") {
         throw new Error("❌ DB_RESET_ON_START is not allowed in production");
@@ -93,7 +107,7 @@ const initializeDbSchema = async () => {
 
     /* ---------------------------------------
        CREATE TABLES (IDEMPOTENT)
-    ---------------------------------------- */
+     ---------------------------------------- */
 
     await client.query(`
       CREATE TABLE IF NOT EXISTS users (
@@ -139,7 +153,7 @@ const initializeDbSchema = async () => {
 
     /* ---------------------------------------
        UPDATED_AT TRIGGER
-    ---------------------------------------- */
+     ---------------------------------------- */
     await client.query(`
       CREATE OR REPLACE FUNCTION update_updated_at_column()
       RETURNS TRIGGER AS $$
