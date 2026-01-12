@@ -112,6 +112,9 @@ const initializeDbSchema = async () => {
         provider_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         user_id UUID UNIQUE NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
         bio TEXT,
+        phone VARCHAR(50),
+        hourly_rate DECIMAL(10, 2),
+        referral_code VARCHAR(50),
         booking_slug VARCHAR(255) UNIQUE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
