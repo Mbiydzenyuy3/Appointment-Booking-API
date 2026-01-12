@@ -102,18 +102,32 @@ export async function updateProvider(req, res, next) {
 export async function getCurrentProvider(req, res, next) {
   try {
     const user_id = req.user?.user_id;
+    const user_type = req.user?.user_type;
     if (!user_id)
       return res
         .status(401)
         .json({ success: false, error_code: "UNAUTHORIZED" });
 
-    const provider = await ProviderModel.findByUserId(user_id);
-    if (!provider)
-      return res.status(404).json({
-        success: false,
-        error_code: "PROVIDER_NOT_FOUND",
-        message: "Business profile not found."
-      });
+    let provider = await ProviderModel.findByUserId(user_id);
+    if (!provider) {
+      // If provider doesn't exist but user is a provider, create it
+      if (user_type === "provider") {
+        provider = await ProviderModel.create({
+          user_id,
+          bio: "",
+          phone: null,
+          hourly_rate: null,
+          referral_code: generateReferralCode()
+        });
+        await logProviderActivity(provider.provider_id, "provider_created");
+      } else {
+        return res.status(404).json({
+          success: false,
+          error_code: "PROVIDER_NOT_FOUND",
+          message: "Business profile not found."
+        });
+      }
+    }
 
     res.json({ success: true, data: provider });
   } catch (err) {
