@@ -62,10 +62,14 @@ export async function get(slotId) {
     const slot = await getSlotById(slotId);
     if (!slot) {
       throw new Error("Slot not found");
+      const err = new Error("Slot not found");
+      err.statusCode = 404;
+      throw err;
     }
     return slot;
   } catch (err) {
     logError("Failed to fetch slot", err);
+    if (err.statusCode) throw err;
     throw new Error(
       "We're having trouble loading this slot. Please try again."
     );

@@ -24,11 +24,13 @@ const authMiddleware = async (req, res, next) => {
 
     // Validate user exists in database
     const userResult = await query(
-      "SELECT user_id, user_type, email FROM users WHERE user_id = $1",
+      "/*primary*/ SELECT user_id, user_type, email FROM users WHERE user_id = $1",
       [decoded.sub]
     );
     if (userResult.rowCount === 0) {
-      logInfo("Auth middleware: User not found in database");
+      logInfo(
+        `Auth middleware: User not found in database for user_id: ${decoded.sub}`
+      );
       return res.status(401).json({ message: "User not found." });
     }
 

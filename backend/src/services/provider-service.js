@@ -42,7 +42,11 @@ export async function listProviders({ limit, offset }) {
 
 export async function getProviderByBookingSlug(booking_slug) {
   try {
-    const provider = await ProviderModel.findByBookingSlug(booking_slug);
+    let provider = await ProviderModel.findByBookingSlug(booking_slug);
+    if (!provider) {
+      // Try if it's actually a provider_id
+      provider = await ProviderModel.findById(booking_slug);
+    }
     if (!provider) {
       throw new Error("Provider not found");
     }
