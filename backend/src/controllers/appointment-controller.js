@@ -147,7 +147,7 @@ export async function CreateGuestAppointment(req, res) {
 export async function CreateAppointment(req, res) {
   try {
     const { timeslotId, appointment_date, appointment_time } = req.body;
-    const userId = req.user?.sub;
+    const userId = req.user?.user_id;
 
     // Validate required fields
     if (!userId || !timeslotId || !appointment_date || !appointment_time) {
@@ -264,7 +264,7 @@ export async function CreateAppointment(req, res) {
 export async function cancelAppointment(req, res, next) {
   try {
     const { appointmentId } = req.params;
-    const userId = req.user?.sub;
+    const userId = req.user?.user_id;
     const userType = req.user?.user_type;
     const result = await appointmentService.cancel(
       appointmentId,
@@ -297,7 +297,7 @@ export async function cancelAppointment(req, res, next) {
 
 export async function listAppointments(req, res, next) {
   try {
-    const userId = req.user?.sub;
+    const userId = req.user?.user_id;
     const userType = req.user?.user_type;
     const { startDate, endDate, page = 1, limit = 10 } = req.query;
     const offset = (page - 1) * limit;

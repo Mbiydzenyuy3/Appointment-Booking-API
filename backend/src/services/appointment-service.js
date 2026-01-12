@@ -182,7 +182,7 @@ export async function list(
            a.updated_at,
            s.service_name as service_name,
            s.price,
-           COALESCE(s.duration, s.duration_minutes) as duration_minutes,
+           s.duration_minutes,
            u.name as client_name,
            u.email as client_email
          FROM appointments a
@@ -206,7 +206,7 @@ export async function list(
            a.updated_at,
            s.service_name as service_name,
            s.price,
-           COALESCE(s.duration, s.duration_minutes) as duration_minutes,
+           s.duration_minutes,
            u.name as provider_name,
            u.email as provider_email
          FROM appointments a

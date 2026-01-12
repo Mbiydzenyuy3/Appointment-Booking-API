@@ -107,7 +107,7 @@ export async function list(req, res, next) {
 
 export async function update(req, res, next) {
   try {
-    const userId = req.user?.sub;
+    const userId = req.user?.user_id;
     const slotId = req.params.slotId;
 
     // Get provider_id
@@ -168,7 +168,7 @@ export async function update(req, res, next) {
 
 export async function remove(req, res, next) {
   try {
-    const userId = req.user?.sub;
+    const userId = req.user?.user_id;
     const slotId = req.params.slotId;
 
     // Get provider_id

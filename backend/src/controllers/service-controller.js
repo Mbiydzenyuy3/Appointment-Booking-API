@@ -5,7 +5,7 @@ import ProviderModel from "../models/provider-model.js";
 // Create a new service
 export async function create(req, res, next) {
   try {
-    const userId = req.user?.sub;
+    const userId = req.user?.user_id;
     const {
       name: service_name,
       description,
