@@ -8,7 +8,6 @@ import app from "../app.js";
 import { initSocket } from "../src/sockets/socket.js";
 import { logInfo, logError, logDebug } from "../src/utils/logger.js";
 import { connectToDb, initializeDbSchema } from "../src/config/db.js";
-// import { runMigrations } from "../src/config/migrations.js";
 import { initializeRedis } from "../src/config/redis.js";
 import performanceMonitor from "../src/services/performance-monitor.js";
 
@@ -83,7 +82,6 @@ async function startServer() {
     logInfo(`Attempting to start server on port ${PORT}`);
     await connectToDb();
     await initializeDbSchema();
-    // await runMigrations();
     await initializeRedis();
     performanceMonitor.start();
     server.listen(PORT);

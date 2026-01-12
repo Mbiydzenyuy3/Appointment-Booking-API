@@ -6,6 +6,9 @@ import { logInfo, logError, logDebug } from "../utils/logger.js";
 
 const { Pool } = pg;
 
+/* ---------------------------------------
+   ENV
+---------------------------------------- */
 const {
   DATABASE_URL,
   DB_USER,
@@ -18,25 +21,25 @@ const {
 } = process.env;
 
 /* ---------------------------------------
-   ENV VALIDATION (NON-DESTRUCTIVE)
+   POOL CONFIG
 ---------------------------------------- */
 let poolConfig;
 
 if (DATABASE_URL) {
-  // Use DATABASE_URL if provided (e.g., on Render)
   poolConfig = {
     connectionString: DATABASE_URL,
     connectionTimeoutMillis: 5000,
     ssl: NODE_ENV === "production" ? { rejectUnauthorized: false } : false
   };
 } else {
-  // Fallback to individual vars
   const requiredVars = { DB_USER, DB_PASSWORD, DB_HOST, DB_NAME, DB_PORT };
+
   for (const [key, value] of Object.entries(requiredVars)) {
     if (!value) {
       logError(`❌ Missing environment variable: ${key}`);
     }
   }
+
   poolConfig = {
     user: DB_USER,
     host: DB_HOST,
@@ -54,7 +57,7 @@ if (DATABASE_URL) {
 const pool = new Pool(poolConfig);
 
 pool.on("connect", () => {
-  logInfo(`🔗 DB connected (${DB_NAME})`);
+  logInfo(`🔗 DB connected (${DB_NAME || "DATABASE_URL"})`);
 });
 
 pool.on("error", (err) => {
@@ -63,7 +66,7 @@ pool.on("error", (err) => {
 });
 
 /* ---------------------------------------
-   SAFE CONNECTION CHECK
+   CONNECTION CHECK
 ---------------------------------------- */
 const connectToDb = async () => {
   const client = await pool.connect();
@@ -72,7 +75,7 @@ const connectToDb = async () => {
 };
 
 /* ---------------------------------------
-   SCHEMA INITIALIZATION (SAFE)
+   SCHEMA INITIALIZATION
 ---------------------------------------- */
 const initializeDbSchema = async () => {
   const client = await pool.connect();
@@ -86,21 +89,16 @@ const initializeDbSchema = async () => {
     await client.query(`CREATE EXTENSION IF NOT EXISTS pgcrypto`);
 
     /* ---------------------------------------
-       🚨 DESTRUCTIVE OPERATION (OPT-IN ONLY)
-     ---------------------------------------- */
+       ⚠️ DEV-ONLY RESET
+    ---------------------------------------- */
     if (DB_RESET_ON_START === "true") {
       if (NODE_ENV === "production") {
         throw new Error("❌ DB_RESET_ON_START is not allowed in production");
       }
 
-      logInfo("⚠️ DEV MODE: Dropping tables (DB_RESET_ON_START=true)");
+      logInfo("⚠️ DEV MODE: Dropping all tables");
 
       await client.query(`
-        DROP TABLE IF EXISTS provider_reviews CASCADE;
-        DROP TABLE IF EXISTS provider_activity_logs CASCADE;
-        DROP TABLE IF EXISTS provider_activity_log CASCADE;
-        DROP TABLE IF EXISTS referrals CASCADE;
-        DROP TABLE IF EXISTS guest_sessions CASCADE;
         DROP TABLE IF EXISTS appointments CASCADE;
         DROP TABLE IF EXISTS time_slots CASCADE;
         DROP TABLE IF EXISTS services CASCADE;
@@ -110,9 +108,8 @@ const initializeDbSchema = async () => {
     }
 
     /* ---------------------------------------
-       CREATE TABLES (IDEMPOTENT)
-     ---------------------------------------- */
-
+       USERS
+    ---------------------------------------- */
     await client.query(`
       CREATE TABLE IF NOT EXISTS users (
         user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -125,6 +122,9 @@ const initializeDbSchema = async () => {
       );
     `);
 
+    /* ---------------------------------------
+       PROVIDERS
+    ---------------------------------------- */
     await client.query(`
       CREATE TABLE IF NOT EXISTS providers (
         provider_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -139,6 +139,9 @@ const initializeDbSchema = async () => {
       );
     `);
 
+    /* ---------------------------------------
+       SERVICES
+    ---------------------------------------- */
     await client.query(`
       CREATE TABLE IF NOT EXISTS services (
         service_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -155,12 +158,15 @@ const initializeDbSchema = async () => {
       );
     `);
 
+    /* ---------------------------------------
+       TIME SLOTS
+    ---------------------------------------- */
     await client.query(`
       CREATE TABLE IF NOT EXISTS time_slots (
         timeslot_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         provider_id UUID NOT NULL REFERENCES providers(provider_id) ON DELETE CASCADE,
         service_id UUID REFERENCES services(service_id) ON DELETE CASCADE,
-        day DATE,
+        day DATE NOT NULL,
         start_time TIME NOT NULL,
         end_time TIME NOT NULL,
         is_booked BOOLEAN DEFAULT FALSE,
@@ -169,6 +175,15 @@ const initializeDbSchema = async () => {
       );
     `);
 
+    /* Prevent duplicate / overlapping slot definitions */
+    await client.query(`
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_provider_timeslot
+      ON time_slots (provider_id, day, start_time, end_time);
+    `);
+
+    /* ---------------------------------------
+       APPOINTMENTS
+    ---------------------------------------- */
     await client.query(`
       CREATE TABLE IF NOT EXISTS appointments (
         appointment_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -186,14 +201,32 @@ const initializeDbSchema = async () => {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT check_guest_or_user CHECK (
           (user_id IS NOT NULL AND is_guest_booking = FALSE) OR
-          (user_id IS NULL AND is_guest_booking = TRUE AND guest_name IS NOT NULL AND guest_email IS NOT NULL)
+          (user_id IS NULL AND is_guest_booking = TRUE
+            AND guest_name IS NOT NULL
+            AND guest_email IS NOT NULL)
         )
       );
     `);
 
     /* ---------------------------------------
+       INDEXES
+    ---------------------------------------- */
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+      CREATE INDEX IF NOT EXISTS idx_providers_user_id ON providers(user_id);
+      CREATE INDEX IF NOT EXISTS idx_providers_booking_slug ON providers(booking_slug);
+      CREATE INDEX IF NOT EXISTS idx_services_provider_id ON services(provider_id);
+      CREATE INDEX IF NOT EXISTS idx_time_slots_provider_id ON time_slots(provider_id);
+      CREATE INDEX IF NOT EXISTS idx_time_slots_start_time ON time_slots(start_time);
+      CREATE INDEX IF NOT EXISTS idx_appointments_user_id ON appointments(user_id);
+      CREATE INDEX IF NOT EXISTS idx_appointments_provider_id ON appointments(provider_id);
+      CREATE INDEX IF NOT EXISTS idx_appointments_timeslot_id ON appointments(timeslot_id);
+      CREATE INDEX IF NOT EXISTS idx_appointments_guest_email ON appointments(guest_email);
+    `);
+
+    /* ---------------------------------------
        UPDATED_AT TRIGGER
-     ---------------------------------------- */
+    ---------------------------------------- */
     await client.query(`
       CREATE OR REPLACE FUNCTION update_updated_at_column()
       RETURNS TRIGGER AS $$
@@ -235,9 +268,11 @@ const initializeDbSchema = async () => {
 const query = async (text, params) => {
   const start = Date.now();
   const res = await pool.query(text, params);
+
   if (NODE_ENV !== "production") {
-    logDebug(`🧪 Query (${Date.now() - start}ms): ${text.slice(0, 60)}...`);
+    logDebug(`🧪 Query (${Date.now() - start}ms): ${text.slice(0, 80)}...`);
   }
+
   return res;
 };
 
