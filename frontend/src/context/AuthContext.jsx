@@ -39,6 +39,7 @@ export const Provider = ({ children }) => {
       const { token } = response.data;
 
       if (token) {
+        localStorage.setItem("token", token);
         try {
           const decoded = jwtDecode(token);
           setUser(decoded);
