@@ -124,7 +124,8 @@ export function generateToken(user, providerId = null) {
       sub: user.user_id,
       email: user.email,
       user_type: user.user_type,
-      provider_id: providerId
+      provider_id: providerId,
+      name: user.name
     },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES_IN }

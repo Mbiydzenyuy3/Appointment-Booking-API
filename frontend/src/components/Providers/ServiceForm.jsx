@@ -8,7 +8,10 @@ export default function ServiceForm({ onCreate }) {
     service_name: "",
     description: "",
     duration_minutes: "",
-    price: ""
+    price: "",
+    location: "",
+    additional_description: "",
+    image_url: ""
   });
 
   const handleChange = (e) => {
@@ -22,7 +25,10 @@ export default function ServiceForm({ onCreate }) {
       name: service.service_name,
       description: service.description,
       price: Number(service.price),
-      durationMinutes: Number(service.duration_minutes)
+      durationMinutes: Number(service.duration_minutes),
+      location: service.location,
+      additionalDescription: service.additional_description,
+      imageUrl: service.image_url
     };
 
     console.log("Service data being sent:", ServiceValues);
@@ -33,7 +39,10 @@ export default function ServiceForm({ onCreate }) {
       service_name: "",
       description: "",
       price: "",
-      duration_minutes: ""
+      duration_minutes: "",
+      location: "",
+      additional_description: "",
+      image_url: ""
     });
   };
 
@@ -102,7 +111,7 @@ export default function ServiceForm({ onCreate }) {
               Create a new service offering for your clients
             </p>
           </div>
-          <div className='flex-shrink-0'>
+          <div className='flex-shrink-0 text-gray-700'>
             <CurrencySelector />
           </div>
         </div>
@@ -114,7 +123,7 @@ export default function ServiceForm({ onCreate }) {
             htmlFor='service_name'
             className='block text-sm font-semibold text-gray-700 mb-2'
           >
-            Service Name *
+            Service Name
           </label>
           <input
             id='service_name'
@@ -123,7 +132,7 @@ export default function ServiceForm({ onCreate }) {
             value={service.service_name}
             onChange={handleChange}
             placeholder='Enter service name (e.g., Haircut, Consultation)'
-            className='block w-full p-4 border-2 border-gray-200 rounded-lg text-gray-800 placeholder-gray-400 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all duration-200 text-base'
+            className='block w-full p-4 border-2 border-gray-200 rounded-lg text-gray-800 placeholder-gray-400    transition-all duration-200 text-base'
             required
             autoComplete='off'
           />
@@ -134,7 +143,7 @@ export default function ServiceForm({ onCreate }) {
             htmlFor='description'
             className='block text-sm font-semibold text-gray-700 mb-2'
           >
-            Description *
+            Description
           </label>
           <textarea
             id='description'
@@ -143,8 +152,64 @@ export default function ServiceForm({ onCreate }) {
             onChange={handleChange}
             placeholder='Describe what your service includes...'
             rows={4}
-            className='block w-full p-4 border-2 border-gray-200 rounded-lg text-gray-800 placeholder-gray-400 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all duration-200 resize-vertical text-base'
+            className='block w-full p-4 border-2 border-gray-200 rounded-lg text-gray-800 placeholder-gray-400    transition-all duration-200 resize-vertical text-base'
             required
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor='location'
+            className='block text-sm font-semibold text-gray-700 mb-2'
+          >
+            Location
+          </label>
+          <input
+            id='location'
+            type='text'
+            name='location'
+            value={service.location}
+            onChange={handleChange}
+            placeholder='Enter your business location (e.g., 123 Main St, City)'
+            className='block w-full p-4 border-2 border-gray-200 rounded-lg text-gray-800 placeholder-gray-400    transition-all duration-200 text-base'
+            autoComplete='off'
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor='additional_description'
+            className='block text-sm font-semibold text-gray-700 mb-2'
+          >
+            Additional Description
+          </label>
+          <textarea
+            id='additional_description'
+            name='additional_description'
+            value={service.additional_description}
+            onChange={handleChange}
+            placeholder='Additional details about your business or service...'
+            rows={3}
+            className='block w-full p-4 border-2 border-gray-200 rounded-lg text-gray-800 placeholder-gray-400    transition-all duration-200 resize-vertical text-base'
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor='image_url'
+            className='block text-sm font-semibold text-gray-700 mb-2'
+          >
+            Image URL (Logo or Business Place)
+          </label>
+          <input
+            id='image_url'
+            type='url'
+            name='image_url'
+            value={service.image_url}
+            onChange={handleChange}
+            placeholder='https://example.com/image.jpg'
+            className='block w-full p-4 border-2 border-gray-200 rounded-lg text-gray-800 placeholder-gray-400    transition-all duration-200 text-base'
+            autoComplete='off'
           />
         </div>
 
@@ -154,7 +219,7 @@ export default function ServiceForm({ onCreate }) {
               htmlFor='price'
               className='block text-sm font-semibold text-gray-700 mb-2'
             >
-              Price ({selectedCurrency})
+              Price (in XAF)
             </label>
             <div className='relative'>
               <span className='absolute left-4 top-1/2 transform -translate-y-1/2 text-transparent font-medium'>
@@ -169,7 +234,7 @@ export default function ServiceForm({ onCreate }) {
                 placeholder='0.00'
                 min='0'
                 step='0.01'
-                className='block w-full pl-8 pr-4 py-4 border-2 border-gray-200 rounded-lg text-gray-800 placeholder-gray-400 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all duration-200 text-base'
+                className='block w-full pl-8 pr-4 py-4 border-2 border-gray-200 rounded-lg text-gray-800 placeholder-gray-400    transition-all duration-200 text-base'
                 required
               />
             </div>
@@ -197,7 +262,7 @@ export default function ServiceForm({ onCreate }) {
               placeholder='30'
               min='1'
               max='480'
-              className='block w-full p-4 border-2 border-gray-200 rounded-lg text-gray-800 placeholder-gray-400 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all duration-200 text-base'
+              className='block w-full p-4 border-2 border-gray-200 rounded-lg text-gray-800 placeholder-gray-400    transition-all duration-200 text-base'
               required
             />
           </div>
@@ -207,7 +272,7 @@ export default function ServiceForm({ onCreate }) {
       <div className='relative'>
         <button
           type='submit'
-          className='form-submit-button w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 active:from-green-800 active:to-green-900 text-white font-bold py-5 px-8 rounded-xl transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-green-300 focus:ring-offset-2 min-h-[64px] touch-target transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl border-2 border-transparent hover:border-green-800'
+          className='form-submit-button w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 active:from-green-800 active:to-green-900 text-white font-bold py-5 px-8 rounded-xl transition-all duration-300 focus:outline-none    min-h-[64px] touch-target transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl border-2 border-transparent hover:border-green-800'
           style={{
             position: "relative",
             zIndex: 9999,

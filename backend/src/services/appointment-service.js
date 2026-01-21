@@ -34,6 +34,37 @@ export async function book({
   }
 }
 
+export async function bookAsGuest({
+  timeslotId,
+  appointment_date,
+  appointment_time,
+  guest_name,
+  guest_email,
+  guest_phone
+}) {
+  try {
+    const appointment = await CreateAppointment({
+      timeslotId,
+      userId: null,
+      appointment_date,
+      appointment_time,
+      guest_name,
+      guest_email,
+      guest_phone,
+      is_guest_booking: true
+    });
+
+    // Emit targeted socket notification
+    emitAppointmentBooked(appointment);
+
+    logInfo(` Guest appointment booked:`, appointment.appointment_id);
+    return appointment;
+  } catch (err) {
+    logError(" Error booking guest appointment:", err);
+    throw new Error(err.message || "Failed to create guest appointment");
+  }
+}
+
 // Cancel appointment
 export async function cancel(appointmentId, userId, userType) {
   const client = await pool.connect();
@@ -52,11 +83,9 @@ export async function cancel(appointmentId, userId, userType) {
         a.timeslot_id,
         a.appointment_date,
         a.appointment_time,
-        a.status,
-        a.notes,
         a.created_at,
         a.updated_at,
-        s.name as service_name,
+        s.service_name as service_name,
         u.name as client_name,
         u.email as client_email,
         p.name as provider_name,
@@ -64,7 +93,8 @@ export async function cancel(appointmentId, userId, userType) {
       FROM appointments a
       LEFT JOIN services s ON a.service_id = s.service_id
       LEFT JOIN users u ON a.user_id = u.user_id
-      LEFT JOIN users p ON a.provider_id = p.user_id
+      LEFT JOIN providers pr ON a.provider_id = pr.provider_id
+      LEFT JOIN users p ON pr.user_id = p.user_id
       WHERE a.appointment_id = $1 FOR UPDATE
     `,
       [appointmentId]
@@ -87,7 +117,7 @@ export async function cancel(appointmentId, userId, userType) {
       appointmentId
     ]);
     await client.query(
-      "UPDATE time_slots SET is_booked = false, is_available = true WHERE timeslot_id = $1",
+      "UPDATE time_slots SET is_booked = false WHERE timeslot_id = $1",
       [appointment.timeslot_id]
     );
 
@@ -145,16 +175,14 @@ export async function list(
            a.user_id,
            a.provider_id,
            a.service_id,
-           COALESCE(a.timeslot_id, a.slot_id) as timeslot_id,
+           a.timeslot_id,
            a.appointment_date as date,
            a.appointment_time,
-           a.status,
-           a.notes,
            a.created_at,
            a.updated_at,
-           s.name as service_name,
+           s.service_name as service_name,
            s.price,
-           COALESCE(s.duration, s.duration_minutes) as duration_minutes,
+           s.duration_minutes,
            u.name as client_name,
            u.email as client_email
          FROM appointments a
@@ -171,41 +199,37 @@ export async function list(
            a.user_id,
            a.provider_id,
            a.service_id,
-           COALESCE(a.timeslot_id, a.slot_id) as timeslot_id,
+           a.timeslot_id,
            a.appointment_date as date,
            a.appointment_time,
-           a.status,
-           a.notes,
            a.created_at,
            a.updated_at,
-           s.name as service_name,
+           s.service_name as service_name,
            s.price,
-           COALESCE(s.duration, s.duration_minutes) as duration_minutes,
+           s.duration_minutes,
            u.name as provider_name,
            u.email as provider_email
          FROM appointments a
          LEFT JOIN services s ON a.service_id = s.service_id
-         LEFT JOIN users u ON a.provider_id = u.user_id
+         LEFT JOIN providers pr ON a.provider_id = pr.provider_id
+         LEFT JOIN users u ON pr.user_id = u.user_id
          WHERE a.user_id = $1
        `;
       params.push(userId);
     }
 
-    if (status) {
-      query += ` AND a.status = $${paramIndex++}`;
-      params.push(status);
+    // Status filter removed as status column was dropped in MVP simplification
+
+    // Date filters
+    if (startDate) {
+      query += ` AND a.appointment_date >= $${paramIndex++}`;
+      params.push(startDate);
     }
 
-    // Note: Date filters commented out as appointment_date may not exist in deployed DB
-    // if (startDate) {
-    //   query += ` AND a.appointment_date >= $${paramIndex++}`;
-    //   params.push(startDate);
-    // }
-
-    // if (endDate) {
-    //   query += ` AND a.appointment_date <= $${paramIndex++}`;
-    //   params.push(endDate);
-    // }
+    if (endDate) {
+      query += ` AND a.appointment_date <= $${paramIndex++}`;
+      params.push(endDate);
+    }
 
     query += ` ORDER BY a.created_at DESC LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
     params.push(limit, offset);

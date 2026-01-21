@@ -9,45 +9,60 @@ export const createSlot = async ({
   startTime,
   endTime
 }) => {
+  console.log("createSlot called with:", {
+    providerId,
+    serviceId,
+    day,
+    startTime,
+    endTime
+  });
   const client = await pool.connect();
 
   try {
     await client.query("BEGIN");
+    console.log("Transaction begun");
 
     // Check for exact duplicate
+    console.log("Checking for exact duplicate");
     const exactDuplicate = await client.query(
       `
   SELECT * FROM time_slots
-  WHERE provider_id = $1 AND day = $2 AND start_time = $3 AND end_time = $4
+  WHERE provider_id = $1 AND day = $2::DATE AND start_time = $3::TIME AND end_time = $4::TIME
   `,
       [providerId, day, startTime, endTime]
     );
 
     if (exactDuplicate.rows.length > 0) {
-      throw new Error("An identical slot already exists.");
+      throw new Error(
+        "It looks like this time slot is already scheduled. Please choose a different time."
+      );
     }
 
     // Check for overlapping slots
+    console.log("Checking for overlapping slots");
     const overlapCheck = await client.query(
       `
       SELECT * FROM time_slots
       WHERE provider_id = $1
-        AND day = $2
-        AND ($3 < end_time AND $4 > start_time)
+        AND day = $2::DATE
+        AND ($3::TIME < end_time AND $4::TIME > start_time)
       `,
-      [providerId, day, endTime, startTime]
+      [providerId, day, startTime, endTime]
     );
 
     if (overlapCheck.rows.length > 0) {
-      throw new Error("Slot overlaps with an existing slot.");
+      throw new Error(
+        "This time conflicts with another appointment. Let's find another available slot."
+      );
     }
 
     // Insert new slot
+    console.log("Inserting new slot");
     const newSlotInsert = await client.query(
       `
       INSERT INTO time_slots (
-        provider_id, service_id, day, start_time, end_time, is_booked, is_available
-      ) VALUES ($1, $2, $3, $4, $5, false, true)
+        provider_id, service_id, day, start_time, end_time, is_booked, created_at, updated_at
+      ) VALUES ($1, $2::UUID, $3::DATE, $4::TIME, $5::TIME, false, NOW(), NOW())
       RETURNING *
       `,
       [providerId, serviceId, day, startTime, endTime]
@@ -69,7 +84,7 @@ export async function getSlotsByProviderId(providerId) {
 
   try {
     const result = await client.query(
-      `SELECT ts.*, s.service_name as name, s.description as service_description, s.price as service_price, s.duration_minutes as service_duration
+      `SELECT ts.*, s.service_name, s.description as service_description, s.price as service_price, s.duration_minutes as service_duration
        FROM time_slots ts
         LEFT JOIN services s ON ts.service_id = s.service_id
         WHERE ts.provider_id = $1
@@ -99,22 +114,28 @@ export const updateSlot = async (
       [slotId]
     );
     const slot = rows[0];
-    if (!slot) throw new Error(`Slot not found with ID ${slotId}`);
-    if (slot.is_booked) throw new Error("Cannot update a booked slot");
+    if (!slot)
+      throw new Error(
+        "We couldn't find that time slot. It may have been removed or booked."
+      );
+    if (slot.is_booked)
+      throw new Error(
+        "This appointment is already confirmed and can't be changed. Please contact support if needed."
+      );
     if (slot.provider_id !== providerId) throw new Error("Unauthorized");
 
     // Overlap check
     const overlap = await client.query(
       `SELECT * FROM time_slots
-       WHERE provider_id = $1 AND day = $2 AND timeslot_id <> $3 AND ($4 < end_time AND $5 > start_time)`,
-      [providerId, slot.day, slotId, endTime, startTime]
+       WHERE provider_id = $1 AND day = $2::DATE AND timeslot_id <> $3 AND ($4::TIME < end_time AND $5::TIME > start_time)`,
+      [providerId, slot.day, slotId, startTime, endTime]
     );
     if (overlap.rows.length > 0) {
       throw new Error("Slot overlaps with an existing slot");
     }
 
     const result = await client.query(
-      `UPDATE time_slots SET start_time = $1, end_time = $2, service_id = $3 WHERE timeslot_id = $4 RETURNING *`,
+      `UPDATE time_slots SET start_time = $1::TIME, end_time = $2::TIME, service_id = $3::UUID WHERE timeslot_id = $4 RETURNING *`,
       [startTime, endTime, serviceId, slotId]
     );
 
@@ -139,8 +160,12 @@ export const deleteSlot = async (slotId, providerId) => {
     );
     const slot = rows[0];
     if (!slot) throw new Error("Slot not found");
-    if (slot.is_booked) throw new Error("Cannot delete a booked slot");
-    if (slot.provider_id !== providerId) throw new Error("Unauthorized");
+    if (slot.is_booked)
+      throw new Error(
+        "This appointment is already confirmed and can't be cancelled here. Please contact the provider."
+      );
+    if (slot.provider_id !== providerId)
+      throw new Error("You don't have permission to modify this slot.");
 
     await client.query(`DELETE FROM time_slots WHERE timeslot_id = $1`, [
       slotId
@@ -161,7 +186,7 @@ export async function getSlotById(slotId) {
 
   try {
     const result = await client.query(
-      `SELECT ts.*, s.service_name as name, s.description as service_description, s.price as service_price, s.duration_minutes as service_duration
+      `SELECT ts.*, s.service_name, s.description as service_description, s.price as service_price, s.duration_minutes as service_duration
         FROM time_slots ts
         LEFT JOIN services s ON ts.service_id = s.service_id
         WHERE ts.timeslot_id = $1`,
@@ -187,7 +212,7 @@ export async function searchAvailableSlots({
     SELECT ts.*, s.service_name as name
     FROM time_slots ts
     JOIN services s ON ts.service_id = s.service_id
-    WHERE ts.is_available = true AND ts.is_booked = false
+    WHERE ts.is_booked = false
   `;
 
   const params = [];
@@ -226,7 +251,7 @@ export const advanceSlots = async () => {
 
     // Get all available slots where day < today
     const { rows: slots } = await client.query(
-      `SELECT timeslot_id, day FROM time_slots WHERE day < $1 AND is_available = true AND is_booked = false`,
+      `SELECT timeslot_id, day FROM time_slots WHERE day < $1 AND is_booked = false`,
       [today]
     );
 

@@ -4,97 +4,37 @@ import * as ProviderController from "../controllers/provider-controller.js";
 import authMiddleware from "../middlewares/auth-middleware.js";
 import { requireProvider } from "../middlewares/role-middleware.js";
 import { validate } from "../middlewares/validate-middleware.js";
-import { providerSchema } from "../validators/provider-validator.js"; // Optional if you want request validation
+import { providerSchema } from "../validators/provider-validator.js";
 
 const router = express.Router();
 
-/**
- * @swagger
- * /providers/create:
- *   post:
- *     summary: Create a provider profile
- *     tags: [Providers]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               bio:
- *                 type: string
- *               rating:
- *                 type: number
- *     responses:
- *       201:
- *         description: Provider profile created
- *       400:
- *         description: Validation error
- *       401:
- *         description: Unauthorized
- */
+/* =========================
+   PUBLIC ROUTES (NO AUTH)
+========================= */
 
+router.get("/", ProviderController.getAllProviders);
+
+router.get("/slug/:bookingSlug", ProviderController.getProviderProfile);
+
+router.get("/profile/:bookingSlug", ProviderController.getProviderProfile);
+
+router.get("/reviews/:providerId", ProviderController.getReviews);
+
+/* =========================
+   AUTHENTICATED ROUTES
+========================= */
+
+// Create provider profile (user is authenticated but NOT provider yet)
 router.post(
   "/create",
   authMiddleware,
-  validate(providerSchema), // Optional: add this if you want to validate bio/rating
+  validate(providerSchema),
   ProviderController.createProvider
 );
 
-/**
- * @swagger
- * /providers/update:
- *   put:
- *     summary: Update the current provider's profile
- *     tags: [Providers]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               bio:
- *                 type: string
- *               rating:
- *                 type: number
- *     responses:
- *       200:
- *         description: Profile updated successfully
- *       401:
- *         description: Unauthorized
- *       403:
- *         description: Access denied (only providers)
- */
-
-router.put(
-  "/update",
-  authMiddleware,
-  requireProvider,
-  validate(providerSchema),
-  ProviderController.updateProvider
-);
-
-/**
- * @swagger
- * /providers/me:
- *   get:
- *     summary: Get current provider profile
- *     tags: [Providers]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Provider profile
- *       401:
- *         description: Unauthorized
- *       403:
- *         description: Only providers allowed
- */
+/* =========================
+   PROVIDER-ONLY ROUTES
+========================= */
 
 router.get(
   "/me",
@@ -103,19 +43,60 @@ router.get(
   ProviderController.getCurrentProvider
 );
 
-/**
- * @swagger
- * /providers:
- *   get:
- *     summary: List all providers
- *     tags: [Providers]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Array of provider profiles
- */
+router.put(
+  "/me",
+  authMiddleware,
+  requireProvider,
+  validate(providerSchema),
+  ProviderController.updateProvider
+);
 
-router.get("/", authMiddleware, ProviderController.getAllProviders);
+router.get(
+  "/referral-code",
+  authMiddleware,
+  requireProvider,
+  ProviderController.getReferralCode
+);
+
+router.post(
+  "/use-referral",
+  authMiddleware,
+  requireProvider,
+  ProviderController.useReferralCode
+);
+
+router.post(
+  "/log-activity",
+  authMiddleware,
+  requireProvider,
+  ProviderController.logActivity
+);
+
+router.post(
+  "/update-credibility",
+  authMiddleware,
+  requireProvider,
+  ProviderController.updateCredibilityMetrics
+);
+
+/* =========================
+   REVIEWS (AUTH REQUIRED)
+========================= */
+
+router.post("/reviews", authMiddleware, ProviderController.addReview);
+
+router.put(
+  "/reviews/:review_id",
+  authMiddleware,
+  ProviderController.updateReview
+);
+
+router.delete(
+  "/reviews/:review_id",
+  authMiddleware,
+  ProviderController.deleteReview
+);
+
+router.get("/:providerId/booking-link", ProviderController.getBookingLink);
 
 export default router;

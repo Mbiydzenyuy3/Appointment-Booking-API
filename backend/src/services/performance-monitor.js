@@ -1,660 +1,250 @@
-import { pool, query } from "../config/db.js";
-import { checkRedisHealth, getCacheStats } from "../config/redis.js";
-import cacheService from "./cache-service.js";
-import databaseOptimizer from "./database-optimizer.js";
-import { logInfo, logError } from "../utils/logger.js";
-
-/**
- * Comprehensive Performance Monitoring System
- * Collects and analyzes performance metrics across the application
- */
+import os from "os";
+import { performance } from "perf_hooks";
 
 class PerformanceMonitor {
   constructor() {
+    this.isMonitoring = false;
     this.metrics = {
-      api: {
-        totalRequests: 0,
-        successfulRequests: 0,
-        errorRequests: 0,
-        averageResponseTime: 0,
-        slowRequests: 0,
-        requestsPerMinute: []
-      },
-      database: {
-        totalQueries: 0,
-        slowQueries: 0,
-        averageQueryTime: 0,
-        connectionPool: {
-          total: 0,
-          active: 0,
-          idle: 0,
-          waiting: 0
-        },
-        cacheHitRatio: 0
-      },
-      cache: {
-        hits: 0,
-        misses: 0,
-        hitRatio: 0,
-        memoryUsage: {},
-        keyCount: {}
-      },
-      system: {
-        uptime: 0,
-        memoryUsage: {},
-        cpuUsage: 0,
-        activeConnections: 0
-      },
-      business: {
-        appointmentsPerHour: [],
-        activeUsers: 0,
-        popularServices: [],
-        peakHours: []
-      }
+      requests: [],
+      errors: [],
+      responseTimes: [],
+      memoryUsage: [],
+      cpuUsage: []
+    };
+    this.startTime = null;
+  }
+
+  start() {
+    if (this.isMonitoring) {
+      throw new Error("Performance monitoring is already running");
+    }
+
+    this.isMonitoring = true;
+    this.startTime = Date.now();
+    this.metrics = {
+      requests: [],
+      errors: [],
+      responseTimes: [],
+      memoryUsage: [],
+      cpuUsage: []
     };
 
-    this.monitoringInterval = null;
-    this.retentionDays = 7; // Keep metrics for 7 days
-    this.startTime = Date.now();
-
-    // Real-time metrics storage
-    this.realtimeMetrics = new Map();
-  }
-
-  /**
-   * Start performance monitoring
-   */
-  start() {
-    if (this.monitoringInterval) {
-      logInfo("Performance monitoring already started");
-      return;
-    }
-
-    logInfo("🚀 Starting performance monitoring...");
-
-    // Collect metrics every 30 seconds
-    this.monitoringInterval = setInterval(() => {
+    // Start collecting metrics every 5 seconds
+    this.intervalId = setInterval(() => {
       this.collectMetrics();
-    }, 30000);
+    }, 5000);
 
-    // Initial collection
-    this.collectMetrics();
-
-    logInfo("✅ Performance monitoring started");
+    console.log("Performance monitoring started");
   }
 
-  /**
-   * Stop performance monitoring
-   */
   stop() {
-    if (this.monitoringInterval) {
-      clearInterval(this.monitoringInterval);
-      this.monitoringInterval = null;
-      logInfo("🛑 Performance monitoring stopped");
+    if (!this.isMonitoring) {
+      throw new Error("Performance monitoring is not running");
     }
+
+    this.isMonitoring = false;
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = null;
+    }
+
+    console.log("Performance monitoring stopped");
   }
 
-  /**
-   * Record API request metrics
-   */
-  recordApiRequest(duration, statusCode, endpoint) {
-    const timestamp = Date.now();
-    const minuteKey = Math.floor(timestamp / 60000) * 60000;
+  collectMetrics() {
+    if (!this.isMonitoring) return;
 
-    // Update real-time metrics
-    if (!this.realtimeMetrics.has(minuteKey)) {
-      this.realtimeMetrics.set(minuteKey, {
-        api: { requests: 0, errors: 0, totalTime: 0 },
-        database: { queries: 0, totalTime: 0 }
-      });
-    }
+    const memUsage = process.memoryUsage();
+    const cpuUsage = process.cpuUsage();
 
-    const minuteMetrics = this.realtimeMetrics.get(minuteKey);
-    minuteMetrics.api.requests++;
-    minuteMetrics.api.totalTime += duration;
-
-    if (statusCode >= 400) {
-      minuteMetrics.api.errors++;
-    }
-
-    // Update aggregated metrics
-    this.metrics.api.totalRequests++;
-
-    if (statusCode < 400) {
-      this.metrics.api.successfulRequests++;
-    } else {
-      this.metrics.api.errorRequests++;
-    }
-
-    // Calculate running average response time
-    const totalTime =
-      this.metrics.api.averageResponseTime *
-      (this.metrics.api.totalRequests - 1);
-    this.metrics.api.averageResponseTime =
-      (totalTime + duration) / this.metrics.api.totalRequests;
-
-    // Track slow requests (> 1 second)
-    if (duration > 1000) {
-      this.metrics.api.slowRequests++;
-    }
-
-    // Store detailed metrics for analytics
-    this.storeRequestMetric(endpoint, duration, statusCode);
-  }
-
-  /**
-   * Record database query metrics
-   */
-  recordDatabaseQuery(duration, queryType = "unknown") {
-    const timestamp = Date.now();
-    const minuteKey = Math.floor(timestamp / 60000) * 60000;
-
-    // Update real-time metrics
-    if (!this.realtimeMetrics.has(minuteKey)) {
-      this.realtimeMetrics.set(minuteKey, {
-        api: { requests: 0, errors: 0, totalTime: 0 },
-        database: { queries: 0, totalTime: 0 }
-      });
-    }
-
-    const minuteMetrics = this.realtimeMetrics.get(minuteKey);
-    minuteMetrics.database.queries++;
-    minuteMetrics.database.totalTime += duration;
-
-    // Update aggregated metrics
-    this.metrics.database.totalQueries++;
-
-    if (duration > 1000) {
-      this.metrics.database.slowQueries++;
-    }
-
-    // Calculate running average query time
-    const totalTime =
-      this.metrics.database.averageQueryTime *
-      (this.metrics.database.totalQueries - 1);
-    this.metrics.database.averageQueryTime =
-      (totalTime + duration) / this.metrics.database.totalQueries;
-  }
-
-  /**
-   * Collect comprehensive metrics
-   */
-  async collectMetrics() {
-    try {
-      await Promise.all([
-        this.collectDatabaseMetrics(),
-        this.collectCacheMetrics(),
-        this.collectSystemMetrics(),
-        this.collectBusinessMetrics()
-      ]);
-
-      // Clean up old real-time metrics
-      this.cleanupOldMetrics();
-
-      // Store hourly aggregates
-      await this.storeHourlyMetrics();
-    } catch (error) {
-      logError("Error collecting metrics:", error);
-    }
-  }
-
-  /**
-   * Collect database-related metrics
-   */
-  async collectDatabaseMetrics() {
-    try {
-      // Connection pool stats
-      const poolStats = await query(`
-        SELECT 
-          count(*) as total_connections,
-          count(*) FILTER (WHERE state = 'active') as active_connections,
-          count(*) FILTER (WHERE state = 'idle') as idle_connections,
-          count(*) FILTER (WHERE state = 'idle in transaction') as waiting_connections
-        FROM pg_stat_activity
-        WHERE datname = current_database()
-      `);
-
-      this.metrics.database.connectionPool = {
-        total: parseInt(poolStats.rows[0].total_connections),
-        active: parseInt(poolStats.rows[0].active_connections),
-        idle: parseInt(poolStats.rows[0].idle_connections),
-        waiting: parseInt(poolStats.rows[0].waiting_connections)
-      };
-
-      // Cache hit ratio
-      const cacheStats = await query(`
-        SELECT 
-          round(
-            (sum(blks_hit) * 100.0) / (sum(blks_hit) + sum(blks_read)), 2
-          ) as cache_hit_ratio
-        FROM pg_stat_database
-        WHERE datname = current_database()
-      `);
-
-      this.metrics.database.cacheHitRatio = parseFloat(
-        cacheStats.rows[0].cache_hit_ratio
-      );
-    } catch (error) {
-      logError("Error collecting database metrics:", error);
-    }
-  }
-
-  /**
-   * Collect cache-related metrics
-   */
-  async collectCacheMetrics() {
-    try {
-      const redisHealth = await checkRedisHealth();
-      if (redisHealth.status === "connected") {
-        const cacheStats = await getCacheStats();
-        this.metrics.cache = {
-          ...this.metrics.cache,
-          ...cacheStats
-        };
-      }
-
-      // Calculate cache hit ratio from application metrics
-      const totalRequests = this.metrics.cache.hits + this.metrics.cache.misses;
-      if (totalRequests > 0) {
-        this.metrics.cache.hitRatio =
-          (this.metrics.cache.hits / totalRequests) * 100;
-      }
-    } catch (error) {
-      logError("Error collecting cache metrics:", error);
-    }
-  }
-
-  /**
-   * Collect system metrics
-   */
-  async collectSystemMetrics() {
-    try {
-      const memUsage = process.memoryUsage();
-      this.metrics.system = {
-        uptime: Math.floor((Date.now() - this.startTime) / 1000),
-        memoryUsage: {
-          rss: Math.round(memUsage.rss / 1024 / 1024), // MB
-          heapTotal: Math.round(memUsage.heapTotal / 1024 / 1024), // MB
-          heapUsed: Math.round(memUsage.heapUsed / 1024 / 1024), // MB
-          external: Math.round(memUsage.external / 1024 / 1024) // MB
-        },
-        cpuUsage: process.cpuUsage(),
-        activeConnections: this.metrics.database.connectionPool.active
-      };
-    } catch (error) {
-      logError("Error collecting system metrics:", error);
-    }
-  }
-
-  /**
-   * Collect business metrics
-   */
-  async collectBusinessMetrics() {
-    try {
-      // Active users (users who made requests in last hour)
-      const activeUsers = await query(`
-        SELECT COUNT(DISTINCT user_id) as active_users
-        FROM appointments 
-        WHERE created_at > NOW() - INTERVAL '1 hour'
-      `);
-
-      // Appointments per hour (last 24 hours)
-      const appointmentsPerHour = await query(`
-        SELECT 
-          DATE_TRUNC('hour', created_at) as hour,
-          COUNT(*) as count
-        FROM appointments 
-        WHERE created_at > NOW() - INTERVAL '24 hours'
-        GROUP BY hour
-        ORDER BY hour
-      `);
-
-      // Popular services
-      const popularServices = await query(`
-        SELECT
-          s.service_name as name,
-          COUNT(a.appointment_id) as appointment_count
-        FROM services s
-        JOIN appointments a ON s.service_id = a.service_id
-        WHERE a.created_at > NOW() - INTERVAL '7 days'
-        GROUP BY s.service_id, s.service_name
-        ORDER BY appointment_count DESC
-        LIMIT 5
-      `);
-
-      this.metrics.business = {
-        activeUsers: parseInt(activeUsers.rows[0]?.active_users || 0),
-        appointmentsPerHour: appointmentsPerHour.rows,
-        popularServices: popularServices.rows,
-        peakHours: this.calculatePeakHours(appointmentsPerHour.rows)
-      };
-    } catch (error) {
-      logError("Error collecting business metrics:", error);
-    }
-  }
-
-  /**
-   * Calculate peak hours from appointment data
-   */
-  calculatePeakHours(appointmentsData) {
-    const hourCounts = {};
-
-    appointmentsData.forEach((appointment) => {
-      const hour = new Date(appointment.hour).getHours();
-      hourCounts[hour] = (hourCounts[hour] || 0) + parseInt(appointment.count);
+    this.metrics.memoryUsage.push({
+      timestamp: Date.now(),
+      heapUsed: Math.round(memUsage.heapUsed / 1024 / 1024), // MB
+      heapTotal: Math.round(memUsage.heapTotal / 1024 / 1024),
+      external: Math.round(memUsage.external / 1024 / 1024),
+      rss: Math.round(memUsage.rss / 1024 / 1024)
     });
 
-    return Object.entries(hourCounts)
-      .sort(([, a], [, b]) => b - a)
-      .slice(0, 3)
-      .map(([hour, count]) => ({ hour: parseInt(hour), count }));
+    this.metrics.cpuUsage.push({
+      timestamp: Date.now(),
+      user: cpuUsage.user / 1000, // ms
+      system: cpuUsage.system / 1000
+    });
   }
 
-  /**
-   * Store detailed request metrics for analytics
-   */
-  async storeRequestMetric(endpoint, duration, statusCode) {
-    try {
-      await query(
-        `
-        INSERT INTO performance_metrics (
-          metric_type, endpoint, duration, status_code, timestamp
-        ) VALUES ($1, $2, $3, $4, NOW())
-      `,
-        ["api_request", endpoint, duration, statusCode]
-      );
+  recordRequest(responseTime, isError = false) {
+    if (!this.isMonitoring) return;
 
-      // Clean up old metrics
-      await query(`
-        DELETE FROM performance_metrics 
-        WHERE timestamp < NOW() - INTERVAL '${this.retentionDays} days'
-      `);
-    } catch (error) {
-      logError("Error storing request metric:", error);
+    this.metrics.requests.push({
+      timestamp: Date.now(),
+      responseTime,
+      isError
+    });
+
+    if (isError) {
+      this.metrics.errors.push({
+        timestamp: Date.now(),
+        responseTime
+      });
+    }
+
+    this.metrics.responseTimes.push(responseTime);
+
+    // Keep only last 1000 entries to prevent memory issues
+    if (this.metrics.requests.length > 1000) {
+      this.metrics.requests.shift();
+    }
+    if (this.metrics.errors.length > 1000) {
+      this.metrics.errors.shift();
+    }
+    if (this.metrics.responseTimes.length > 1000) {
+      this.metrics.responseTimes.shift();
     }
   }
 
-  /**
-   * Store hourly aggregated metrics
-   */
-  async storeHourlyMetrics() {
-    try {
-      const hourKey = Math.floor(Date.now() / 3600000) * 3600000;
-
-      // Calculate metrics for this hour
-      const minuteMetrics = Array.from(this.realtimeMetrics.entries())
-        .filter(
-          ([timestamp]) => timestamp >= hourKey && timestamp < hourKey + 3600000
-        )
-        .map(([, metrics]) => metrics);
-
-      if (minuteMetrics.length > 0) {
-        const totalApiRequests = minuteMetrics.reduce(
-          (sum, m) => sum + m.api.requests,
-          0
-        );
-        const totalApiErrors = minuteMetrics.reduce(
-          (sum, m) => sum + m.api.errors,
-          0
-        );
-        const totalApiTime = minuteMetrics.reduce(
-          (sum, m) => sum + m.api.totalTime,
-          0
-        );
-        const totalDbQueries = minuteMetrics.reduce(
-          (sum, m) => sum + m.database.queries,
-          0
-        );
-        const totalDbTime = minuteMetrics.reduce(
-          (sum, m) => sum + m.database.totalTime,
-          0
-        );
-
-        await query(
-          `
-          INSERT INTO hourly_performance_metrics (
-            hour_timestamp, 
-            total_requests, 
-            error_requests, 
-            avg_response_time,
-            total_queries,
-            avg_query_time
-          ) VALUES ($1, $2, $3, $4, $5, $6)
-          ON CONFLICT (hour_timestamp) 
-          DO UPDATE SET
-            total_requests = EXCLUDED.total_requests,
-            error_requests = EXCLUDED.error_requests,
-            avg_response_time = EXCLUDED.avg_response_time,
-            total_queries = EXCLUDED.total_queries,
-            avg_query_time = EXCLUDED.avg_query_time,
-            updated_at = NOW()
-        `,
-          [
-            new Date(hourKey),
-            totalApiRequests,
-            totalApiErrors,
-            totalApiRequests > 0 ? totalApiTime / totalApiRequests : 0,
-            totalDbQueries,
-            totalDbQueries > 0 ? totalDbTime / totalDbQueries : 0
-          ]
-        );
-      }
-    } catch (error) {
-      logError("Error storing hourly metrics:", error);
-    }
-  }
-
-  /**
-   * Clean up old real-time metrics
-   */
-  cleanupOldMetrics() {
-    const cutoff = Date.now() - 24 * 60 * 60 * 1000; // 24 hours ago
-
-    for (const [timestamp] of this.realtimeMetrics.entries()) {
-      if (timestamp < cutoff) {
-        this.realtimeMetrics.delete(timestamp);
-      }
-    }
-  }
-
-  /**
-   * Get real-time dashboard data
-   */
   getDashboardData() {
     const now = Date.now();
     const lastHour = now - 60 * 60 * 1000;
 
-    // Get last hour's metrics
-    const recentMetrics = Array.from(this.realtimeMetrics.entries())
-      .filter(([timestamp]) => timestamp >= lastHour)
-      .reduce(
-        (acc, [, metrics]) => {
-          acc.requests += metrics.api.requests;
-          acc.errors += metrics.api.errors;
-          acc.totalTime += metrics.api.totalTime;
-          acc.queries += metrics.database.queries;
-          acc.queryTime += metrics.database.totalTime;
-          return acc;
-        },
-        { requests: 0, errors: 0, totalTime: 0, queries: 0, queryTime: 0 }
-      );
+    // Filter metrics from last hour
+    const recentRequests = this.metrics.requests.filter(
+      (r) => r.timestamp > lastHour
+    );
+    const recentErrors = this.metrics.errors.filter(
+      (e) => e.timestamp > lastHour
+    );
+    const recentResponseTimes = this.metrics.responseTimes.filter(
+      (rt) => rt !== undefined
+    );
 
-    const avgResponseTime =
-      recentMetrics.requests > 0
-        ? recentMetrics.totalTime / recentMetrics.requests
-        : 0;
-    const avgQueryTime =
-      recentMetrics.queries > 0
-        ? recentMetrics.queryTime / recentMetrics.queries
-        : 0;
+    const totalRequests = recentRequests.length;
+    const errorCount = recentErrors.length;
     const errorRate =
-      recentMetrics.requests > 0
-        ? (recentMetrics.errors / recentMetrics.requests) * 100
+      totalRequests > 0 ? (errorCount / totalRequests) * 100 : 0;
+
+    const averageResponseTime =
+      recentResponseTimes.length > 0
+        ? recentResponseTimes.reduce((sum, rt) => sum + rt, 0) /
+          recentResponseTimes.length
         : 0;
+
+    const p95ResponseTime = this.calculatePercentile(recentResponseTimes, 95);
+    const p99ResponseTime = this.calculatePercentile(recentResponseTimes, 99);
+
+    // Current memory and CPU
+    const currentMemory = process.memoryUsage();
+    const currentCpu = process.cpuUsage();
 
     return {
       realTime: {
-        requestsPerMinute: this.getRequestsPerMinute(),
-        averageResponseTime: Math.round(avgResponseTime),
-        errorRate: Math.round(errorRate * 100) / 100,
-        activeConnections: this.metrics.system.activeConnections,
-        cacheHitRatio: Math.round(this.metrics.cache.hitRatio * 100) / 100
+        totalRequests,
+        errorCount,
+        errorRate,
+        averageResponseTime: Math.round(averageResponseTime),
+        p95ResponseTime: Math.round(p95ResponseTime),
+        p99ResponseTime: Math.round(p99ResponseTime),
+        requestsPerSecond: totalRequests / 3600, // per hour
+        uptime: this.startTime ? Math.round((now - this.startTime) / 1000) : 0
       },
-      summary: this.metrics,
-      health: {
-        database:
-          this.metrics.database.cacheHitRatio > 80 ? "healthy" : "warning",
-        cache: this.metrics.cache.hitRatio > 70 ? "healthy" : "warning",
-        api: errorRate < 5 ? "healthy" : errorRate < 10 ? "warning" : "critical"
+      summary: {
+        system: {
+          memoryUsage: {
+            heapUsed: Math.round(currentMemory.heapUsed / 1024 / 1024),
+            heapTotal: Math.round(currentMemory.heapTotal / 1024 / 1024),
+            external: Math.round(currentMemory.external / 1024 / 1024),
+            rss: Math.round(currentMemory.rss / 1024 / 1024)
+          },
+          cpuUsage: {
+            user: currentCpu.user / 1000,
+            system: currentCpu.system / 1000
+          },
+          loadAverage: os.loadavg()
+        },
+        monitoring: {
+          isActive: this.isMonitoring,
+          startTime: this.startTime,
+          uptime: this.startTime ? Math.round((now - this.startTime) / 1000) : 0
+        }
       },
-      alerts: this.generateAlerts()
+      charts: {
+        responseTimeHistory: this.metrics.responseTimes.slice(-50), // Last 50 response times
+        memoryHistory: this.metrics.memoryUsage.slice(-20), // Last 20 memory readings
+        cpuHistory: this.metrics.cpuUsage.slice(-20) // Last 20 CPU readings
+      }
     };
   }
 
-  /**
-   * Get requests per minute for the last 10 minutes
-   */
-  getRequestsPerMinute() {
-    const now = Date.now();
-    const minutes = [];
-
-    for (let i = 9; i >= 0; i--) {
-      const minuteStart = now - i * 60 * 1000;
-      const minuteEnd = minuteStart + 60 * 1000;
-
-      const minuteMetrics = Array.from(this.realtimeMetrics.entries()).filter(
-        ([timestamp]) => timestamp >= minuteStart && timestamp < minuteEnd
-      );
-
-      const requests = minuteMetrics.reduce(
-        (sum, [, metrics]) => sum + metrics.api.requests,
-        0
-      );
-
-      minutes.push({
-        time: new Date(minuteStart).toISOString(),
-        requests
-      });
-    }
-
-    return minutes;
-  }
-
-  /**
-   * Generate performance alerts
-   */
-  generateAlerts() {
-    const alerts = [];
-
-    // High error rate
-    const errorRate =
-      this.metrics.api.totalRequests > 0
-        ? (this.metrics.api.errorRequests / this.metrics.api.totalRequests) *
-          100
-        : 0;
-
-    if (errorRate > 10) {
-      alerts.push({
-        level: "critical",
-        message: `High error rate detected: ${errorRate.toFixed(2)}%`,
-        timestamp: new Date().toISOString()
-      });
-    } else if (errorRate > 5) {
-      alerts.push({
-        level: "warning",
-        message: `Elevated error rate: ${errorRate.toFixed(2)}%`,
-        timestamp: new Date().toISOString()
-      });
-    }
-
-    // Slow response times
-    if (this.metrics.api.averageResponseTime > 2000) {
-      alerts.push({
-        level: "warning",
-        message: `Average response time is high: ${this.metrics.api.averageResponseTime.toFixed(
-          0
-        )}ms`,
-        timestamp: new Date().toISOString()
-      });
-    }
-
-    // Database performance
-    if (this.metrics.database.cacheHitRatio < 80) {
-      alerts.push({
-        level: "warning",
-        message: `Low database cache hit ratio: ${this.metrics.database.cacheHitRatio.toFixed(
-          1
-        )}%`,
-        timestamp: new Date().toISOString()
-      });
-    }
-
-    // Memory usage
-    const memoryUsage = this.metrics.system.memoryUsage;
-    if (memoryUsage.heapUsed > 500) {
-      // 500MB
-      alerts.push({
-        level: "warning",
-        message: `High memory usage: ${memoryUsage.heapUsed}MB`,
-        timestamp: new Date().toISOString()
-      });
-    }
-
-    return alerts;
-  }
-
-  /**
-   * Get performance report
-   */
   async getPerformanceReport(startDate, endDate) {
-    try {
-      const report = await query(
-        `
-        SELECT 
-          DATE_TRUNC('hour', timestamp) as hour,
-          AVG(duration) as avg_response_time,
-          COUNT(*) as total_requests,
-          COUNT(*) FILTER (WHERE status_code >= 400) as error_requests
-        FROM performance_metrics
-        WHERE timestamp BETWEEN $1 AND $2
-        GROUP BY hour
-        ORDER BY hour
-      `,
-        [startDate, endDate]
-      );
+    // For now, return current dashboard data
+    // In a real implementation, this would query historical data from a database
+    const dashboardData = this.getDashboardData();
 
-      return report.rows;
-    } catch (error) {
-      logError("Error generating performance report:", error);
-      return [];
-    }
+    return {
+      period: {
+        start: startDate.toISOString(),
+        end: endDate.toISOString()
+      },
+      metrics: dashboardData.realTime,
+      system: dashboardData.summary.system,
+      recommendations: this.generateRecommendations(dashboardData)
+    };
   }
 
-  /**
-   * Optimize database based on performance data
-   */
-  async optimizeBasedOnMetrics() {
-    try {
-      logInfo("Running optimization based on performance metrics...");
+  calculatePercentile(values, percentile) {
+    if (values.length === 0) return 0;
 
-      const result = await databaseOptimizer.optimize();
+    const sorted = [...values].sort((a, b) => a - b);
+    const index = (percentile / 100) * (sorted.length - 1);
+    const lower = Math.floor(index);
+    const upper = Math.ceil(index);
 
-      if (result.success) {
-        logInfo("✅ Database optimization completed based on metrics");
-        return result;
-      } else {
-        logError("❌ Database optimization failed:", result.error);
-        return result;
-      }
-    } catch (error) {
-      logError("Error running metrics-based optimization:", error);
-      throw error;
+    if (lower === upper) {
+      return sorted[lower];
     }
+
+    return sorted[lower] + (index - lower) * (sorted[upper] - sorted[lower]);
+  }
+
+  generateRecommendations(dashboardData) {
+    const recommendations = [];
+
+    if (dashboardData.realTime.errorRate > 5) {
+      recommendations.push({
+        type: "error_rate",
+        severity: "high",
+        title: "High Error Rate",
+        description: `Error rate is ${dashboardData.realTime.errorRate.toFixed(
+          1
+        )}%. Investigate error logs and API endpoints.`,
+        action: "Check application logs and fix failing endpoints"
+      });
+    }
+
+    if (dashboardData.realTime.averageResponseTime > 2000) {
+      recommendations.push({
+        type: "response_time",
+        severity: "high",
+        title: "Slow Response Times",
+        description: `Average response time is ${dashboardData.realTime.averageResponseTime}ms. Consider database optimization or caching.`,
+        action: "Optimize database queries and implement caching strategies"
+      });
+    }
+
+    if (dashboardData.summary.system.memoryUsage.heapUsed > 500) {
+      recommendations.push({
+        type: "memory_usage",
+        severity: "medium",
+        title: "High Memory Usage",
+        description: `Heap usage is ${dashboardData.summary.system.memoryUsage.heapUsed}MB. Monitor for memory leaks.`,
+        action:
+          "Review memory usage patterns and optimize memory-intensive operations"
+      });
+    }
+
+    return recommendations;
   }
 }
 
-// Create and export performance monitor instance
+// Export singleton instance
 const performanceMonitor = new PerformanceMonitor();
-
 export default performanceMonitor;
-export { PerformanceMonitor };

@@ -72,8 +72,8 @@ const UserDashboard = () => {
         Array.isArray(servicesRes.data.data) ? servicesRes.data.data : []
       ).map((s) => ({
         ...s,
-        service_name: s.name,
-        duration_minutes: s.duration,
+        service_name: s.service_name,
+        duration_minutes: s.duration_minutes,
         providerId: s.provider_id || "default-provider-id"
       }));
       setServices(servicesWithProvider);
@@ -161,7 +161,7 @@ const UserDashboard = () => {
               placeholder='Search by service name or provider name...'
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className='w-full px-4 py-2 pl-10 border text-gray-800 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent'
+              className='w-full px-4 py-2 pl-10 border text-gray-800 border-gray-300 rounded-lg   
             />
             <svg
               className='absolute right-8 top-4 h-5 w-5 text-gray-400'
@@ -303,19 +303,6 @@ const UserDashboard = () => {
                           minute: "2-digit"
                         })}
                       </p>
-                      <div className='flex items-center justify-between'>
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            appt.status === "confirmed"
-                              ? "bg-green-100 text-green-800"
-                              : appt.status === "pending"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-gray-100 text-gray-800"
-                          }`}
-                        >
-                          {appt.status}
-                        </span>
-                      </div>
                     </div>
                   </div>
 

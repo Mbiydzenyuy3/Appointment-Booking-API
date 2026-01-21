@@ -38,7 +38,7 @@ export default function TimeSlotList({ timeslots = [], onDelete }) {
     return endMinutes - startMinutes;
   };
 
-  // Group timeslots by date for better organization
+  // Group time slots by date for better organization
   const groupedTimeslots = timeslots.reduce((groups, slot) => {
     const date = slot.day;
     if (!groups[date]) {
@@ -54,7 +54,7 @@ export default function TimeSlotList({ timeslots = [], onDelete }) {
   const handleDelete = async (slotId, serviceName, day) => {
     if (
       window.confirm(
-        `Are you sure you want to delete the timeslot for "${serviceName}" on ${formatDate(
+        `Are you sure you want to delete the availability for "${serviceName}" on ${formatDate(
           day
         )}? This action cannot be undone.`
       )
@@ -68,15 +68,13 @@ export default function TimeSlotList({ timeslots = [], onDelete }) {
       <div className='text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200'>
         <div className='text-6xl mb-4'>⏰</div>
         <h3 className='text-xl font-semibold text-gray-700 mb-2'>
-          No Timeslots Created Yet
+          No Availability Set Yet
         </h3>
         <p className='text-gray-500 mb-4'>
-          Start by creating available time slots for your services
+          Set times when you're available for bookings
         </p>
         <div className='text-sm text-gray-400'>
-          <p>
-            Timeslots help clients know when you're available for appointments
-          </p>
+          <p>Availability helps clients know when they can book with you</p>
         </div>
       </div>
     );
@@ -87,7 +85,7 @@ export default function TimeSlotList({ timeslots = [], onDelete }) {
       <div className='bg-white rounded-lg shadow-sm border border-gray-200 p-4'>
         <div className='flex items-center justify-between mb-4'>
           <h3 className='text-lg font-semibold text-gray-800'>
-            Your Timeslots ({timeslots.length})
+            Your Availability ({timeslots.length})
           </h3>
           <div className='flex items-center gap-4 text-sm'>
             <div className='flex items-center gap-1'>
@@ -125,13 +123,13 @@ export default function TimeSlotList({ timeslots = [], onDelete }) {
               </svg>
               {formatDate(date)}
               <span className='text-sm font-normal text-gray-500'>
-                ({groupedTimeslots[date].length} slot
+                ({groupedTimeslots[date].length} time
                 {groupedTimeslots[date].length !== 1 ? "s" : ""})
               </span>
             </h4>
           </div>
 
-          {/* Timeslots for this date */}
+          {/* Time Slots for this date */}
           <div className='divide-y divide-gray-100'>
             {groupedTimeslots[date]
               .sort((a, b) => a.start_time.localeCompare(b.start_time))
@@ -140,7 +138,7 @@ export default function TimeSlotList({ timeslots = [], onDelete }) {
                   slot.start_time,
                   slot.end_time
                 );
-                const isBooked = slot.is_booked || !slot.is_available;
+                const isBooked = slot.is_booked;
 
                 return (
                   <div
@@ -152,7 +150,7 @@ export default function TimeSlotList({ timeslots = [], onDelete }) {
                     }`}
                   >
                     <div className='flex items-center justify-between'>
-                      {/* Timeslot Info */}
+                      {/* Time Slot Info */}
                       <div className='flex-1'>
                         <div className='flex items-center gap-4'>
                           {/* Time Range */}
@@ -265,7 +263,7 @@ export default function TimeSlotList({ timeslots = [], onDelete }) {
                               )
                             }
                             className='flex-1 sm:flex-none btn btn-secondary text-sm px-4 py-2 touch-target hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all duration-200'
-                            title='Delete timeslot'
+                            title='Delete time slot'
                           >
                             <svg
                               className='w-4 h-4'
@@ -313,18 +311,16 @@ export default function TimeSlotList({ timeslots = [], onDelete }) {
       <div className='bg-green-50 border border-green-200 rounded-lg p-4'>
         <div className='flex items-center justify-between'>
           <div>
-            <h4 className='font-medium text-green-800'>Timeslot Summary</h4>
+            <h4 className='font-medium text-green-800'>Availability Summary</h4>
             <p className='text-sm text-green-600 mt-1'>
-              Total: {timeslots.length} timeslots • Available:{" "}
-              {timeslots.filter((s) => !s.is_booked && s.is_available).length} •
-              Booked:{" "}
-              {timeslots.filter((s) => s.is_booked || !s.is_available).length}
+              Total: {timeslots.length} times • Available:{" "}
+              {timeslots.filter((s) => !s.is_booked).length} • Booked:{" "}
+              {timeslots.filter((s) => s.is_booked).length}
             </p>
           </div>
           <div className='text-right'>
             <p className='text-sm text-green-600'>
-              {timeslots.filter((s) => !s.is_booked && s.is_available).length >
-              0
+              {timeslots.filter((s) => !s.is_booked).length > 0
                 ? "You have available slots for booking"
                 : "All slots are currently booked"}
             </p>

@@ -1,25 +1,24 @@
-// app.js - Enhanced with AI Scheduling Routes
+// app.js
 import dotenv from "dotenv";
 dotenv.config();
+
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import { fileURLToPath } from "node:url";
 import path, { dirname } from "node:path";
-import { ErrorHandler } from "./src/middlewares/error-handler-middleware.js";
-
-import { initSocket } from "./src/sockets/socket.js";
 import swaggerUi from "swagger-ui-express";
-import swaggerSpec from "./swaggerConfig.js";
-
-import { initializeRedis } from "./src/config/redis.js";
-import cacheService from "./src/services/cache-service.js";
 import cron from "node-cron";
+
+import { ErrorHandler } from "./src/middlewares/error-handler-middleware.js";
+import swaggerSpec from "./swaggerConfig.js";
+import performanceMonitor from "./src/services/performance-monitor.js";
 import * as SlotService from "./src/services/slot-service.js";
-// Route Imports
+
+// Routes
 import indexRouter from "./src/routes/index.js";
-import authRouter from "./src/routes/auth.js"; // Using real auth for production
+import authRouter from "./src/routes/auth.js";
 import appointmentRouter from "./src/routes/appointment.js";
 import slotRouter from "./src/routes/slot.js";
 import providerRouter from "./src/routes/provider.js";
@@ -30,29 +29,41 @@ import debugAuthRouter from "./src/routes/debug-auth.js";
 
 const app = express();
 
-// Setup __dirname (since ES modules don't have it by default)
+// dirname fix for ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Middleware
+// Logging
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
+
+// ✅ CORS — MUST MATCH FRONTEND DOMAIN
 app.use(
   cors({
     origin: [
       "https://appointment-booking-api-1-7zro.onrender.com",
-      "http://localhost:5173",
-      "http://localhost:5174"
+      "http://localhost:5173"
     ],
-    methods: ["GET", "POST", "PUT", "DELETE"], // allowed HTTP methods
-    credentials: true // if you use cookies or auth headers
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
   })
 );
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
-// API Routes
+// Performance monitoring
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on("finish", () => {
+    performanceMonitor.recordRequest(Date.now() - start, res.statusCode >= 400);
+  });
+  next();
+});
+
+// Routes
 app.use("/", indexRouter);
 app.use("/auth", authRouter);
 app.use("/debug-auth", debugAuthRouter);
@@ -63,20 +74,19 @@ app.use("/services", serviceRoutes);
 app.use("/api/ai-scheduler", aiSchedulerRouter);
 app.use("/api/performance", performanceRouter);
 
-// Schedule daily slot advancement at 00:01 UTC
+// Cron job
 cron.schedule("1 0 * * *", async () => {
   try {
     await SlotService.advanceSlotsService();
-    console.log("Slots advanced successfully");
   } catch (err) {
-    console.error("Error advancing slots:", err);
+    console.error("Slot cron error:", err);
   }
 });
 
-// Swagger Documentation
+// Swagger
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// Add error handler middleware
+// Error handler LAST
 app.use(ErrorHandler);
 
-export { app, initSocket };
+export default app;

@@ -1,10 +1,10 @@
 /**
  * @type {import('@playwright/test').PlaywrightTestConfig}
  */
-const { devices } = require("@playwright/test");
+import { devices } from "@playwright/test";
 
 const config = {
-  testDir: "./src/tests",
+  testDir: "./tests",
   timeout: 30 * 1000,
   expect: {
     timeout: 5000
@@ -92,4 +92,4 @@ const config = {
   }
 };
 
-module.exports = config;
+export default config;

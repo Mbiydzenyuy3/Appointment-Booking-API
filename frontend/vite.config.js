@@ -1,10 +1,23 @@
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
+import path from "path";
+import react from "@vitejs/plugin-react";
 
 export default defineConfig({
+  test: {
+    environment: "jsdom",
+    setupFiles: ["./src/test/setup.js"],
+    exclude: ["tests/**", "node_modules/**"]
+  },
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src")
+    }
+  },
   plugins: [
     tailwindcss(),
+    react(),
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "apple-touch-icon.png", "masked-icon.svg"],
@@ -117,6 +130,8 @@ export default defineConfig({
     target: "esnext",
     minify: "terser",
     sourcemap: false,
+    cssCodeSplit: true,
+    reportCompressedSize: false, // Faster builds
     rollupOptions: {
       output: {
         manualChunks: {
@@ -124,8 +139,32 @@ export default defineConfig({
           router: ["react-router-dom"],
           forms: ["formik", "yup"],
           ui: ["react-modal", "react-datepicker", "react-hot-toast"],
-          utils: ["date-fns", "axios", "jwt-decode"]
+          utils: ["date-fns", "axios", "jwt-decode"],
+          // Mobile-first chunks
+          mobile: ["react-intersection-observer"]
+        },
+        // Optimize chunk size for mobile networks
+        chunkFileNames: (chunkInfo) => {
+          const facadeModuleId = chunkInfo.facadeModuleId
+            ? chunkInfo.facadeModuleId.split("/").pop().replace(".js", "")
+            : "chunk";
+          return `js/${facadeModuleId}-[hash].js`;
+        },
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name && assetInfo.name.endsWith(".css")) {
+            return "css/[name]-[hash][extname]";
+          }
+          return "assets/[name]-[hash][extname]";
         }
+      }
+    },
+    // Optimize for mobile
+    chunkSizeWarningLimit: 600, // Lower limit for mobile
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+        pure_funcs: ["console.log", "console.info", "console.debug"]
       }
     }
   }
