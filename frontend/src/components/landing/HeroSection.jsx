@@ -312,7 +312,7 @@ export default function HeroSection() {
           >
             <div className='relative'>
               <img
-                src='https://z-p3-scontent.fnsi2-1.fna.fbcdn.net/v/t39.30808-6/514264380_717675361057900_7905008741915973508_n.jpg?_nc_cat=102&ccb=1-7&_nc_sid=833d8c&_nc_eui2=AeFFcQeaVIsxVPEhksmCKBoKbIP1fxMyPmFsg_V_EzI-YRcHWpuhlbroylS_JqiZOQiwxb1sdIxi4aAE7w02c-8X&_nc_ohc=iGp7lkqQIlEQ7kNvwH2dYIg&_nc_oc=Adms4sIFuMcqryFOrMTne2KL4oYOD3cfyHQ5UsGFIJxcouLZmB6hzahwTtMLecOl7hU&_nc_zt=23&_nc_ht=z-p3-scontent.fnsi2-1.fna&_nc_gid=kzTfE2GqXcLMqBSIbTfYLg&oh=00_AfrrKW1ap0jBk2dzeNyd0XO-fBLTwjw3FMGRVKm8Lw5sWQ&oe=696B1A64'
+                src='../../assets/nadinedjioko.jpeg'
                 alt='Happy Cameroonian business owner smiling with phone showing BOOKEasy results'
                 className='w-full h-[32rem] object-cover rounded-2xl shadow-2xl'
               />
