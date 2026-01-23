@@ -203,6 +203,19 @@ const initializeDbSchema = async () => {
       );
     `);
 
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS provider_reviews (
+        review_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        provider_id UUID NOT NULL REFERENCES providers(provider_id) ON DELETE CASCADE,
+        booking_id UUID REFERENCES appointments(appointment_id) ON DELETE CASCADE,
+        reviewer_user_id UUID REFERENCES users(user_id) ON DELETE CASCADE,
+        rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+        comment TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
     await client.query("COMMIT");
     logInfo("🎉 Database schema ready");
   } catch (err) {

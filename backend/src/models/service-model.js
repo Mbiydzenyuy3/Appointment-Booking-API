@@ -35,13 +35,14 @@ export async function createService({
 
 export async function findAllServices() {
   try {
-    const queryText = `SELECT s.service_id, s.provider_id, s.service_name, s.description, s.price, s.duration_minutes, u.name as provider_name, p.booking_slug,
+    const queryText = `SELECT s.service_id, s.provider_id, s.service_name as name, s.description, s.price, s.duration_minutes as duration, s.location,
+                              u.name as provider_name, p.booking_slug,
                               COALESCE(AVG(pr.rating), 0) as average_rating, COUNT(pr.review_id) as review_count
                        FROM services s
                        JOIN providers p ON s.provider_id = p.provider_id
                        JOIN users u ON p.user_id = u.user_id
                        LEFT JOIN provider_reviews pr ON pr.provider_id = p.provider_id
-                       GROUP BY s.service_id, s.provider_id, s.service_name, s.description, s.price, s.duration_minutes, u.name, p.booking_slug`;
+                       GROUP BY s.service_id, s.provider_id, s.service_name, s.description, s.price, s.duration_minutes, s.location, u.name, p.booking_slug`;
 
     const result = await query(queryText);
     return result.rows;
