@@ -25,12 +25,14 @@ const AvailabilityPicker = ({ providerId, onSlotSelect, selectedSlotId }) => {
         `/slots/search/available?providerId=${providerId}&limit=1000`
       );
       const slots = response.data.data || [];
+      console.log("Fetched slots:", slots);
 
       // Filter slots for current month
       const monthSlots = slots.filter((slot) => {
         const slotDate = new Date(slot.day);
         return slotDate >= startOfMonth && slotDate <= endOfMonth;
       });
+      console.log("Month slots:", monthSlots);
 
       setAvailableSlots(monthSlots);
     } catch (error) {
@@ -258,6 +260,16 @@ const AvailabilityPicker = ({ providerId, onSlotSelect, selectedSlotId }) => {
                 );
                 const isPast = slotDateTime < new Date();
                 const isDisabled = isPast;
+                console.log(
+                  "Slot:",
+                  slot,
+                  "slotDateTime:",
+                  slotDateTime,
+                  "now:",
+                  new Date(),
+                  "isPast:",
+                  isPast
+                );
 
                 return (
                   <button
