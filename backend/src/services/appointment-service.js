@@ -188,7 +188,7 @@ export async function list(
          FROM appointments a
          LEFT JOIN services s ON a.service_id = s.service_id
          LEFT JOIN users u ON a.user_id = u.user_id
-         WHERE a.provider_id = $1
+         WHERE a.provider_id = $${paramIndex++}
        `;
       params.push(userId);
     } else {
@@ -213,7 +213,7 @@ export async function list(
          LEFT JOIN services s ON a.service_id = s.service_id
          LEFT JOIN providers pr ON a.provider_id = pr.provider_id
          LEFT JOIN users u ON pr.user_id = u.user_id
-         WHERE a.user_id = $1
+         WHERE a.user_id = $${paramIndex++}
        `;
       params.push(userId);
     }

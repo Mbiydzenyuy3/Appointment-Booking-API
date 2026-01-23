@@ -134,7 +134,7 @@ export default function UserProfile() {
         phone: profileData.phone || ""
       };
 
-      const response = await api.put("/providers/update", updateData);
+      const response = await api.put("/providers/me", updateData);
 
       if (response.data.success) {
         toast.success("Provider profile updated successfully!");
