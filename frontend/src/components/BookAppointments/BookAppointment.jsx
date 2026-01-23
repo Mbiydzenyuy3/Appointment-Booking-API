@@ -254,7 +254,9 @@ export default function BookAppointmentForm({
     <div className='fixed inset-0 bg-gray-50 bg-opacity-20 backdrop-blur-md flex items-center justify-center z-50 p-4 safe-area-bottom'>
       <div
         ref={modalRef}
-        className='bg-white rounded-2xl flex flex-col shadow-2xl w-full max-w-md max-h-[85vh] sm:max-h-[90vh] overflow-hidden'
+        className={`bg-white rounded-2xl flex flex-col shadow-2xl w-full ${
+          currentStep === 2 ? "max-w-5xl" : "max-w-md"
+        } max-h-[85vh] sm:max-h-[90vh] overflow-hidden transition-all duration-300 ease-in-out`}
         role='dialog'
         aria-modal='true'
       >
@@ -332,12 +334,13 @@ export default function BookAppointmentForm({
 
             {/* Step 2: Availability */}
             <div>
-              <label className='block text-sm font-medium text-gray-700 mb-2'>
-                Select Date & Time
-              </label>
-              <p className='text-xs text-gray-500 mb-2'>
-                Pick a convenient slot to continue.
-              </p>
+              {currentStep === 2 && (
+                <div className='mb-4'>
+                  <h2 className='text-lg font-semibold text-gray-900'>
+                    Select a Date & Time
+                  </h2>
+                </div>
+              )}
               <AvailabilityPicker
                 providerId={providerId}
                 onSlotSelect={(slot) => {
@@ -491,7 +494,7 @@ export default function BookAppointmentForm({
         {showSignUpPrompt && (
           <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4'>
             <div className='bg-white rounded-xl p-6 max-w-sm w-full mx-4 text-center'>
-              <h3 className='text-lg font-semibold mb-2'>Booking Confirmed!</h3>
+              <h3 className='text-lg font-semibold mb-2'>Booking Confirmed</h3>
               <p className='text-gray-600 mb-4'>
                 Create an account to manage your appointments and get
                 recommendations.
