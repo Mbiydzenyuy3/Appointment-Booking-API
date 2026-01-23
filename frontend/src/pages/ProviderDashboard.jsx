@@ -404,79 +404,131 @@ export default function ProviderDashboard() {
             )}
 
             {activeTab === "bookings" && (
-              <div className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden'>
-                <div className='p-4 sm:p-6 border-b border-gray-100'>
-                  <div className='flex items-center justify-between'>
-                    <h2 className='text-xl font-semibold text-gray-900 flex items-center'>
-                      <svg
-                        className='w-5 h-5 mr-2 text-blue-600'
-                        fill='currentColor'
-                        viewBox='0 0 20 20'
-                      >
-                        <path d='M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' />
-                      </svg>
-                      Your Bookings
-                    </h2>
-                    <span className='text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full'>
-                      {appointments.length}
-                    </span>
-                  </div>
-                </div>
-                <div className='p-4 sm:p-6'>
-                  {appointments.length === 0 ? (
-                    <div className='text-center py-8'>
-                      <div className='text-3xl mb-2'>📅</div>
-                      <p className='text-gray-500 mb-4'>No bookings yet.</p>
-                      <p className='text-sm text-gray-400'>
-                        Share your booking link to start receiving appointments.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className='space-y-4'>
-                      {appointments.map((appt) => (
-                        <div
-                          key={appt.appointment_id}
-                          className='bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 hover-lift'
+              <>
+                <div className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden'>
+                  <div className='p-4 sm:p-6 border-b border-gray-100'>
+                    <div className='flex items-center justify-between'>
+                      <h2 className='text-xl font-semibold text-gray-900 flex items-center'>
+                        <svg
+                          className='w-5 h-5 mr-2 text-blue-600'
+                          fill='currentColor'
+                          viewBox='0 0 20 20'
                         >
-                          <div className='flex flex-col sm:flex-row sm:items-center gap-4'>
-                            <div className='flex-1 min-w-0'>
-                              <h3 className='text-lg font-semibold text-gray-900 truncate'>
-                                {appt.service_name}
-                              </h3>
-                              <div className='mt-2 space-y-1 text-sm text-gray-600'>
-                                <p className='flex items-center'>
-                                  <svg
-                                    className='w-4 h-4 mr-2 text-gray-400'
-                                    fill='currentColor'
-                                    viewBox='0 0 20 20'
-                                  >
-                                    <path
-                                      fillRule='evenodd'
-                                      d='M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z'
-                                      clipRule='evenodd'
-                                    />
-                                  </svg>
-                                  {new Date(appt.created_at).toLocaleString(
-                                    "en-US",
-                                    {
-                                      weekday: "short",
-                                      month: "short",
-                                      day: "numeric",
-                                      hour: "2-digit",
-                                      minute: "2-digit"
-                                    }
-                                  )}
-                                </p>
-                                <p>Client: {appt.client_name}</p>
+                          <path d='M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' />
+                        </svg>
+                        Your Bookings
+                      </h2>
+                      <span className='text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full'>
+                        {appointments.length}
+                      </span>
+                    </div>
+                  </div>
+                  <div className='p-4 sm:p-6'>
+                    {appointments.length === 0 ? (
+                      <div className='text-center py-8'>
+                        <div className='text-3xl mb-2'>📅</div>
+                        <p className='text-gray-500 mb-4'>No bookings yet.</p>
+                        <p className='text-sm text-gray-400'>
+                          Share your booking link to start receiving
+                          appointments.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className='space-y-4'>
+                        {appointments.map((appt) => (
+                          <div
+                            key={appt.appointment_id}
+                            className='bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 hover-lift'
+                          >
+                            <div className='flex flex-col sm:flex-row sm:items-center gap-4'>
+                              <div className='flex-1 min-w-0'>
+                                <h3 className='text-lg font-semibold text-gray-900 truncate'>
+                                  {appt.service_name}
+                                </h3>
+                                <div className='mt-2 space-y-1 text-sm text-gray-600'>
+                                  <p className='flex items-center'>
+                                    <svg
+                                      className='w-4 h-4 mr-2 text-gray-400'
+                                      fill='currentColor'
+                                      viewBox='0 0 20 20'
+                                    >
+                                      <path
+                                        fillRule='evenodd'
+                                        d='M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z'
+                                        clipRule='evenodd'
+                                      />
+                                    </svg>
+                                    {new Date(appt.created_at).toLocaleString(
+                                      "en-US",
+                                      {
+                                        weekday: "short",
+                                        month: "short",
+                                        day: "numeric",
+                                        hour: "2-digit",
+                                        minute: "2-digit"
+                                      }
+                                    )}
+                                  </p>
+                                  <p>Client: {appt.client_name}</p>
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
+
+                {/* Booking Link Section */}
+                <div className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden'>
+                  <div className='p-4 sm:p-6 border-b border-gray-100'>
+                    <h2 className='text-xl font-semibold text-gray-900 flex items-center'>
+                      <svg
+                        className='w-5 h-5 mr-2 text-purple-600'
+                        fill='currentColor'
+                        viewBox='0 0 20 20'
+                      >
+                        <path
+                          fillRule='evenodd'
+                          d='M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z'
+                          clipRule='evenodd'
+                        />
+                      </svg>
+                      Your Booking Link
+                    </h2>
+                  </div>
+                  <div className='p-4 sm:p-6'>
+                    <p className='text-gray-600 mb-4'>
+                      Share this link with clients to let them book your
+                      services directly and easily.
+                    </p>
+                    <div className='flex flex-col sm:flex-row sm:items-center gap-3'>
+                      <input
+                        type='text'
+                        value={bookingLink}
+                        readOnly
+                        className='flex-1 px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-sm font-mono'
+                      />
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(bookingLink);
+                          toast.success(
+                            "Booking link copied! Share it with your clients to start getting bookings."
+                          );
+                        }}
+                        className='px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium transition-colors duration-200 whitespace-nowrap'
+                      >
+                        Copy Link
+                      </button>
+                    </div>
+                    <p className='text-xs text-gray-500 mt-3'>
+                      This link directs clients to your profile where they can
+                      view your services and book appointments instantly.
+                    </p>
+                  </div>
+                </div>
+              </>
             )}
           </div>
 

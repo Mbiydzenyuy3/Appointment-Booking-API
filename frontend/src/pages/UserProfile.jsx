@@ -432,7 +432,7 @@ export default function UserProfile() {
                         phone: e.target.value
                       }))
                     }
-                    className='mt-1 block w-full border-gray-300 rounded-md shadow-sm   sm:text-sm'
+                    className='mt-1 block w-full border-gray-300 rounded-md shadow-sm   sm:text-sm text-gray-700'
                     placeholder='Enter your phone number'
                   />
                 </div>
