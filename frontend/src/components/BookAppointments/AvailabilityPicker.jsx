@@ -255,10 +255,14 @@ const AvailabilityPicker = ({ providerId, onSlotSelect, selectedSlotId }) => {
             <div className='grid grid-cols-2 gap-2 max-h-48 overflow-y-auto'>
               {getSlotsForDate(selectedDate).map((slot) => {
                 // Check if slot time is in the past
+                // Assume slot times are in local time, compare timestamps
                 const slotDateTime = new Date(
                   `${selectedDate}T${slot.start_time}`
                 );
-                const isPast = slotDateTime < new Date();
+                const now = new Date();
+                // Allow booking if slot is at least 1 hour in the future
+                const oneHourFromNow = new Date(now.getTime() + 60 * 60 * 1000);
+                const isPast = slotDateTime < oneHourFromNow;
                 const isDisabled = isPast;
                 console.log(
                   "Slot:",
@@ -266,7 +270,7 @@ const AvailabilityPicker = ({ providerId, onSlotSelect, selectedSlotId }) => {
                   "slotDateTime:",
                   slotDateTime,
                   "now:",
-                  new Date(),
+                  now,
                   "isPast:",
                   isPast
                 );
