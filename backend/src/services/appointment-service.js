@@ -183,7 +183,7 @@ export async function cancel(appointmentId, userId, userType) {
       LEFT JOIN users u ON a.user_id = u.user_id
       LEFT JOIN providers pr ON a.provider_id = pr.provider_id
       LEFT JOIN users p ON pr.user_id = p.user_id
-      WHERE a.appointment_id = $1 FOR UPDATE
+      WHERE a.appointment_id = $1
     `,
       [appointmentId]
     );
