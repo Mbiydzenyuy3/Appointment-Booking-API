@@ -8,6 +8,7 @@ import {
   GraduationCap,
   ArrowRight
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const categories = [
   {
@@ -16,7 +17,8 @@ const categories = [
     icon: Scissors,
     color: "from-pink-500 to-rose-500",
     bgColor: "bg-pink-50",
-    count: "120+ providers"
+    count: "120+ providers",
+    href: "/explore?category=salon"
   },
   {
     name: "Home Repairs",
@@ -24,7 +26,8 @@ const categories = [
     icon: Wrench,
     color: "from-orange-500 to-amber-500",
     bgColor: "bg-orange-50",
-    count: "85+ providers"
+    count: "85+ providers",
+    href: "/explore?category=plumber"
   },
   {
     name: "Personal Training",
@@ -32,7 +35,8 @@ const categories = [
     icon: Dumbbell,
     color: "from-blue-500 to-cyan-500",
     bgColor: "bg-blue-50",
-    count: "60+ providers"
+    count: "60+ providers",
+    href: "/explore?category=personal-trainer"
   },
   {
     name: "Pet Care",
@@ -40,7 +44,8 @@ const categories = [
     icon: PawPrint,
     color: "from-emerald-500 to-green-500",
     bgColor: "bg-emerald-50",
-    count: "45+ providers"
+    count: "45+ providers",
+    href: "/explore?category=pet-walker"
   },
   {
     name: "Wellness",
@@ -48,7 +53,8 @@ const categories = [
     icon: Heart,
     color: "from-purple-500 to-violet-500",
     bgColor: "bg-purple-50",
-    count: "70+ providers"
+    count: "70+ providers",
+    href: "/explore?category=wellness"
   },
   {
     name: "Tutoring",
@@ -56,7 +62,8 @@ const categories = [
     icon: GraduationCap,
     color: "from-indigo-500 to-blue-500",
     bgColor: "bg-indigo-50",
-    count: "90+ providers"
+    count: "90+ providers",
+    href: "/explore?category=tutor"
   }
 ];
 
@@ -80,9 +87,10 @@ export default function FeaturedCategories() {
         {/* Categories Grid */}
         <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5'>
           {categories.map((category) => (
-            <div
+            <Link
               key={category.name}
-              className='group relative bg-white rounded-2xl p-6 border border-slate-100 hover:border-slate-200 hover:shadow-xl hover:shadow-slate-100 transition-all duration-300 cursor-pointer overflow-hidden'
+              to={category.href}
+              className='group relative bg-white rounded-2xl p-6 border border-slate-100 hover:border-slate-200 hover:shadow-xl hover:shadow-slate-100 transition-all duration-300 cursor-pointer overflow-hidden block'
             >
               {/* Hover Background */}
               <div
@@ -113,13 +121,13 @@ export default function FeaturedCategories() {
                   </div>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 
         {/* View All Button */}
         <div className='text-center mt-12'>
-          <button className='inline-flex items-center gap-2 text-emerald-600 font-semibold hover:text-emerald-700 transition-colors group'>
+          <button className='inline-flex items-center gap-2 text-emerald-600 font-semibold hover:text-emerald-700 transition-colors cursor-pointer group'>
             View all categories
             <ArrowRight className='w-4 h-4 group-hover:translate-x-1 transition-transform' />
           </button>
