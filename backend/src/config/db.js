@@ -181,6 +181,12 @@ const initializeDbSchema = async () => {
       );
     `);
 
+    // Add category column if it doesn't exist
+    await client.query(`
+      ALTER TABLE services
+      ADD COLUMN IF NOT EXISTS category VARCHAR(100);
+    `);
+
     await client.query(`
       CREATE TABLE IF NOT EXISTS time_slots (
         timeslot_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

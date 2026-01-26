@@ -35,7 +35,7 @@ const ExplorePage = () => {
 
       if (query) {
         servicesData = servicesData.filter((s) =>
-          s.name.toLowerCase().includes(query.toLowerCase())
+          (s.name || "").toLowerCase().includes(query.toLowerCase())
         );
       }
 
