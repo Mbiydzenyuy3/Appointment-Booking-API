@@ -60,7 +60,7 @@ export default function LandingHeader() {
             {/* Logo */}
             <Link
               to='/'
-              className='flex items-center space-x-2 text-xl font-bold text-black touch-target'
+              className='flex items-center space-x-2 text-xl font-bold text-gray-800 touch-target'
               onClick={closeMobileNav}
             >
               <span className='text-2xl'>📅</span>
