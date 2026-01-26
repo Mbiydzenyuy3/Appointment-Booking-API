@@ -172,7 +172,7 @@ export async function CreateAppointment(req, res) {
       return res.status(409).json({
         success: false,
         message:
-          "This time slot is no longer available. Please choose another time."
+          "We're sorry, but this time slot has already been taken. Please select another available time."
       });
     }
 
