@@ -6,7 +6,10 @@ import {
   emitAppointmentCancelled
 } from "../sockets/socket.js";
 
-import { sendAppointmentCancellationEmail } from "./email-service.js";
+import {
+  sendAppointmentCancellationEmail,
+  sendAppointmentBookingEmailToProvider
+} from "./email-service.js";
 import { logError, logInfo } from "../utils/logger.js";
 
 export async function book({
@@ -22,6 +25,48 @@ export async function book({
       appointment_date,
       appointment_time
     });
+
+    // Get provider and service details for email notification
+    const appointmentDetails = await pool.query(
+      `
+      SELECT
+        a.*,
+        s.service_name,
+        u.name as client_name,
+        p.name as provider_name,
+        pu.email as provider_email
+      FROM appointments a
+      LEFT JOIN services s ON a.service_id = s.service_id
+      LEFT JOIN users u ON a.user_id = u.user_id
+      LEFT JOIN providers pr ON a.provider_id = pr.provider_id
+      LEFT JOIN users pu ON pr.user_id = pu.user_id
+      WHERE a.appointment_id = $1
+      `,
+      [appointment.appointment_id]
+    );
+
+    const details = appointmentDetails.rows[0];
+
+    // Send email notification to provider
+    try {
+      await sendAppointmentBookingEmailToProvider(
+        details.provider_email,
+        details.provider_name,
+        details.client_name || "Guest",
+        details.service_name,
+        new Date(details.appointment_date).toLocaleDateString("en-US", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric"
+        }),
+        details.appointment_time,
+        false
+      );
+    } catch (emailError) {
+      logError("Failed to send provider notification email", emailError);
+      // Don't fail the booking if email fails
+    }
 
     // Emit targeted socket notification (assumes this function does targeting internally)
     emitAppointmentBooked(appointment);
@@ -53,6 +98,49 @@ export async function bookAsGuest({
       guest_phone,
       is_guest_booking: true
     });
+
+    // Get provider and service details for email notification
+    const appointmentDetails = await pool.query(
+      `
+      SELECT
+        a.*,
+        s.service_name,
+        p.name as provider_name,
+        pu.email as provider_email
+      FROM appointments a
+      LEFT JOIN services s ON a.service_id = s.service_id
+      LEFT JOIN providers pr ON a.provider_id = pr.provider_id
+      LEFT JOIN users pu ON pr.user_id = pu.user_id
+      WHERE a.appointment_id = $1
+      `,
+      [appointment.appointment_id]
+    );
+
+    const details = appointmentDetails.rows[0];
+
+    // Send email notification to provider
+    try {
+      await sendAppointmentBookingEmailToProvider(
+        details.provider_email,
+        details.provider_name,
+        details.guest_name || guest_name,
+        details.service_name,
+        new Date(details.appointment_date).toLocaleDateString("en-US", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric"
+        }),
+        details.appointment_time,
+        true
+      );
+    } catch (emailError) {
+      logError(
+        "Failed to send provider notification email for guest booking",
+        emailError
+      );
+      // Don't fail the booking if email fails
+    }
 
     // Emit targeted socket notification
     emitAppointmentBooked(appointment);
