@@ -54,12 +54,18 @@ const AvailabilityPicker = ({
 
   // Check if a date has available slots
   const hasAvailableSlots = (date) => {
-    return availableSlots.some((slot) => slot.day === date);
+    return availableSlots.some((slot) => {
+      const slotDate = new Date(slot.day).toISOString().split("T")[0];
+      return slotDate === date;
+    });
   };
 
   // Get slots for a specific date
   const getSlotsForDate = (date) => {
-    return availableSlots.filter((slot) => slot.day === date);
+    return availableSlots.filter((slot) => {
+      const slotDate = new Date(slot.day).toISOString().split("T")[0];
+      return slotDate === date;
+    });
   };
 
   // Navigate to previous month
