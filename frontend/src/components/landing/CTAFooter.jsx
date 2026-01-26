@@ -7,11 +7,11 @@ import {
   Calendar,
   Briefcase,
   Phone,
-  Mail,
-  MapPin,
-  Facebook,
-  Instagram,
-  Twitter
+  // Mail,
+  MapPin
+  // Facebook,
+  // Instagram,
+  // Twitter
 } from "lucide-react";
 
 export default function CTAFooter({ onProviderClick, onClientClick }) {
@@ -103,7 +103,11 @@ export default function CTAFooter({ onProviderClick, onClientClick }) {
           <div className='grid md:grid-cols-4 gap-12 mb-12'>
             {/* Brand */}
             <div className='md:col-span-1'>
-              <div className='flex items-center gap-2 mb-4'>
+              <div
+                className='flex items-center gap-2 mb-4 cursor-pointer'
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                style={{ cursor: "pointer" }}
+              >
                 <div className='w-10 h-10 bg-[#D4A574] rounded-xl flex items-center justify-center'>
                   <span className='text-[#1B4332] font-bold text-lg'>B</span>
                 </div>
@@ -113,7 +117,7 @@ export default function CTAFooter({ onProviderClick, onClientClick }) {
                 Connecting Cameroonians with trusted local professionals since
                 2020.
               </p>
-              <div className='flex items-center gap-4'>
+              {/* <div className='flex items-center gap-4'>
                 <a
                   href='#'
                   className='w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center hover:bg-white/20 transition-colors'
@@ -132,7 +136,7 @@ export default function CTAFooter({ onProviderClick, onClientClick }) {
                 >
                   <Twitter className='w-5 h-5' />
                 </a>
-              </div>
+              </div> */}
             </div>
 
             {/* Quick Links */}
@@ -227,7 +231,7 @@ export default function CTAFooter({ onProviderClick, onClientClick }) {
                 </li> */}
                 <li className='flex items-start gap-3 text-white/60'>
                   <MapPin className='w-4 h-4 mt-1' />
-                  Douala, Cameroon
+                  Yaounde, Cameroon
                 </li>
               </ul>
             </div>

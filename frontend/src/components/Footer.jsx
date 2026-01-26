@@ -7,7 +7,7 @@ export default function Footer() {
       <div className='max-w-7xl mx-auto px-4'>
         <div className='grid gap-8 md:grid-cols-4 mb-10 text-sm text-gray-300'>
           <div>
-            <h4 className='font-bold text-white mb-3 text-lg'>BOOKEasy</h4>
+            <h4 className='font-bold text-white mb-3 text-lg cursor-pointer' onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>BOOKEasy</h4>
             <p className='leading-relaxed'>
               A simple and secure way for service businesses to manage
               appointments and for clients to book instantly.
