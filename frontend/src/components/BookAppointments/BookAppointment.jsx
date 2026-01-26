@@ -288,7 +288,7 @@ export default function BookAppointmentForm({
                 <svg
                   className='w-5 h-5'
                   fill='none'
-                  stroke='currentColor'
+                  stroke='black'
                   viewBox='0 0 24 24'
                 >
                   <path

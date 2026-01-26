@@ -576,7 +576,7 @@ export default function ProviderDashboard() {
                         type='text'
                         value={bookingLink}
                         readOnly
-                        className='flex-1 px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-sm font-mono'
+                        className='flex-1 px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-sm font-mono text-gray-700'
                       />
                       <button
                         onClick={() => {
