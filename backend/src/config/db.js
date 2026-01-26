@@ -133,9 +133,22 @@ const initializeDbSchema = async () => {
         user_type VARCHAR(20) CHECK (user_type IN ('client','provider')),
         reset_password_token VARCHAR(255),
         reset_password_expires TIMESTAMP,
+        google_access_token TEXT,
+        google_refresh_token TEXT,
+        google_token_expiry TIMESTAMP,
+        calendar_sync_enabled BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+    `);
+
+    // Add Google Calendar columns if they don't exist
+    await client.query(`
+      ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS google_access_token TEXT,
+      ADD COLUMN IF NOT EXISTS google_refresh_token TEXT,
+      ADD COLUMN IF NOT EXISTS google_token_expiry TIMESTAMP,
+      ADD COLUMN IF NOT EXISTS calendar_sync_enabled BOOLEAN DEFAULT FALSE;
     `);
 
     await client.query(`
