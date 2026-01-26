@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useGuest } from "../../context/GuestContext.jsx";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import api from "../../services/api.js";
 import AvailabilityPicker from "./AvailabilityPicker.jsx";
 import {
@@ -14,7 +15,8 @@ export default function BookAppointmentForm({
   providerId,
   isOpen,
   onClose,
-  service
+  service,
+  returnPath = "/"
 }) {
   const { user } = useAuth();
   const { saveGuestBooking, markSignUpPrompted } = useGuest();
@@ -159,7 +161,6 @@ export default function BookAppointmentForm({
     try {
       const endpoint = user ? "/appointments/book" : "/appointments/guest-book";
       const response = await api.post(endpoint, payload);
-      setMessage("Appointment booked successfully! 🎉");
 
       trackBookingCompleted(
         response.data.data?.appointment_id,
@@ -167,6 +168,9 @@ export default function BookAppointmentForm({
         service?.service_name,
         !user
       );
+
+      // Show success toast
+      toast.success("Appointment booked successfully! 🎉");
 
       if (!user) {
         saveGuestBooking({
@@ -180,6 +184,7 @@ export default function BookAppointmentForm({
           appointment_time: payload.appointment_time
         });
 
+        // For guests, show sign-up prompt after success
         setTimeout(() => {
           setShowSignUpPrompt(true);
           trackEvent("Sign Up Prompt Shown", {
@@ -187,6 +192,17 @@ export default function BookAppointmentForm({
             service_name: service?.service_name,
             booking_type: "guest"
           });
+          // Close modal after showing prompt
+          setTimeout(() => {
+            onClose();
+            navigate(returnPath);
+          }, 5000); // Give time to see the prompt
+        }, 2000);
+      } else {
+        // For logged-in users, close modal and navigate after a delay
+        setTimeout(() => {
+          onClose();
+          navigate(returnPath);
         }, 2000);
       }
 
@@ -263,15 +279,36 @@ export default function BookAppointmentForm({
         {/* Header */}
         <div className='flex-shrink-0 px-6 py-4 border-b border-gray-100'>
           <div className='flex items-center justify-between'>
-            <div>
-              <h3 className='text-xl font-bold text-gray-900'>
-                Book Appointment
-              </h3>
-              {service && (
-                <p className='text-gray-600 mt-1 text-sm'>
-                  {service.service_name}
-                </p>
-              )}
+            <div className='flex items-center'>
+              <button
+                onClick={onClose}
+                className='p-2 hover:bg-gray-100 rounded-lg mr-3'
+                aria-label='Go back'
+              >
+                <svg
+                  className='w-5 h-5'
+                  fill='none'
+                  stroke='currentColor'
+                  viewBox='0 0 24 24'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M15 19l-7-7 7-7'
+                  />
+                </svg>
+              </button>
+              <div>
+                <h3 className='text-xl font-bold text-gray-900'>
+                  Book Appointment
+                </h3>
+                {service && (
+                  <p className='text-gray-600 mt-1 text-sm'>
+                    {service.service_name}
+                  </p>
+                )}
+              </div>
             </div>
             <button
               onClick={onClose}

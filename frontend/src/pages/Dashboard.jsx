@@ -334,6 +334,7 @@ const UserDashboard = () => {
         isOpen={bookingModal.open}
         onClose={() => setBookingModal({ open: false, service: null })}
         service={bookingModal.service}
+        returnPath='/dashboard'
       />
 
       <RescheduleModal
