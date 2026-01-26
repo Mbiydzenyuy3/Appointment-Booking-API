@@ -2,7 +2,12 @@ import React, { useState } from "react";
 import { useCurrency } from "../../context/CurrencyContext.jsx";
 import CurrencySelector from "../Common/CurrencySelector.jsx";
 
-export default function ServiceForm({ onCreate }) {
+export default function ServiceForm({
+  onCreate,
+  onUpdate,
+  editingService,
+  onCancelEdit
+}) {
   const { selectedCurrency, formatPrice } = useCurrency();
   const [service, setService] = useState({
     service_name: "",
@@ -13,6 +18,32 @@ export default function ServiceForm({ onCreate }) {
     additional_description: "",
     image_url: ""
   });
+
+  // Populate form when editing
+  React.useEffect(() => {
+    if (editingService) {
+      setService({
+        service_name: editingService.name || "",
+        description: editingService.description || "",
+        duration_minutes: editingService.duration || "",
+        price: editingService.price || "",
+        location: editingService.location || "",
+        additional_description: editingService.additional_description || "",
+        image_url: editingService.image_url || ""
+      });
+    } else {
+      // Reset form when not editing
+      setService({
+        service_name: "",
+        description: "",
+        duration_minutes: "",
+        price: "",
+        location: "",
+        additional_description: "",
+        image_url: ""
+      });
+    }
+  }, [editingService]);
 
   const handleChange = (e) => {
     setService({ ...service, [e.target.name]: e.target.value });
@@ -33,17 +64,27 @@ export default function ServiceForm({ onCreate }) {
 
     console.log("Service data being sent:", ServiceValues);
 
-    onCreate(ServiceValues);
+    if (editingService) {
+      onUpdate(editingService.service_id, ServiceValues);
+    } else {
+      onCreate(ServiceValues);
+      // Reset form only when creating
+      setService({
+        service_name: "",
+        description: "",
+        price: "",
+        duration_minutes: "",
+        location: "",
+        additional_description: "",
+        image_url: ""
+      });
+    }
+  };
 
-    setService({
-      service_name: "",
-      description: "",
-      price: "",
-      duration_minutes: "",
-      location: "",
-      additional_description: "",
-      image_url: ""
-    });
+  const handleCancel = () => {
+    if (onCancelEdit) {
+      onCancelEdit();
+    }
   };
 
   // Get currency symbols for the different countries, not all but majority of the worlds currencies to make the app more inclusive to all users
@@ -105,10 +146,12 @@ export default function ServiceForm({ onCreate }) {
         <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4'>
           <div>
             <h2 className='text-2xl font-bold text-gray-800 mb-2'>
-              Add a Service
+              {editingService ? "Edit Service" : "Add a Service"}
             </h2>
             <p className='text-gray-600 text-sm'>
-              Create a new service offering for your clients
+              {editingService
+                ? "Update your service details"
+                : "Create a new service offering for your clients"}
             </p>
           </div>
           <div className='flex-shrink-0 text-gray-700'>
@@ -270,6 +313,31 @@ export default function ServiceForm({ onCreate }) {
       </div>
 
       <div className='relative'>
+        {editingService && (
+          <button
+            type='button'
+            onClick={handleCancel}
+            className='w-full mb-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 px-8 rounded-xl transition-all duration-300 focus:outline-none min-h-[48px] touch-target'
+            aria-label='Cancel editing'
+          >
+            <span className='flex items-center justify-center gap-3 text-base'>
+              <svg
+                className='w-5 h-5'
+                fill='none'
+                stroke='currentColor'
+                viewBox='0 0 24 24'
+                strokeWidth='2'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  d='M6 18L18 6M6 6l12 12'
+                />
+              </svg>
+              Cancel
+            </span>
+          </button>
+        )}
         <button
           type='submit'
           className='form-submit-button w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 active:from-green-800 active:to-green-900 text-white font-bold py-5 px-8 rounded-xl transition-all duration-300 focus:outline-none    min-h-[64px] touch-target transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl border-2 border-transparent hover:border-green-800'
@@ -285,7 +353,7 @@ export default function ServiceForm({ onCreate }) {
             backgroundColor: "#16a34a",
             color: "white"
           }}
-          aria-label='Create new service'
+          aria-label={editingService ? "Update service" : "Create new service"}
         >
           <span className='flex items-center justify-center gap-3 text-lg'>
             <svg
@@ -298,10 +366,14 @@ export default function ServiceForm({ onCreate }) {
               <path
                 strokeLinecap='round'
                 strokeLinejoin='round'
-                d='M12 4v16m8-8H4'
+                d={
+                  editingService
+                    ? "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                    : "M12 4v16m8-8H4"
+                }
               />
             </svg>
-            Add A Service
+            {editingService ? "Update Service" : "Add A Service"}
           </span>
         </button>
       </div>

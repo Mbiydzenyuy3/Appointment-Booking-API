@@ -23,6 +23,7 @@ import appointmentRouter from "./src/routes/appointment.js";
 import slotRouter from "./src/routes/slot.js";
 import providerRouter from "./src/routes/provider.js";
 import serviceRoutes from "./src/routes/service.js";
+import calendarRouter from "./src/routes/calendar.js";
 import aiSchedulerRouter from "./src/routes/ai-scheduler.js";
 import performanceRouter from "./src/routes/performance.js";
 import debugAuthRouter from "./src/routes/debug-auth.js";
@@ -71,6 +72,7 @@ app.use("/appointments", appointmentRouter);
 app.use("/slots", slotRouter);
 app.use("/providers", providerRouter);
 app.use("/services", serviceRoutes);
+app.use("/calendar", calendarRouter);
 app.use("/api/ai-scheduler", aiSchedulerRouter);
 app.use("/api/performance", performanceRouter);
 

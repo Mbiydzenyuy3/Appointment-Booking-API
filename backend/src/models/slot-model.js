@@ -209,9 +209,11 @@ export async function searchAvailableSlots({
   offset = 0
 }) {
   let query = `
-    SELECT ts.*, s.service_name as name
+    SELECT ts.*, s.service_name as name, u.user_id as provider_user_id
     FROM time_slots ts
     JOIN services s ON ts.service_id = s.service_id
+    JOIN providers p ON ts.provider_id = p.provider_id
+    JOIN users u ON p.user_id = u.user_id
     WHERE ts.is_booked = false
   `;
 
@@ -238,7 +240,33 @@ export async function searchAvailableSlots({
   params.push(offset);
 
   const result = await pool.query(query, params);
-  return result.rows;
+  let slots = result.rows;
+
+  // Filter out slots that conflict with Google Calendar events
+  if (slots.length > 0) {
+    const { checkCalendarConflicts } =
+      await import("../services/calendar-service.js");
+
+    const filteredSlots = [];
+    for (const slot of slots) {
+      const slotStart = new Date(`${slot.day}T${slot.start_time}`);
+      const slotEnd = new Date(`${slot.day}T${slot.end_time}`);
+
+      const conflict = await checkCalendarConflicts(
+        slot.provider_user_id,
+        slotStart,
+        slotEnd
+      );
+
+      if (!conflict.conflict) {
+        filteredSlots.push(slot);
+      }
+    }
+
+    slots = filteredSlots;
+  }
+
+  return slots;
 }
 
 export const advanceSlots = async () => {

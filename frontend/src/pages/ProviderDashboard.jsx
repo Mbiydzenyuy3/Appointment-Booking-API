@@ -4,6 +4,7 @@ import ServiceForm from "../components/Providers/ServiceForm.jsx";
 import ServiceList from "../components/Providers/ServiceList.jsx";
 import TimeslotForm from "../components/Providers/TimeSlotForm.jsx";
 import TimeslotList from "../components/Providers/TimeSlotList.jsx";
+import CalendarSync from "../components/Providers/CalendarSync.jsx";
 import AuthDebugger from "../components/Providers/AuthDebugger.jsx";
 import api from "../services/api.js";
 import toast from "react-hot-toast";
@@ -17,6 +18,7 @@ export default function ProviderDashboard() {
   const [appointments, setAppointments] = useState([]);
   const [bookingLink, setBookingLink] = useState("");
   const [profileComplete, setProfileComplete] = useState(false);
+  const [editingService, setEditingService] = useState(null);
 
   // Debug logging
   console.log("ProviderDashboard render:", {
@@ -98,6 +100,33 @@ export default function ProviderDashboard() {
       console.error("Delete service error:", error);
       toast.error("Something went wrong");
     }
+  };
+
+  const handleUpdateService = async (serviceId, serviceData) => {
+    try {
+      const res = await api.put(`/services/${serviceId}`, serviceData);
+      setServices((prev) =>
+        prev.map((s) => (s.service_id === serviceId ? res.data.data : s))
+      );
+      setEditingService(null);
+      toast.success("Service updated successfully!");
+    } catch (error) {
+      if (error.response?.status === 401) {
+        toast.error("Session expired. Please log in again.");
+      } else if (error.response?.status === 403) {
+        toast.error("You don't have permission to update this service.");
+      } else {
+        toast.error(error.response?.data?.message || "Something went wrong");
+      }
+    }
+  };
+
+  const handleEditService = (service) => {
+    setEditingService(service);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingService(null);
   };
 
   const handleCreateTimeSlot = async (slot) => {
@@ -253,6 +282,29 @@ export default function ProviderDashboard() {
                   </div>
                 </button>
                 <button
+                  onClick={() => setActiveTab("calendar")}
+                  className={`py-3 px-4 rounded-lg font-medium text-sm touch-target transition-all duration-200 ${
+                    activeTab === "calendar"
+                      ? "bg-purple-600 text-white"
+                      : "text-gray-600 hover:text-purple-600 hover:bg-purple-50"
+                  }`}
+                >
+                  <div className='flex items-center justify-center'>
+                    <svg
+                      className='w-4 h-4 mr-2'
+                      fill='currentColor'
+                      viewBox='0 0 20 20'
+                    >
+                      <path
+                        fillRule='evenodd'
+                        d='M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z'
+                        clipRule='evenodd'
+                      />
+                    </svg>
+                    Calendar
+                  </div>
+                </button>
+                <button
                   onClick={() => setActiveTab("marketing")}
                   className={`py-3 px-4 rounded-lg font-medium text-sm touch-target transition-all duration-200 ${
                     activeTab === "marketing"
@@ -309,6 +361,16 @@ export default function ProviderDashboard() {
                   >
                     Bookings
                   </button>
+                  <button
+                    onClick={() => setActiveTab("calendar")}
+                    className={`flex-1 py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
+                      activeTab === "calendar"
+                        ? "bg-purple-600 text-white"
+                        : "text-gray-600 hover:text-purple-600 hover:bg-purple-50"
+                    }`}
+                  >
+                    Calendar
+                  </button>
                 </div>
               </div>
             </div>
@@ -333,7 +395,12 @@ export default function ProviderDashboard() {
                   </div>
                 </div>
                 <div className='p-4 sm:p-6'>
-                  <ServiceForm onCreate={handleCreateService} />
+                  <ServiceForm
+                    onCreate={handleCreateService}
+                    onUpdate={handleUpdateService}
+                    editingService={editingService}
+                    onCancelEdit={handleCancelEdit}
+                  />
                   {services.length === 0 ? (
                     <div className='text-center py-8'>
                       <div className='text-3xl mb-2'>📋</div>
@@ -347,6 +414,7 @@ export default function ProviderDashboard() {
                       <ServiceList
                         services={services}
                         onDelete={handleDeleteService}
+                        onEdit={handleEditService}
                       />
                     </div>
                   )}
@@ -530,6 +598,8 @@ export default function ProviderDashboard() {
                 </div>
               </>
             )}
+
+            {activeTab === "calendar" && <CalendarSync />}
           </div>
 
           {/* Mobile Content */}
