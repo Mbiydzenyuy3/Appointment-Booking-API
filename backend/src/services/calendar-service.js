@@ -7,7 +7,8 @@ import { query } from "../config/db.js";
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
-  process.env.GOOGLE_REDIRECT_URI || "http://localhost:5173"
+  process.env.GOOGLE_REDIRECT_URI ||
+    "https://appointment-booking-api-1-7zro.onrender.com/calendar/callback"
 );
 
 // Set credentials if available

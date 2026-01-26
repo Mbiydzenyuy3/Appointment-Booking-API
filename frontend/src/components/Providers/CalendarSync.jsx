@@ -37,7 +37,6 @@ export default function CalendarSync() {
       const checkClosed = setInterval(() => {
         if (popup.closed) {
           clearInterval(checkClosed);
-          // Refresh sync status after popup closes
           setTimeout(fetchSyncStatus, 1000);
         }
       }, 1000);
