@@ -4,7 +4,12 @@ import api from "../../services/api.js";
 // Get user's time zone
 const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-const AvailabilityPicker = ({ providerId, onSlotSelect, selectedSlotId }) => {
+const AvailabilityPicker = ({
+  providerId,
+  serviceId,
+  onSlotSelect,
+  selectedSlotId
+}) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [availableSlots, setAvailableSlots] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -12,7 +17,7 @@ const AvailabilityPicker = ({ providerId, onSlotSelect, selectedSlotId }) => {
 
   // Fetch available slots for the current month
   const fetchAvailableSlots = async (month = currentMonth) => {
-    if (!providerId) return;
+    if (!providerId || !serviceId) return;
 
     setLoading(true);
     try {
@@ -22,7 +27,7 @@ const AvailabilityPicker = ({ providerId, onSlotSelect, selectedSlotId }) => {
 
       // Fetch slots for the entire month
       const response = await api.get(
-        `/slots/search/available?providerId=${providerId}&limit=1000`
+        `/slots/search/available?providerId=${providerId}&serviceId=${serviceId}&limit=1000`
       );
       const slots = response.data.data || [];
       console.log("Fetched slots:", slots);
@@ -45,7 +50,7 @@ const AvailabilityPicker = ({ providerId, onSlotSelect, selectedSlotId }) => {
 
   useEffect(() => {
     fetchAvailableSlots();
-  }, [providerId, currentMonth]);
+  }, [providerId, serviceId, currentMonth]);
 
   // Check if a date has available slots
   const hasAvailableSlots = (date) => {

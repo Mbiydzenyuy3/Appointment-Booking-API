@@ -343,6 +343,7 @@ export default function BookAppointmentForm({
               )}
               <AvailabilityPicker
                 providerId={providerId}
+                serviceId={service?.service_id}
                 onSlotSelect={(slot) => {
                   setSelectedTimeslotId(slot.timeslot_id);
                   setSelectedSlot(slot);
