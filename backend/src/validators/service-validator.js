@@ -21,6 +21,8 @@ export const serviceSchema = Joi.object({
     "any.required": "Duration is required"
   }),
 
+  category: Joi.string().optional(),
+
   location: Joi.string().optional(),
 
   additionalDescription: Joi.string().optional(),

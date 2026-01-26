@@ -25,7 +25,7 @@ const ExplorePage = () => {
     service: null
   });
 
-  const fetchServices = async (query = "", location = "") => {
+  const fetchServices = async (query = "", location = "", category = "") => {
     try {
       const servicesRes = await api.get("/services");
 
@@ -42,6 +42,12 @@ const ExplorePage = () => {
       if (location) {
         servicesData = servicesData.filter((s) =>
           (s.location || "").toLowerCase().includes(location.toLowerCase())
+        );
+      }
+
+      if (category) {
+        servicesData = servicesData.filter((s) =>
+          (s.category || "").toLowerCase().includes(category.toLowerCase())
         );
       }
 
@@ -65,7 +71,10 @@ const ExplorePage = () => {
       try {
         const serviceParam = searchParams.get("service") || "";
         const locationParam = searchParams.get("location") || "";
-        await Promise.all([fetchServices(serviceParam, locationParam)]);
+        const categoryParam = searchParams.get("category") || "";
+        await Promise.all([
+          fetchServices(serviceParam, locationParam, categoryParam)
+        ]);
         // Track explore page view
         trackExploreView({ service_count: services.length });
       } catch (error) {
@@ -127,14 +136,31 @@ const ExplorePage = () => {
       <div className='container-mobile py-8'>
         {/* Available Services Section */}
         <section>
-          <div className='flex items-center justify-between mb-4 sm:mb-6'>
-            <h2 className='text-xl sm:text-2xl font-semibold text-gray-900'>
-              All Available Businesses
-            </h2>
-            <span className='text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full'>
-              {services.length} services from trusted providers
-            </span>
-          </div>
+          {(() => {
+            const categoryParam = searchParams.get("category") || "";
+            return (
+              <>
+                {categoryParam && (
+                  <div className='mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg'>
+                    <p className='text-sm text-blue-800'>
+                      Filtering by category: <strong>{categoryParam}</strong>
+                    </p>
+                  </div>
+                )}
+                <div className='flex items-center justify-between mb-4 sm:mb-6'>
+                  <h2 className='text-xl sm:text-2xl font-semibold text-gray-900'>
+                    All Available Businesses
+                    {categoryParam ? ` in ${categoryParam}` : ""}
+                  </h2>
+                  <span className='text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full'>
+                    {services.length} services
+                    {categoryParam ? ` in ${categoryParam}` : ""} from trusted
+                    providers
+                  </span>
+                </div>
+              </>
+            );
+          })()}
 
           {services.length === 0 ? (
             <div className='text-center py-12 bg-white rounded-xl shadow-sm border border-gray-100'>

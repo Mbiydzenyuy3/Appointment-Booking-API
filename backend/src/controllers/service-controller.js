@@ -10,7 +10,8 @@ export async function create(req, res, next) {
       name: service_name,
       description,
       price,
-      durationMinutes: duration_minutes
+      durationMinutes: duration_minutes,
+      category
     } = req.body;
 
     if (!service_name || !description || !price || !duration_minutes) {
@@ -62,7 +63,8 @@ export async function create(req, res, next) {
       service_name,
       description,
       price,
-      duration_minutes
+      duration_minutes,
+      category
     });
 
     return res.status(201).json({
@@ -122,7 +124,8 @@ export async function update(req, res, next) {
       name: service_name,
       description,
       price,
-      durationMinutes: duration_minutes
+      durationMinutes: duration_minutes,
+      category
     } = req.body;
     const userId = req.user?.user_id;
 
@@ -178,7 +181,13 @@ export async function update(req, res, next) {
       });
     }
 
-    const updates = { service_name, description, price, duration_minutes };
+    const updates = {
+      service_name,
+      description,
+      price,
+      duration_minutes,
+      category
+    };
     const updated = await ServiceService.updateService(serviceId, updates);
 
     return res.status(200).json({
