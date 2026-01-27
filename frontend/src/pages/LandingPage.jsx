@@ -99,12 +99,17 @@ export default function HomePage() {
                     {biz.category} • {biz.city}
                   </p>
 
-                  <button
-                    onClick={handleExploreBusinesses}
-                    className='w-full py-3 bg-green-50 text-green-700 font-bold rounded-xl hover:bg-green-700 hover:text-green-500 transition-colors'
+                  <a
+                    href='/explore'
+                    className='inline-block mt-4 text-green-700 font-semibold hover:underline'
                   >
-                    View availability
-                  </button>
+                    <button
+                      onClick={handleExploreBusinesses}
+                      className='w-full py-3 bg-green-50 text-green-700 font-bold rounded-xl hover:bg-green-700 hover:text-green-500 transition-colors'
+                    >
+                      View availability
+                    </button>
+                  </a>
                 </div>
               </div>
             ))}

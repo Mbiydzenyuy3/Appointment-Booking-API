@@ -6,6 +6,11 @@ import RescheduleModal from "../components/Appointments/ResheduleModal.jsx";
 import BookAppointmentForm from "../components/BookAppointments/BookAppointment.jsx";
 import api from "../services/api.js";
 import { toast } from "react-toastify";
+import {
+  MagnifyingGlassIcon,
+  ClockIcon,
+  CalendarDaysIcon
+} from "@heroicons/react/24/outline";
 
 const UserDashboard = () => {
   const { user } = useAuth();
@@ -163,19 +168,7 @@ const UserDashboard = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               className='w-full px-4 py-2 pl-10 border text-gray-800 border-gray-300 rounded-lg   
             />
-            <svg
-              className='absolute right-8 top-4 h-5 w-5 text-gray-400'
-              fill='none'
-              stroke='currentColor'
-              viewBox='0 0 24 24'
-            >
-              <path
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                strokeWidth={2}
-                d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'
-              />
-            </svg>
+            <MagnifyingGlassIcon className='absolute right-8 top-4 h-5 w-5 text-gray-400' />
           </div>
         </div> */}
 
@@ -221,17 +214,7 @@ const UserDashboard = () => {
 
                   <div className='flex items-center justify-between mb-4 text-sm text-gray-500'>
                     <span className='flex items-center'>
-                      <svg
-                        className='w-4 h-4 mr-1'
-                        fill='currentColor'
-                        viewBox='0 0 20 20'
-                      >
-                        <path
-                          fillRule='evenodd'
-                          d='M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z'
-                          clipRule='evenodd'
-                        />
-                      </svg>
+                      <ClockIcon className='w-4 h-4 mr-1' />
                       {service.duration_minutes} min
                     </span>
                   </div>
@@ -284,17 +267,7 @@ const UserDashboard = () => {
                     </h3>
                     <div className='mt-2 space-y-1 text-sm text-gray-600'>
                       <p className='flex items-center'>
-                        <svg
-                          className='w-4 h-4 mr-2 text-gray-400'
-                          fill='currentColor'
-                          viewBox='0 0 20 20'
-                        >
-                          <path
-                            fillRule='evenodd'
-                            d='M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z'
-                            clipRule='evenodd'
-                          />
-                        </svg>
+                        <CalendarDaysIcon className='w-4 h-4 mr-2 text-gray-400' />
                         {new Date(appt.created_at).toLocaleString("en-US", {
                           weekday: "short",
                           month: "short",

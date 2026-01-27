@@ -8,6 +8,13 @@ import CalendarSync from "../components/Providers/CalendarSync.jsx";
 import AuthDebugger from "../components/Providers/AuthDebugger.jsx";
 import api from "../services/api.js";
 import toast from "react-hot-toast";
+import {
+  CheckCircleIcon,
+  ClockIcon,
+  LightBulbIcon,
+  CalendarDaysIcon,
+  LinkIcon
+} from "@heroicons/react/24/outline";
 
 export default function ProviderDashboard() {
   const { user } = useAuth();
@@ -229,13 +236,7 @@ export default function ProviderDashboard() {
                   }`}
                 >
                   <div className='flex items-center justify-center'>
-                    <svg
-                      className='w-4 h-4 mr-2'
-                      fill='currentColor'
-                      viewBox='0 0 20 20'
-                    >
-                      <path d='M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' />
-                    </svg>
+                    <CheckCircleIcon className='w-4 h-4 mr-2' />
                     Services ({services.length})
                   </div>
                 </button>
@@ -248,17 +249,7 @@ export default function ProviderDashboard() {
                   }`}
                 >
                   <div className='flex items-center justify-center'>
-                    <svg
-                      className='w-4 h-4 mr-2'
-                      fill='currentColor'
-                      viewBox='0 0 20 20'
-                    >
-                      <path
-                        fillRule='evenodd'
-                        d='M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z'
-                        clipRule='evenodd'
-                      />
-                    </svg>
+                    <ClockIcon className='w-4 h-4 mr-2' />
                     Availability ({timeSlots.length})
                   </div>
                 </button>
@@ -271,13 +262,7 @@ export default function ProviderDashboard() {
                   }`}
                 >
                   <div className='flex items-center justify-center'>
-                    <svg
-                      className='w-4 h-4 mr-2'
-                      fill='currentColor'
-                      viewBox='0 0 20 20'
-                    >
-                      <path d='M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' />
-                    </svg>
+                    <CheckCircleIcon className='w-4 h-4 mr-2' />
                     Bookings ({appointments.length})
                   </div>
                 </button>
@@ -290,17 +275,7 @@ export default function ProviderDashboard() {
                   }`}
                 >
                   <div className='flex items-center justify-center'>
-                    <svg
-                      className='w-4 h-4 mr-2'
-                      fill='currentColor'
-                      viewBox='0 0 20 20'
-                    >
-                      <path
-                        fillRule='evenodd'
-                        d='M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z'
-                        clipRule='evenodd'
-                      />
-                    </svg>
+                    <CalendarDaysIcon className='w-4 h-4 mr-2' />
                     Calendar
                   </div>
                 </button>
@@ -313,13 +288,7 @@ export default function ProviderDashboard() {
                   }`}
                 >
                   <div className='flex items-center justify-center'>
-                    <svg
-                      className='w-4 h-4 mr-2'
-                      fill='currentColor'
-                      viewBox='0 0 20 20'
-                    >
-                      <path d='M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1h4v1a2 2 0 11-4 0zM12 14c.015-.34.208-.646.477-.859a4 4 0 10-4.954 0c.27.213.462.519.477.859h1.49c.83 0 1.5.67 1.5 1.5S14.33 17 13.5 17h-3C9.67 17 9 16.33 9 15.5v-1.379c.234-.121.406-.312.523-.531.472-.722 1.264-1.09 2.475-1.09z' />
-                    </svg>
+                    <LightBulbIcon className='w-4 h-4 mr-2' />
                     Marketing
                   </div>
                 </button>
@@ -380,13 +349,7 @@ export default function ProviderDashboard() {
                 <div className='p-4 sm:p-6 border-b border-gray-100'>
                   <div className='flex items-center justify-between'>
                     <h2 className='text-xl font-semibold text-gray-900 flex items-center'>
-                      <svg
-                        className='w-5 h-5 mr-2 text-green-600'
-                        fill='currentColor'
-                        viewBox='0 0 20 20'
-                      >
-                        <path d='M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' />
-                      </svg>
+                      <CheckCircleIcon className='w-5 h-5 mr-2 text-green-600' />
                       Your Services
                     </h2>
                     <span className='text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full'>
@@ -427,17 +390,7 @@ export default function ProviderDashboard() {
                 <div className='p-4 sm:p-6 border-b border-gray-100'>
                   <div className='flex items-center justify-between'>
                     <h2 className='text-xl font-semibold text-gray-900 flex items-center'>
-                      <svg
-                        className='w-5 h-5 mr-2 text-green-600'
-                        fill='currentColor'
-                        viewBox='0 0 20 20'
-                      >
-                        <path
-                          fillRule='evenodd'
-                          d='M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z'
-                          clipRule='evenodd'
-                        />
-                      </svg>
+                      <ClockIcon className='w-5 h-5 mr-2 text-green-600' />
                       Your Availability
                     </h2>
                     <span className='text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full'>
@@ -477,13 +430,7 @@ export default function ProviderDashboard() {
                   <div className='p-4 sm:p-6 border-b border-gray-100'>
                     <div className='flex items-center justify-between'>
                       <h2 className='text-xl font-semibold text-gray-900 flex items-center'>
-                        <svg
-                          className='w-5 h-5 mr-2 text-blue-600'
-                          fill='currentColor'
-                          viewBox='0 0 20 20'
-                        >
-                          <path d='M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' />
-                        </svg>
+                        <CheckCircleIcon className='w-5 h-5 mr-2 text-blue-600' />
                         Your Bookings
                       </h2>
                       <span className='text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full'>
@@ -515,17 +462,7 @@ export default function ProviderDashboard() {
                                 </h3>
                                 <div className='mt-2 space-y-1 text-sm text-gray-600'>
                                   <p className='flex items-center'>
-                                    <svg
-                                      className='w-4 h-4 mr-2 text-gray-400'
-                                      fill='currentColor'
-                                      viewBox='0 0 20 20'
-                                    >
-                                      <path
-                                        fillRule='evenodd'
-                                        d='M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z'
-                                        clipRule='evenodd'
-                                      />
-                                    </svg>
+                                    <CalendarDaysIcon className='w-4 h-4 mr-2 text-gray-400' />
                                     {new Date(appt.created_at).toLocaleString(
                                       "en-US",
                                       {
@@ -552,17 +489,7 @@ export default function ProviderDashboard() {
                 <div className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden'>
                   <div className='p-4 sm:p-6 border-b border-gray-100'>
                     <h2 className='text-xl font-semibold text-gray-900 flex items-center'>
-                      <svg
-                        className='w-5 h-5 mr-2 text-purple-600'
-                        fill='currentColor'
-                        viewBox='0 0 20 20'
-                      >
-                        <path
-                          fillRule='evenodd'
-                          d='M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z'
-                          clipRule='evenodd'
-                        />
-                      </svg>
+                      <LinkIcon className='w-5 h-5 mr-2 text-purple-600' />
                       Your Booking Link
                     </h2>
                   </div>
@@ -720,17 +647,7 @@ export default function ProviderDashboard() {
                                 </h3>
                                 <div className='mt-2 space-y-1 text-sm text-gray-600'>
                                   <p className='flex items-center'>
-                                    <svg
-                                      className='w-4 h-4 mr-2 text-gray-400'
-                                      fill='currentColor'
-                                      viewBox='0 0 20 20'
-                                    >
-                                      <path
-                                        fillRule='evenodd'
-                                        d='M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z'
-                                        clipRule='evenodd'
-                                      />
-                                    </svg>
+                                    <CalendarDaysIcon className='w-4 h-4 mr-2 text-gray-400' />
                                     {new Date(appt.created_at).toLocaleString(
                                       "en-US",
                                       {

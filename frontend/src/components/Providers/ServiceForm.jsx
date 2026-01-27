@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useCurrency } from "../../context/CurrencyContext.jsx";
 import CurrencySelector from "../Common/CurrencySelector.jsx";
+import { XMarkIcon, PencilIcon, PlusIcon } from "@heroicons/react/24/outline";
 
 export default function ServiceForm({
   onCreate,
@@ -321,19 +322,7 @@ export default function ServiceForm({
             aria-label='Cancel editing'
           >
             <span className='flex items-center justify-center gap-3 text-base'>
-              <svg
-                className='w-5 h-5'
-                fill='none'
-                stroke='currentColor'
-                viewBox='0 0 24 24'
-                strokeWidth='2'
-              >
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  d='M6 18L18 6M6 6l12 12'
-                />
-              </svg>
+              <XMarkIcon className='w-5 h-5' />
               Cancel
             </span>
           </button>
@@ -356,23 +345,11 @@ export default function ServiceForm({
           aria-label={editingService ? "Update service" : "Create new service"}
         >
           <span className='flex items-center justify-center gap-3 text-lg'>
-            <svg
-              className='w-6 h-6'
-              fill='none'
-              stroke='currentColor'
-              viewBox='0 0 24 24'
-              strokeWidth='2'
-            >
-              <path
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                d={
-                  editingService
-                    ? "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                    : "M12 4v16m8-8H4"
-                }
-              />
-            </svg>
+            {editingService ? (
+              <PencilIcon className='w-6 h-6' />
+            ) : (
+              <PlusIcon className='w-6 h-6' />
+            )}
             {editingService ? "Update Service" : "Add A Service"}
           </span>
         </button>

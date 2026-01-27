@@ -10,6 +10,7 @@ import {
   trackBookingFailed,
   trackEvent
 } from "../../services/analytics.js";
+import { ChevronLeftIcon, XMarkIcon } from "@heroicons/react/24/solid";
 
 export default function BookAppointmentForm({
   providerId,
@@ -285,19 +286,7 @@ export default function BookAppointmentForm({
                 className='p-2 hover:bg-gray-100 rounded-lg mr-3'
                 aria-label='Go back'
               >
-                <svg
-                  className='w-5 h-5'
-                  fill='black'
-                  stroke='black'
-                  viewBox='0 0 24 24'
-                >
-                  <path
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    strokeWidth={2}
-                    d='M15 19l-7-7 7-7'
-                  />
-                </svg>
+                <ChevronLeftIcon className='w-5 h-5' />
               </button>
               <div>
                 <h3 className='text-xl font-bold text-gray-900'>
@@ -314,19 +303,7 @@ export default function BookAppointmentForm({
               onClick={onClose}
               className='p-2 hover:bg-gray-100 rounded-lg'
             >
-              <svg
-                className='w-5 h-5'
-                fill='none'
-                stroke='currentColor'
-                viewBox='0 0 24 24'
-              >
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth={2}
-                  d='M6 18L18 6M6 6l12 12'
-                />
-              </svg>
+              <XMarkIcon className='w-5 h-5' />
             </button>
           </div>
         </div>
