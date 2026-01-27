@@ -160,7 +160,15 @@ const ProviderProfile = () => {
       : 0;
 
   return (
-    <div className='min-h-screen bg-gray-50'>
+    <div className='min-h-screen bg-gray-50 relative'>
+      {/* Back Button */}
+      <button
+        onClick={() => navigate("/")}
+        className='fixed top-4 left-4 z-50 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 rounded-full p-3 shadow-lg border border-gray-200 transition-all duration-200 group'
+        aria-label='Go back to home'
+      >
+        <ArrowLeft className='w-5 h-5 group-hover:-translate-x-1 transition-transform' />
+      </button>
       <div className='container-mobile py-8'>
         {/* Hero Section - Critical Content */}
         <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6 critical-content progressive-content'>
@@ -447,7 +455,10 @@ const ProviderProfile = () => {
             </div>
             {reviews.length > 5 && (
               <div className='text-center mt-4'>
-                <button className='text-green-600 hover:text-green-700 font-medium'>
+                <button
+                  onClick={() => navigate("/explore")}
+                  className='text-green-600 hover:text-green-700 font-medium'
+                >
                   View all {reviews.length} reviews
                 </button>
               </div>
@@ -592,7 +603,10 @@ const ProviderProfile = () => {
                 >
                   Book Your Appointment
                 </button>
-                <button className='border border-gray-300 text-gray-700 px-8 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors'>
+                <button
+                  onClick={() => navigate("/explore")}
+                  className='border border-gray-300 text-gray-700 px-8 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors'
+                >
                   View Availability
                 </button>
               </div>

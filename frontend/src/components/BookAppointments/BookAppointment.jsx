@@ -525,7 +525,9 @@ export default function BookAppointmentForm({
                 ? "Book Appointment"
                 : "Book as Guest"}
           </button>
-          {message && <p className='text-sm text-center mt-3'>{message}</p>}
+          {message && (
+            <p className='text-sm text-center mt-3 text-red-600'>{message}</p>
+          )}
         </div>
 
         {/* Sign-up Prompt */}

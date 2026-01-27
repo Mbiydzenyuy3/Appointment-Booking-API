@@ -8,7 +8,7 @@ import {
   GraduationCap,
   ArrowRight
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const categories = [
   {
@@ -68,6 +68,8 @@ const categories = [
 ];
 
 export default function FeaturedCategories() {
+  const navigate = useNavigate();
+
   return (
     <section id='services' className='py-24 lg:py-32 bg-slate-50'>
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
@@ -127,7 +129,10 @@ export default function FeaturedCategories() {
 
         {/* View All Button */}
         <div className='text-center mt-12'>
-          <button className='inline-flex items-center gap-2 text-emerald-600 font-semibold hover:text-emerald-700 transition-colors cursor-pointer group'>
+          <button
+            onClick={() => navigate("/explore")}
+            className='inline-flex items-center gap-2 text-emerald-600 font-semibold hover:text-emerald-700 transition-colors cursor-pointer group'
+          >
             View all categories
             <ArrowRight className='w-4 h-4 group-hover:translate-x-1 transition-transform' />
           </button>
