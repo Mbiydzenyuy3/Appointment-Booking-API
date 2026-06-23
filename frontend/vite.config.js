@@ -127,8 +127,8 @@ export default defineConfig({
           vendor: ["react", "react-dom"],
           router: ["react-router-dom"],
           forms: ["formik", "yup"],
-          ui: ["react-modal", "react-datepicker", "react-hot-toast"],
-          utils: ["date-fns", "axios", "jwt-decode"],
+          ui: ["react-modal", "react-datepicker"],
+          utils: ["date-fns", "axios"],
           // Mobile-first chunks
           mobile: ["react-intersection-observer"]
         },
