@@ -74,7 +74,9 @@ app.use((req, res, next) => {
 // Routes
 app.use("/", indexRouter);
 app.use("/auth", authRouter);
-app.use("/debug-auth", debugAuthRouter);
+if (process.env.NODE_ENV !== "production") {
+  app.use("/debug-auth", debugAuthRouter);
+}
 app.use("/appointments", appointmentRouter);
 app.use("/slots", slotRouter);
 app.use("/providers", providerRouter);

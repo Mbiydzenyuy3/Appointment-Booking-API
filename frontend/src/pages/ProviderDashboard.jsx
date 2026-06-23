@@ -6,7 +6,7 @@ import TimeslotForm from "../components/Providers/TimeSlotForm.jsx";
 import TimeslotList from "../components/Providers/TimeSlotList.jsx";
 import CalendarSync from "../components/Providers/CalendarSync.jsx";
 import api from "../services/api.js";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 import {
   CheckCircleIcon,
   ClockIcon,

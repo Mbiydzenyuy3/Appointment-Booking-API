@@ -290,12 +290,11 @@ export const advanceSlots = async () => {
     for (const slot of slots) {
       let currentDay = slot.day;
       while (currentDay < today) {
-        let d = new Date(currentDay);
-        d.setDate(d.getDate() + 1);
-        if (d.getDay() === 0) {
-          // Sunday
-          d.setDate(d.getDate() + 1);
-        }
+        const d = new Date(currentDay + "T00:00:00Z"); // parse as UTC to avoid DST shift
+        d.setUTCDate(d.getUTCDate() + 1);
+        // Skip weekends: 0 = Sunday, 6 = Saturday
+        if (d.getUTCDay() === 6) d.setUTCDate(d.getUTCDate() + 2); // Sat → Mon
+        if (d.getUTCDay() === 0) d.setUTCDate(d.getUTCDate() + 1); // Sun → Mon
         currentDay = d.toISOString().split("T")[0];
       }
       // Update the slot

@@ -64,7 +64,7 @@ export async function createProvider(req, res, next) {
       success: true,
       data: {
         ...provider,
-        booking_link: `${FRONTEND_URL}/book/provider/${provider.provider_id}`
+        booking_link: `${FRONTEND_URL}/provider/${provider.booking_slug}`
       }
     });
   } catch (err) {
@@ -198,7 +198,7 @@ export async function getBookingLink(req, res, next) {
         message: "Provider not found."
       });
 
-    const bookingLink = `${FRONTEND_URL}/book/provider/${provider.provider_id}`;
+    const bookingLink = `${FRONTEND_URL}/provider/${provider.booking_slug}`;
     res.json({
       success: true,
       data: {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import api from "../../services/api.js";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 
 export default function CalendarSync() {
   const [syncStatus, setSyncStatus] = useState({ enabled: false });

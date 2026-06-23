@@ -80,9 +80,9 @@ router.post("/book", validate(appointmentSchema), CreateAppointment);
  */
 router.delete(
   "/:appointmentId",
-  validate(cancelAppointmentSchema),
+  validate(cancelAppointmentSchema, "params"),
   cancelAppointment
-); // optional path param validation
+);
 
 /**
  * @swagger

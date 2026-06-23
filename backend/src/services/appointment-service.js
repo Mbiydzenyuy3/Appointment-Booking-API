@@ -341,7 +341,6 @@ export async function list(
     return result.rows;
   } catch (err) {
     logError("Appointment list query failed:", err);
-    // Return empty array to prevent 500 errors
-    return [];
+    throw err;
   }
 }
