@@ -21,12 +21,12 @@ test("provider list returns at least one appointment after booking", async () =>
     201,
     `register provider failed: ${JSON.stringify(providerReg.body)}`
   );
-  const providerToken = providerReg.body.token;
+  const providerCookies = providerReg.headers["set-cookie"];
 
   // Step 2: Create service for provider
   const serviceRes = await request(app)
     .post("/services/create")
-    .set("Authorization", `Bearer ${providerToken}`)
+    .set("Cookie", providerCookies)
     .send({
       name: "Test Service",
       description: "A test service",
@@ -50,7 +50,7 @@ test("provider list returns at least one appointment after booking", async () =>
 
   const slotRes = await request(app)
     .post("/slots/create")
-    .set("Authorization", `Bearer ${providerToken}`)
+    .set("Cookie", providerCookies)
     .send({
       day: slotDay,
       startTime: slotStart,
@@ -76,12 +76,12 @@ test("provider list returns at least one appointment after booking", async () =>
     201,
     `register client failed: ${JSON.stringify(clientReg.body)}`
   );
-  const clientToken = clientReg.body.token;
+  const clientCookies = clientReg.headers["set-cookie"];
 
   // Step 5: Client books the slot
   const bookRes = await request(app)
     .post("/appointments/book")
-    .set("Authorization", `Bearer ${clientToken}`)
+    .set("Cookie", clientCookies)
     .send({
       timeslotId: slotId,
       appointment_date: slotDay,
@@ -96,7 +96,7 @@ test("provider list returns at least one appointment after booking", async () =>
   // Step 6: Provider lists appointments — THIS IS THE BUG CHECK
   const listRes = await request(app)
     .get("/appointments/list")
-    .set("Authorization", `Bearer ${providerToken}`);
+    .set("Cookie", providerCookies);
 
   assert.strictEqual(
     listRes.statusCode,

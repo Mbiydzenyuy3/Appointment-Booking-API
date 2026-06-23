@@ -9,6 +9,17 @@ import { sendPasswordResetEmail } from "../services/email-service.js";
 /* ---------------------------------------
    AUTH HELPERS
 ---------------------------------------- */
+const COOKIE_OPTS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "strict",
+  maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days (matches JWT expiry)
+};
+
+function setCookieToken(res, token) {
+  res.cookie("token", token, COOKIE_OPTS);
+}
+
 const generateToken = (user) => {
   return jwt.sign(
     {
@@ -79,11 +90,11 @@ export async function register(req, res, next) {
     });
 
     const token = generateToken(result);
+    setCookieToken(res, token);
 
     res.status(201).json({
       success: true,
       message: "Account created successfully!",
-      token,
       data: result
     });
   } catch (err) {
@@ -135,13 +146,13 @@ export async function login(req, res, next) {
     }
 
     const token = generateToken({ ...user, provider_id: providerId });
+    setCookieToken(res, token);
 
     logInfo("User logged in:", user.email);
 
     res.status(200).json({
       success: true,
       message: "Login successful",
-      token,
       data: { ...user, provider_id: providerId }
     });
   } catch (err) {
@@ -473,11 +484,11 @@ export async function convertGuestToUser(req, res, next) {
     );
 
     const token = generateToken(rows[0]);
+    setCookieToken(res, token);
 
     res.status(201).json({
       success: true,
       message: "Guest converted to user.",
-      token,
       data: rows[0]
     });
   } catch (err) {
@@ -506,11 +517,20 @@ export async function googleAuthCallback(req, res, next) {
     }
 
     const token = generateToken(user);
+    setCookieToken(res, token);
     res
       .status(200)
-      .json({ success: true, message: "Login successful.", token, data: user });
+      .json({ success: true, message: "Login successful.", data: user });
   } catch (err) {
     logError("Google auth callback error:", err);
     next(err);
   }
+}
+
+/* ---------------------------------------
+   LOGOUT
+---------------------------------------- */
+export async function logout(req, res) {
+  res.clearCookie("token", COOKIE_OPTS);
+  res.json({ success: true, message: "Logged out." });
 }

@@ -126,4 +126,7 @@ router.put("/update-user-type", authMiddleware, AuthController.updateUserType);
 // Guest conversion route (public)
 router.post("/convert-guest", AuthController.convertGuestToUser);
 
+// Logout route (public — clears cookie)
+router.post("/logout", AuthController.logout);
+
 export default router;
