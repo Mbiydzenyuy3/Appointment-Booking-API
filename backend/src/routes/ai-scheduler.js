@@ -4,6 +4,16 @@ const router = express.Router();
 import aiSchedulerController from "../controllers/ai-scheduler-controller.js";
 import authMiddleware from "../middlewares/auth-middleware.js";
 
+// All endpoints in this router return simulated/mock data and are not
+// connected to the real database or any AI model. Block until implemented.
+router.use((_req, res) => {
+  res.status(501).json({
+    success: false,
+    message: "AI Scheduler is not yet implemented.",
+    notice: "This feature returns simulated data only and is disabled until a real implementation is available."
+  });
+});
+
 /**
  * @route   POST /api/ai-scheduler/suggestions
  * @desc    Get AI-powered accessibility-optimized appointment suggestions

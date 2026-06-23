@@ -104,7 +104,7 @@ export default function BookAppointmentForm({
         break;
     }
     setFieldErrors(errors);
-    return Object.keys(errors).length === 0;
+    return !errors[fieldName];
   };
 
   const validateAllFields = () => {
@@ -310,7 +310,7 @@ export default function BookAppointmentForm({
 
         {/* Content */}
         <div className='flex-1 overflow-y-auto px-6 py-4'>
-          <form className='space-y-6'>
+          <form id='booking-form' className='space-y-6'>
             {/* Progress */}
             <div className='mb-6'>
               <div className='flex items-center justify-between text-sm text-gray-600 mb-2'>
@@ -492,6 +492,7 @@ export default function BookAppointmentForm({
         <div className='flex-shrink-0 px-6 py-4 border-t border-gray-100'>
           <button
             type='submit'
+            form='booking-form'
             disabled={loading || !isReadyToBook()}
             onClick={handleSubmit}
             className='w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed'
