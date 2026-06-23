@@ -212,9 +212,9 @@ class AISchedulerService {
       }
 
       // Day optimization
-      const dayName = new Date(slot.date).toLocaleLowerCase("en-US", {
-        weekday: "long"
-      });
+      const dayName = new Date(slot.date)
+        .toLocaleDateString("en-US", { weekday: "long" })
+        .toLowerCase();
       if (profile.timing.preferredDays.includes(dayName)) {
         score += 15;
         reasons.push("Preferred day");

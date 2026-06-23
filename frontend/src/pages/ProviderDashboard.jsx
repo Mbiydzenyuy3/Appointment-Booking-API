@@ -5,7 +5,6 @@ import ServiceList from "../components/Providers/ServiceList.jsx";
 import TimeslotForm from "../components/Providers/TimeSlotForm.jsx";
 import TimeslotList from "../components/Providers/TimeSlotList.jsx";
 import CalendarSync from "../components/Providers/CalendarSync.jsx";
-import AuthDebugger from "../components/Providers/AuthDebugger.jsx";
 import api from "../services/api.js";
 import toast from "react-hot-toast";
 import {
@@ -27,17 +26,7 @@ export default function ProviderDashboard() {
   const [profileComplete, setProfileComplete] = useState(false);
   const [editingService, setEditingService] = useState(null);
 
-  // Debug logging
-  console.log("ProviderDashboard render:", {
-    user,
-    provider_id: user?.provider_id
-  });
-
   useEffect(() => {
-    console.log("ProviderDashboard useEffect:", {
-      user,
-      provider_id: user?.provider_id
-    });
     if (!user?.provider_id) {
       setLoading(false);
       return;
@@ -54,13 +43,6 @@ export default function ProviderDashboard() {
             api.get("/providers/me")
           ]);
 
-        console.log("Fetch responses:", {
-          servicesRes,
-          slotsRes,
-          appointmentsRes,
-          linkRes,
-          profileRes
-        });
         setServices(servicesRes.data.data);
         setTimeSlots(slotsRes.data.data);
         setAppointments(appointmentsRes.data.data || []);
@@ -223,7 +205,6 @@ export default function ProviderDashboard() {
         </div>
       ) : (
         <>
-          <AuthDebugger />
           <div className='mb-6 sm:hidden'>
             <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-2'>
               <div className='grid grid-cols-3 gap-2'>

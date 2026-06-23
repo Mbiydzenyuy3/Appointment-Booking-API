@@ -236,9 +236,9 @@ export async function addReview(req, res, next) {
 
     const booking = await query(
       `
-      SELECT booking_id
-      FROM bookings
-      WHERE booking_id = $1 AND user_id = $2 AND status = 'completed'
+      SELECT appointment_id
+      FROM appointments
+      WHERE appointment_id = $1 AND user_id = $2 AND status = 'completed'
     `,
       [booking_id, reviewer_user_id]
     );

@@ -9,21 +9,11 @@ export const createSlot = async ({
   startTime,
   endTime
 }) => {
-  console.log("createSlot called with:", {
-    providerId,
-    serviceId,
-    day,
-    startTime,
-    endTime
-  });
   const client = await pool.connect();
 
   try {
     await client.query("BEGIN");
-    console.log("Transaction begun");
 
-    // Check for exact duplicate
-    console.log("Checking for exact duplicate");
     const exactDuplicate = await client.query(
       `
   SELECT * FROM time_slots
@@ -38,8 +28,6 @@ export const createSlot = async ({
       );
     }
 
-    // Check for overlapping slots
-    console.log("Checking for overlapping slots");
     const overlapCheck = await client.query(
       `
       SELECT * FROM time_slots
@@ -56,8 +44,6 @@ export const createSlot = async ({
       );
     }
 
-    // Insert new slot
-    console.log("Inserting new slot");
     const newSlotInsert = await client.query(
       `
       INSERT INTO time_slots (
@@ -242,24 +228,42 @@ export async function searchAvailableSlots({
   const result = await pool.query(query, params);
   let slots = result.rows;
 
-  // Filter out slots that conflict with Google Calendar events
+  // Filter out slots that conflict with Google Calendar events.
+  // Batch by provider: one getCalendarEvents call per unique provider, then filter locally.
   if (slots.length > 0) {
-    const { checkCalendarConflicts } =
-      await import("../services/calendar-service.js");
+    const { getCalendarEvents } = await import("../services/calendar-service.js");
+
+    // Group slots by provider_user_id
+    const providerSlotMap = new Map();
+    for (const slot of slots) {
+      const pid = slot.provider_user_id;
+      if (!providerSlotMap.has(pid)) providerSlotMap.set(pid, []);
+      providerSlotMap.get(pid).push(slot);
+    }
 
     const filteredSlots = [];
-    for (const slot of slots) {
-      const slotStart = new Date(`${slot.day}T${slot.start_time}`);
-      const slotEnd = new Date(`${slot.day}T${slot.end_time}`);
+    for (const [providerId, providerSlots] of providerSlotMap.entries()) {
+      // Compute the full time range for this provider's slots in one shot
+      const starts = providerSlots.map(s => new Date(`${s.day}T${s.start_time}`));
+      const ends   = providerSlots.map(s => new Date(`${s.day}T${s.end_time}`));
+      const rangeStart = new Date(Math.min(...starts) - 60 * 60 * 1000); // 1h buffer
+      const rangeEnd   = new Date(Math.max(...ends)   + 60 * 60 * 1000);
 
-      const conflict = await checkCalendarConflicts(
-        slot.provider_user_id,
-        slotStart,
-        slotEnd
-      );
+      // One API call per provider (returns [] when calendar sync not enabled)
+      const events = await getCalendarEvents(providerId, rangeStart, rangeEnd);
+      const confirmedEvents = events.filter(e => e.status === "confirmed");
 
-      if (!conflict.conflict) {
-        filteredSlots.push(slot);
+      for (const slot of providerSlots) {
+        const slotStart = new Date(`${slot.day}T${slot.start_time}`);
+        const slotEnd   = new Date(`${slot.day}T${slot.end_time}`);
+
+        const hasConflict = confirmedEvents.some(e => {
+          const eStart = new Date(e.start.dateTime || e.start.date);
+          const eEnd   = new Date(e.end.dateTime   || e.end.date);
+          return slotStart < eEnd && slotEnd > eStart;
+        });
+
+        if (!hasConflict) filteredSlots.push(slot);
       }
     }
 
