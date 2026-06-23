@@ -165,6 +165,13 @@ const initializeDbSchema = async () => {
       );
     `);
 
+    // Add booking_slug to providers if the table pre-dates this column
+    await client.query(`
+      ALTER TABLE providers
+      ADD COLUMN IF NOT EXISTS booking_slug VARCHAR(255) UNIQUE,
+      ADD COLUMN IF NOT EXISTS phone VARCHAR(50);
+    `);
+
     await client.query(`
       CREATE TABLE IF NOT EXISTS services (
         service_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
