@@ -13,14 +13,15 @@ test("Register provider", async () => {
   const res = await request(app).post("/auth/register").send({
     name: "Provider User",
     email: uniqueEmail,
-    password: "test123",
-    confirmPassword: "test123",
+    password: "Test1234!",
     user_type: "provider"
   });
 
   assert.strictEqual(res.statusCode, 201);
-  assert.ok(res.body.token);
-  providerToken = res.body.token;
+  assert.ok(res.headers["set-cookie"]);
+  const cookieHeader = (res.headers["set-cookie"] || []).find((c) => c.startsWith("token=")) || "";
+  providerToken = cookieHeader.split(";")[0].replace("token=", "");
+  assert.ok(providerToken);
 });
 
 test("Create service", async () => {

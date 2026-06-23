@@ -150,10 +150,11 @@ export async function login(req, res, next) {
 
     logInfo("User logged in:", user.email);
 
+    const { password: _p, reset_password_token: _rpt, reset_password_expires: _rpe, ...safeUser } = user;
     res.status(200).json({
       success: true,
       message: "Login successful",
-      data: { ...user, provider_id: providerId }
+      data: { ...safeUser, provider_id: providerId }
     });
   } catch (err) {
     logError("Login error:", err);
@@ -518,9 +519,10 @@ export async function googleAuthCallback(req, res, next) {
 
     const token = generateToken(user);
     setCookieToken(res, token);
+    const { password: _p, reset_password_token: _rpt, reset_password_expires: _rpe, ...safeUser } = user;
     res
       .status(200)
-      .json({ success: true, message: "Login successful.", data: user });
+      .json({ success: true, message: "Login successful.", data: safeUser });
   } catch (err) {
     logError("Google auth callback error:", err);
     next(err);

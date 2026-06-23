@@ -13,7 +13,7 @@ import {
 } from "@heroicons/react/24/outline";
 
 const UserDashboard = () => {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
   const [services, setServices] = useState([]);
@@ -89,9 +89,10 @@ const UserDashboard = () => {
   };
 
   useEffect(() => {
+    if (isLoading) return;
+
     const fetchData = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
+      if (!user) {
         toast.error("Unauthorized. Please log in.");
         navigate("/login");
         return;
@@ -114,7 +115,7 @@ const UserDashboard = () => {
     };
 
     fetchData();
-  }, []);
+  }, [isLoading, user]);
 
   // useEffect(() => {
   //   const debounceTimer = setTimeout(() => {
