@@ -13,15 +13,14 @@ const ProviderModel = {
       const { rows } = await db.query(
         `
         INSERT INTO providers (
-          user_id, bio, phone, hourly_rate, referral_code, booking_slug
+          user_id, bio, hourly_rate, referral_code, booking_slug
         )
-        VALUES ($1,$2,$3,$4,$5,$6)
+        VALUES ($1,$2,$3,$4,$5)
         RETURNING *;
         `,
         [
           user_id,
           bio || "",
-          phone || null,
           hourly_rate || null,
           referral_code || null,
           bookingSlug
