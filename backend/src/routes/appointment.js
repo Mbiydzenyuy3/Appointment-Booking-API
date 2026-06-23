@@ -2,19 +2,28 @@
 import express from "express";
 import {
   CreateAppointment,
+  CreateGuestAppointment,
   cancelAppointment,
-  listAppointments,
+  listAppointments
 } from "../controllers/appointment-controller.js";
 import {
   appointmentSchema,
-  cancelAppointmentSchema,
+  guestAppointmentSchema,
+  cancelAppointmentSchema
 } from "../validators/appointment-validator.js";
-import { validate } from "../middlewares/validate-middleware.js"
-import authMiddleware from "../middlewares/auth-middleware.js"; 
+import { validate } from "../middlewares/validate-middleware.js";
+import authMiddleware from "../middlewares/auth-middleware.js";
 
 const router = express.Router();
 
-router.use(authMiddleware); 
+// Guest booking route (no auth required)
+router.post(
+  "/guest-book",
+  validate(guestAppointmentSchema),
+  CreateGuestAppointment
+);
+
+router.use(authMiddleware);
 
 /**
  * @swagger
@@ -69,7 +78,11 @@ router.post("/book", validate(appointmentSchema), CreateAppointment);
  *       403:
  *         description: Forbidden – only clients allowed
  */
-router.delete("/:appointmentId", validate(cancelAppointmentSchema),cancelAppointment); // optional path param validation
+router.delete(
+  "/:appointmentId",
+  validate(cancelAppointmentSchema),
+  cancelAppointment
+); // optional path param validation
 
 /**
  * @swagger
@@ -120,4 +133,3 @@ router.delete("/:appointmentId", validate(cancelAppointmentSchema),cancelAppoint
 router.get("/list", listAppointments);
 
 export default router;
-

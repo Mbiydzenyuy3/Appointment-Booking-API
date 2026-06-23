@@ -1,62 +1,37 @@
-// src/models/provider-model.js
+import crypto from "crypto";
 import { query } from "../config/db.js";
 import { logError } from "../utils/logger.js";
 
 const ProviderModel = {
-  async create({ user_id, bio, rating }) {
+  async create(
+    { user_id, bio, phone, hourly_rate, referral_code },
+    db = { query }
+  ) {
     try {
-      const { rows } = await query(
+      const bookingSlug = crypto.randomBytes(16).toString("hex");
+
+      const { rows } = await db.query(
         `
-        INSERT INTO providers (user_id, bio, rating)
-        VALUES ($1, $2, $3)
+        INSERT INTO providers (
+          user_id, bio, phone, hourly_rate, referral_code, booking_slug
+        )
+        VALUES ($1,$2,$3,$4,$5,$6)
         RETURNING *;
         `,
-        [user_id, bio, rating]
+        [
+          user_id,
+          bio || "",
+          phone || null,
+          hourly_rate || null,
+          referral_code || null,
+          bookingSlug
+        ]
       );
+
       return rows[0];
     } catch (err) {
       logError("DB Error (create provider):", err);
       throw new Error("Failed to create provider profile");
-    }
-  },
-
-  async updateByUserId(user_id, { bio, rating }) {
-    try {
-      const { rows } = await query(
-        `
-      UPDATE providers
-      SET bio = $1,
-          rating = $2,
-          updated_at = CURRENT_TIMESTAMP
-      WHERE user_id = $3
-      RETURNING *;
-      `,
-        [bio, rating, user_id]
-      );
-      return rows[0];
-    } catch (err) {
-      logError("DB Error (update provider):", err);
-      throw new Error("Failed to update provider profile");
-    }
-  },
-
-  async listAll({limit = 10, offset = 0}) {
-    try {
-      const { rows } = await query(
-        `
-        SELECT 
-          p.*, 
-          u.name, 
-          u.email 
-        FROM providers p
-        JOIN users u ON p.user_id = u.user_id
-        LIMIT $1 OFFSET $2;
-        ` , [limit, offset]
-      );
-      return rows;
-    } catch (err) {
-      logError("DB Error (list providers):", err);
-      throw new Error("Failed to fetch providers");
     }
   },
 
@@ -68,12 +43,88 @@ const ProviderModel = {
       );
       return rows[0];
     } catch (err) {
-      logError("DB Error (find by user ID):", err);
-      throw new Error("Failed to query provider by user ID");
+      logError("DB Error (find provider by user_id):", err);
+      throw err;
     }
   },
+
+  async findById(provider_id) {
+    try {
+      const { rows } = await query(
+        `SELECT * FROM providers WHERE provider_id = $1`,
+        [provider_id]
+      );
+      return rows[0];
+    } catch (err) {
+      logError("DB Error (find provider by id):", err);
+      throw err;
+    }
+  },
+
+  async updateByUserId(user_id, updates) {
+    try {
+      const fields = Object.keys(updates);
+      const values = Object.values(updates);
+      const setClause = fields
+        .map((field, index) => `${field} = $${index + 2}`)
+        .join(", ");
+      const queryText = `UPDATE providers SET ${setClause} WHERE user_id = $1 RETURNING *`;
+      const { rows } = await query(queryText, [user_id, ...values]);
+      return rows[0];
+    } catch (err) {
+      logError("DB Error (update provider by user_id):", err);
+      throw err;
+    }
+  },
+
+  async deleteById(provider_id) {
+    try {
+      await query(`DELETE FROM providers WHERE provider_id = $1`, [
+        provider_id
+      ]);
+    } catch (err) {
+      logError("DB Error (delete provider by id):", err);
+      throw err;
+    }
+  },
+
+  async findByReferralCode(referral_code) {
+    try {
+      const { rows } = await query(
+        `SELECT * FROM providers WHERE referral_code = $1`,
+        [referral_code]
+      );
+      return rows[0];
+    } catch (err) {
+      logError("DB Error (find provider by referral code):", err);
+      throw err;
+    }
+  },
+
+  async findByBookingSlug(booking_slug) {
+    try {
+      const { rows } = await query(
+        `SELECT * FROM providers WHERE booking_slug = $1`,
+        [booking_slug]
+      );
+      return rows[0];
+    } catch (err) {
+      logError("DB Error (find provider by booking slug):", err);
+      throw err;
+    }
+  },
+
+  async markReferralUsed(user_id, referral_code) {
+    try {
+      await query(
+        `INSERT INTO referrals_used (user_id, referral_code, used_at) VALUES ($1, $2, NOW())`,
+        [user_id, referral_code]
+      );
+    } catch (err) {
+      logError("DB Error (mark referral used):", err);
+      throw err;
+    }
+  }
 };
-
-
 
 export default ProviderModel;

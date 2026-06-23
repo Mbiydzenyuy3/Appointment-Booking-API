@@ -6,18 +6,28 @@ export const serviceSchema = Joi.object({
     "string.base": "Name must be a string",
     "string.empty": "Name cannot be empty",
     "string.min": "Name should have at least 3 characters",
-    "any.required": "Name is required",
+    "any.required": "Name is required"
   }),
 
   description: Joi.string().optional(),
 
   price: Joi.number().positive().required().messages({
     "number.base": "Price must be a positive number",
-    "any.required": "Price is required",
+    "any.required": "Price is required"
   }),
 
   durationMinutes: Joi.number().integer().positive().required().messages({
     "number.base": "Duration must be a positive integer",
-    "any.required": "Duration is required",
+    "any.required": "Duration is required"
   }),
+
+  category: Joi.string().optional(),
+
+  location: Joi.string().optional(),
+
+  additionalDescription: Joi.string().optional(),
+
+  imageUrl: Joi.string().uri().optional().messages({
+    "string.uri": "Image URL must be a valid URL"
+  })
 });

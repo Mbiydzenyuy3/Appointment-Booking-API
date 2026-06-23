@@ -1,22 +1,18 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext.jsx";
+import { useAuth } from "../context/AuthContext";
 
 const PrivateRoute = ({ children, allowedRoles }) => {
   const { user, isLoading } = useAuth();
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
+  if (isLoading) return null;
 
-  // If not logged in
   if (!user) {
-    return <Navigate to='/login' />;
+    return <Navigate to='/login' replace />;
   }
 
-  // If role is not allowed
-  if (!allowedRoles?.includes(user?.user_type)) {
-    return <Navigate to='/unauthorized' />;
+  if (allowedRoles && !allowedRoles.includes(user.user_type)) {
+    return <Navigate to='/unauthorized' replace />;
   }
 
   return children;

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { ClockIcon } from "@heroicons/react/24/outline";
 
 export default function TimeslotForm({ onCreate, services = [] }) {
   const [timeslot, setTimeslot] = useState({
@@ -22,7 +23,6 @@ export default function TimeslotForm({ onCreate, services = [] }) {
       serviceId: timeslot.serviceId
     });
 
-    // Reset form
     setTimeslot({ day: "", startTime: "", endTime: "", serviceId: "" });
   };
 
@@ -34,10 +34,10 @@ export default function TimeslotForm({ onCreate, services = [] }) {
     >
       <div className='mb-6'>
         <h2 className='text-2xl font-bold text-gray-800 mb-2'>
-          Add a Timeslot
+          Set Availability
         </h2>
         <p className='text-gray-600 text-sm'>
-          Create available time slots for your services
+          Set times when you're available for bookings
         </p>
       </div>
 
@@ -47,14 +47,14 @@ export default function TimeslotForm({ onCreate, services = [] }) {
             htmlFor='serviceId'
             className='block text-sm font-semibold text-gray-700 mb-2'
           >
-            Service *
+            Service
           </label>
           <select
             id='serviceId'
             name='serviceId'
             value={timeslot.serviceId}
             onChange={handleChange}
-            className='block w-full p-4 border-2 border-gray-200 rounded-lg text-gray-800 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all duration-200 text-base bg-white'
+            className='block w-full p-4 border-2 border-gray-200 rounded-lg text-gray-800    transition-all duration-200 text-base bg-white'
             required
           >
             <option value=''>Select a service</option>
@@ -75,7 +75,7 @@ export default function TimeslotForm({ onCreate, services = [] }) {
             htmlFor='day'
             className='block text-sm font-semibold text-gray-700 mb-2'
           >
-            Date *
+            Date
           </label>
           <input
             id='day'
@@ -84,7 +84,7 @@ export default function TimeslotForm({ onCreate, services = [] }) {
             value={timeslot.day}
             onChange={handleChange}
             min={new Date().toISOString().split("T")[0]}
-            className='block w-full p-4 border-2 border-gray-200 rounded-lg text-gray-800 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all duration-200 text-base'
+            className='block w-full p-4 border-2 border-gray-200 rounded-lg text-gray-800    transition-all duration-200 text-base'
             required
           />
         </div>
@@ -95,7 +95,7 @@ export default function TimeslotForm({ onCreate, services = [] }) {
               htmlFor='startTime'
               className='block text-sm font-semibold text-gray-700 mb-2'
             >
-              Start Time *
+              Start Time
             </label>
             <input
               id='startTime'
@@ -103,7 +103,7 @@ export default function TimeslotForm({ onCreate, services = [] }) {
               name='startTime'
               value={timeslot.startTime}
               onChange={handleChange}
-              className='block w-full p-4 border-2 border-gray-200 rounded-lg text-gray-800 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all duration-200 text-base'
+              className='block w-full p-4 border-2 border-gray-200 rounded-lg text-gray-800    transition-all duration-200 text-base'
               required
             />
           </div>
@@ -112,7 +112,7 @@ export default function TimeslotForm({ onCreate, services = [] }) {
               htmlFor='endTime'
               className='block text-sm font-semibold text-gray-700 mb-2'
             >
-              End Time *
+              End Time
             </label>
             <input
               id='endTime'
@@ -120,7 +120,7 @@ export default function TimeslotForm({ onCreate, services = [] }) {
               name='endTime'
               value={timeslot.endTime}
               onChange={handleChange}
-              className='block w-full p-4 border-2 border-gray-200 rounded-lg text-gray-800 focus:border-green-500 focus:ring-4 focus:ring-green-100 transition-all duration-200 text-base'
+              className='block w-full p-4 border-2 border-gray-200 rounded-lg text-gray-800    transition-all duration-200 text-base'
               required
             />
           </div>
@@ -130,7 +130,7 @@ export default function TimeslotForm({ onCreate, services = [] }) {
       <div className='relative'>
         <button
           type='submit'
-          className='form-submit-button w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 active:from-green-800 active:to-green-900 text-white font-bold py-5 px-8 rounded-xl transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-green-300 focus:ring-offset-2 min-h-[64px] touch-target transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl border-2 border-transparent hover:border-green-800'
+          className='form-submit-button w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 active:from-green-800 active:to-green-900 text-white font-bold py-5 px-8 rounded-xl transition-all duration-300 focus:outline-none    min-h-[64px] touch-target transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl border-2 border-transparent hover:border-green-800'
           style={{
             position: "relative",
             zIndex: 9999,
@@ -146,20 +146,8 @@ export default function TimeslotForm({ onCreate, services = [] }) {
           aria-label='Create new timeslot'
         >
           <span className='flex items-center justify-center gap-3 text-lg'>
-            <svg
-              className='w-6 h-6'
-              fill='none'
-              stroke='currentColor'
-              viewBox='0 0 24 24'
-              strokeWidth='2'
-            >
-              <path
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                d='M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'
-              />
-            </svg>
-            Add A Timeslot
+            <ClockIcon className='w-6 h-6' />
+            Set Availability
           </span>
         </button>
       </div>

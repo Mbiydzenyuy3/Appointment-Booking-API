@@ -1,54 +1,65 @@
 import React from "react";
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import { Formik, Form, ErrorMessage, Field } from "formik";
 import * as Yup from "yup";
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
+import SuccessOverlay from "../components/Common/SuccessOverlay.tsx";
+import { ExclamationTriangleIcon } from "@heroicons/react/24/solid";
 
 const RegisterSchema = Yup.object().shape({
-  name: Yup.string().required("name input field is required"),
+  name: Yup.string().required("Business name is required"),
   email: Yup.string()
-    .email("Invalid email")
-    .required("email input field is required"),
+    .email("Please enter a valid email address")
+    .required("Email is required"),
   password: Yup.string()
-    .min(6, "Minimum 6 characters")
-    .required("password input field is required"),
+    .min(8, "Password must be at least 8 characters long")
+    .max(30, "Password must be no more than 30 characters long")
+    .matches(
+      new RegExp(
+        "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*(),.?\":{}|<>_\\-+=\\[\\]\\\\';/]).*$"
+      ),
+      "Password must include at least one uppercase letter, one lowercase letter, one number, and one special character"
+    )
+    .required("Password is required"),
   user_type: Yup.string()
-    .oneOf(["client", "provider"], "Invalid role")
-    .required("user type input field is equired")
+    .oneOf(["client", "provider"], "Please select a valid account type")
+    .required("Account type is required")
 });
 
 export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
   const [formError, setFormError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className='min-h-screen flex items-center justify-center bg-green-200 py-6 px-4 safe-area-bottom'>
+    <div className='relative flex items-center justify-center bg-green-50 py-4 px-4 safe-area-bottom'>
+      <Link
+        to='/'
+        className='absolute left-4 top-4 inline-flex items-center text-green-600 hover:text-green-700 font-medium'
+      >
+        ← Back
+      </Link>
       <main
         id='main-content'
-        className='bg-white shadow-xl rounded-2xl w-full max-w-md p-6 sm:p-8 items-center justify-center'
+        className='bg-white shadow-xl rounded-2xl w-3xl max-w-md p-6 sm:p-8 items-center justify-center'
         role='main'
         aria-labelledby='register-title'
       >
+        {success && <SuccessOverlay message='Account created successfully!' />}
         {/* Header */}
-        <div className='text-center mb-8'>
-          <Link
-            to='/'
-            className='inline-flex items-center space-x-2 text-2xl font-bold text-green-800 mb-4'
-          >
-            <span className='text-3xl'>📅</span>
-            <span>BOOKEasy</span>
-          </Link>
+        <div className='text-center mb-8 relative'>
           <h1
             className='text-2xl sm:text-3xl font-bold text-gray-900 mb-2'
             id='register-title'
           >
-            Create Account
+            Start Your Business
           </h1>
-          {/* <p className='text-gray-600'>
-            Join BOOKEasy to manage your appointments
-          </p> */}
+          <p className='text-gray-600'>
+            Create your account to start accepting bookings
+          </p>
         </div>
 
         <Formik
@@ -56,20 +67,25 @@ export default function Register() {
             name: "",
             email: "",
             password: "",
-            user_type: "client"
+            user_type: "provider"
           }}
           validationSchema={RegisterSchema}
           onSubmit={async (values, { setSubmitting }) => {
             setFormError("");
-            console.log("Submitting register form:", values);
-            const res = await register(values);
-            console.log("Register response:", res);
+            const registerData = { ...values };
+            const res = await register(registerData);
 
             if (res.success) {
-              if (res.user_type === "provider") navigate("/provider/dashboard");
-              else navigate("/dashboard");
+              setSuccess(true);
+              setTimeout(() => {
+                if (values.user_type === "provider") {
+                  navigate("/provider/dashboard");
+                } else {
+                  navigate("/dashboard");
+                }
+              }, 900);
             } else {
-              setFormError(res.message || "Registration failed");
+              setFormError(res.message);
             }
 
             setSubmitting(false);
@@ -80,17 +96,7 @@ export default function Register() {
               {formError && (
                 <div className='bg-red-50 border border-red-200 rounded-lg p-4'>
                   <p className='text-sm text-red-700 text-center flex items-center justify-center'>
-                    <svg
-                      className='w-4 h-4 mr-2'
-                      fill='currentColor'
-                      viewBox='0 0 20 20'
-                    >
-                      <path
-                        fillRule='evenodd'
-                        d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z'
-                        clipRule='evenodd'
-                      />
-                    </svg>
+                    <ExclamationTriangleIcon className='w-4 h-4 mr-2' />
                     {formError}
                   </p>
                 </div>
@@ -101,14 +107,14 @@ export default function Register() {
                   htmlFor='name'
                   className='block text-sm font-medium text-gray-700 mb-2'
                 >
-                  Full Name
+                  Business Type Name
                 </label>
                 <Field
                   name='name'
                   type='text'
-                  placeholder='Enter your full name'
-                  className='input-field w-full touch-target text-gray-700'
-                  autoComplete='name'
+                  placeholder='Haircut, Salon, Plumber, Spa, etc.'
+                  className='input-field field w-full touch-target text-gray-700'
+                  autoComplete='organization'
                 />
                 <ErrorMessage
                   name='name'
@@ -128,7 +134,7 @@ export default function Register() {
                   name='email'
                   type='email'
                   placeholder='Enter your email'
-                  className='input-field w-full touch-target text-gray-700'
+                  className='input-field field w-full touch-target text-gray-700'
                   autoComplete='email'
                 />
                 <ErrorMessage
@@ -147,36 +153,57 @@ export default function Register() {
                 </label>
                 <Field
                   name='password'
-                  type='password'
-                  placeholder='Create a password'
-                  className='input-field w-full touch-target text-gray-700'
+                  type={showPassword ? "text" : "password"}
+                  placeholder='Password: 8-30 chars, 1 uppercase, 1 lowercase, 1 number, 1 special (!@#$%^&*)'
                   autoComplete='new-password'
+                  className='input-field field w-full touch-target text-gray-700'
                 />
+                <div className='flex items-center'>
+                  <input
+                    type='checkbox'
+                    id='showPassword'
+                    checked={showPassword}
+                    onChange={() => setShowPassword(!showPassword)}
+                    className='mr-2 border-none shadow-none bg-transparent outline-none'
+                  />
+                  <label
+                    htmlFor='showPassword'
+                    className='text-sm text-gray-700'
+                  >
+                    Show password
+                  </label>
+                </div>
                 <ErrorMessage
                   name='password'
                   component='p'
                   className='text-sm text-red-600 mt-1'
                 />
-                <p className='text-xs text-gray-500 mt-1'>
-                  Password must be at least 6 characters long
-                </p>
               </div>
 
               <div>
-                <label
-                  htmlFor='user_type'
-                  className='block text-sm font-medium text-gray-700 mb-2'
-                >
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
                   Account Type
                 </label>
-                <Field
-                  as='select'
-                  name='user_type'
-                  className='input-field w-full touch-target text-gray-700'
-                >
-                  <option value='client'>Client - Book appointments</option>
-                  <option value='provider'>Provider - Manage services</option>
-                </Field>
+                <div className='space-y-2'>
+                  <label className='flex items-center text-gray-700'>
+                    <Field
+                      type='radio'
+                      name='user_type'
+                      value='provider'
+                      className='mr-2'
+                    />
+                    Provider - I want to offer services
+                  </label>
+                  <label className='flex items-center text-gray-700'>
+                    <Field
+                      type='radio'
+                      name='user_type'
+                      value='client'
+                      className='mr-2'
+                    />
+                    Client - I want to book services
+                  </label>
+                </div>
                 <ErrorMessage
                   name='user_type'
                   component='p'
@@ -184,6 +211,7 @@ export default function Register() {
                 />
               </div>
 
+              {/* Email/Password Registration Button */}
               <button
                 type='submit'
                 disabled={isSubmitting}
@@ -195,13 +223,13 @@ export default function Register() {
                     Creating account...
                   </div>
                 ) : (
-                  "Create Account"
+                  "Get Started"
                 )}
               </button>
 
               <div className='text-center'>
                 <p className='text-sm text-gray-600'>
-                  Already have an account?{" "}
+                  Already have a business account?{" "}
                   <Link
                     to='/login'
                     className='text-green-600 hover:text-green-700 font-medium hover:underline touch-target inline-block'

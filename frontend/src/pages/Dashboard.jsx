@@ -1,15 +1,25 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
+import { useCurrency } from "../context/CurrencyContext.jsx";
 import RescheduleModal from "../components/Appointments/ResheduleModal.jsx";
 import BookAppointmentForm from "../components/BookAppointments/BookAppointment.jsx";
 import api from "../services/api.js";
 import { toast } from "react-toastify";
+import {
+  MagnifyingGlassIcon,
+  ClockIcon,
+  CalendarDaysIcon
+} from "@heroicons/react/24/outline";
 
 const UserDashboard = () => {
-  const { logout } = useAuth();
+  const { user } = useAuth();
+  const { formatPrice } = useCurrency();
+  const navigate = useNavigate();
   const [services, setServices] = useState([]);
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
+  // const [searchQuery, setSearchQuery] = useState("");
 
   const [rescheduleModal, setRescheduleModal] = useState({
     open: false,
@@ -23,18 +33,23 @@ const UserDashboard = () => {
 
   const handleReschedule = async (newDate) => {
     const appt = rescheduleModal.appointment;
+    if (!appt) return;
+
     try {
-      await api.delete(`/appointments/${appt._id}`);
+      await api.delete(`/appointments/${appt.appointment_id}`);
       const res = await api.post("/appointments/book", {
-        serviceId: appt.serviceId,
-        providerId: appt.providerId,
+        serviceId: appt.service_id,
+        providerId: appt.provider_id,
         date: newDate
       });
       toast.success("Appointment rescheduled");
       setAppointments((prev) =>
-        prev.map((a) => (a._id === appt._id ? res.data : a))
+        prev.map((a) =>
+          a.appointment_id === appt.appointment_id ? res.data : a
+        )
       );
-    } catch {
+    } catch (error) {
+      console.error("Reschedule error:", error);
       toast.error("Failed to reschedule");
     }
   };
@@ -46,8 +61,30 @@ const UserDashboard = () => {
         prev.filter((appt) => appt.appointment_id !== appointmentId)
       );
       toast.success("Appointment cancelled");
-    } catch {
+    } catch (error) {
+      console.error("Cancel appointment error:", error);
       toast.error("Failed to cancel appointment");
+    }
+  };
+
+  const fetchServices = async (query = "") => {
+    try {
+      const endpoint = query
+        ? `/services/search?q=${encodeURIComponent(query)}`
+        : "/services";
+      const servicesRes = await api.get(endpoint);
+      const servicesWithProvider = (
+        Array.isArray(servicesRes.data.data) ? servicesRes.data.data : []
+      ).map((s) => ({
+        ...s,
+        service_name: s.service_name,
+        duration_minutes: s.duration_minutes,
+        providerId: s.provider_id || "default-provider-id"
+      }));
+      setServices(servicesWithProvider);
+    } catch (error) {
+      console.error("Fetch services error:", error);
+      toast.error("Failed to load services");
     }
   };
 
@@ -56,28 +93,20 @@ const UserDashboard = () => {
       const token = localStorage.getItem("token");
       if (!token) {
         toast.error("Unauthorized. Please log in.");
-        logout();
+        navigate("/login");
         return;
       }
 
       try {
-        const servicesRes = await api.get("/services");
+        await fetchServices();
         const appointmentsRes = await api.get("/appointments/list");
-
-        const servicesWithProvider = (
-          Array.isArray(servicesRes.data.data) ? servicesRes.data.data : []
-        ).map((s) => ({
-          ...s,
-          providerId: s.providerId || "default-provider-id"
-        }));
-
-        setServices(servicesWithProvider);
         setAppointments(
           Array.isArray(appointmentsRes.data.data)
             ? appointmentsRes.data.data
             : []
         );
-      } catch {
+      } catch (error) {
+        console.error("Fetch data error:", error);
         toast.error("Failed to load data");
       } finally {
         setLoading(false);
@@ -85,7 +114,15 @@ const UserDashboard = () => {
     };
 
     fetchData();
-  }, [logout]);
+  }, []);
+
+  // useEffect(() => {
+  //   const debounceTimer = setTimeout(() => {
+  //     fetchServices(searchQuery);
+  //   }, 300);
+
+  //   return () => clearTimeout(debounceTimer);
+  // }, [searchQuery]);
 
   if (loading) {
     return (
@@ -100,22 +137,14 @@ const UserDashboard = () => {
 
   return (
     <div className='max-w-7xl mx-auto'>
-      {/* Mobile-first header */}
-      <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8'>
-        <div>
-          <h1 className='text-2xl sm:text-3xl font-bold text-gray-900'>
-            Client Dashboard
-          </h1>
-          <p className='text-gray-600 mt-1'>
-            Manage your appointments and services
-          </p>
-        </div>
-        <button
-          onClick={logout}
-          className='btn btn-secondary w-full sm:w-auto px-6 py-3 text-sm font-medium touch-target order-2 sm:order-1'
-        >
-          Logout
-        </button>
+      {/* Page title section */}
+      <div className='mb-6 sm:mb-8'>
+        <h1 className='text-2xl sm:text-3xl font-bold text-gray-900'>
+          {user?.name ? `Welcome, ${user.name}` : "Client Dashboard"}
+        </h1>
+        <p className='text-gray-600 mt-1'>
+          Manage your appointments and services
+        </p>
       </div>
 
       {/* Available Services Section */}
@@ -128,6 +157,20 @@ const UserDashboard = () => {
             {services.length} services
           </span>
         </div>
+
+        {/* Search Input */}
+        {/* <div className='mb-4 sm:mb-6'>
+          <div className='relative flex items-center justify-between'>
+            <input
+              type='text'
+              placeholder='Search by service name or provider name...'
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className='w-full px-4 py-2 pl-10 border text-gray-800 border-gray-300 rounded-lg   
+            />
+            <MagnifyingGlassIcon className='absolute right-8 top-4 h-5 w-5 text-gray-400' />
+          </div>
+        </div> */}
 
         {services.length === 0 ? (
           <div className='text-center py-12 bg-white rounded-xl shadow-sm border border-gray-100'>
@@ -150,9 +193,13 @@ const UserDashboard = () => {
                       {service.service_name}
                     </h3>
                     <div className='bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium'>
-                      ${service.price}
+                      {formatPrice(service.price)}
                     </div>
                   </div>
+
+                  <p className='text-sm text-gray-500 mb-2'>
+                    Provider: {service.provider_name}
+                  </p>
 
                   <p
                     className='text-gray-600 mb-4 overflow-hidden'
@@ -167,17 +214,7 @@ const UserDashboard = () => {
 
                   <div className='flex items-center justify-between mb-4 text-sm text-gray-500'>
                     <span className='flex items-center'>
-                      <svg
-                        className='w-4 h-4 mr-1'
-                        fill='currentColor'
-                        viewBox='0 0 20 20'
-                      >
-                        <path
-                          fillRule='evenodd'
-                          d='M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z'
-                          clipRule='evenodd'
-                        />
-                      </svg>
+                      <ClockIcon className='w-4 h-4 mr-1' />
                       {service.duration_minutes} min
                     </span>
                   </div>
@@ -226,22 +263,12 @@ const UserDashboard = () => {
                 <div className='flex flex-col sm:flex-row sm:items-center gap-4'>
                   <div className='flex-1 min-w-0'>
                     <h3 className='text-lg font-semibold text-gray-900 truncate'>
-                      {appt.serviceName}
+                      {appt.service_name}
                     </h3>
                     <div className='mt-2 space-y-1 text-sm text-gray-600'>
                       <p className='flex items-center'>
-                        <svg
-                          className='w-4 h-4 mr-2 text-gray-400'
-                          fill='currentColor'
-                          viewBox='0 0 20 20'
-                        >
-                          <path
-                            fillRule='evenodd'
-                            d='M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z'
-                            clipRule='evenodd'
-                          />
-                        </svg>
-                        {new Date(appt.date).toLocaleString("en-US", {
+                        <CalendarDaysIcon className='w-4 h-4 mr-2 text-gray-400' />
+                        {new Date(appt.created_at).toLocaleString("en-US", {
                           weekday: "short",
                           month: "short",
                           day: "numeric",
@@ -249,19 +276,6 @@ const UserDashboard = () => {
                           minute: "2-digit"
                         })}
                       </p>
-                      <div className='flex items-center justify-between'>
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            appt.status === "confirmed"
-                              ? "bg-green-100 text-green-800"
-                              : appt.status === "pending"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-gray-100 text-gray-800"
-                          }`}
-                        >
-                          {appt.status}
-                        </span>
-                      </div>
                     </div>
                   </div>
 
@@ -288,59 +302,19 @@ const UserDashboard = () => {
         )}
       </section>
 
-      {/* Booking Modal - Mobile Optimized */}
-      {bookingModal.open && (
-        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 safe-area-bottom'>
-          <div className='bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto'>
-            <div className='p-4 sm:p-6 border-b border-gray-100'>
-              <div className='flex items-center justify-between'>
-                <h3 className='text-xl font-bold text-gray-900'>
-                  Book Appointment
-                </h3>
-                <button
-                  onClick={() =>
-                    setBookingModal({ open: false, service: null })
-                  }
-                  className='p-2 hover:bg-gray-100 rounded-lg touch-target'
-                  aria-label='Close modal'
-                >
-                  <svg
-                    className='w-5 h-5'
-                    fill='none'
-                    stroke='currentColor'
-                    viewBox='0 0 24 24'
-                  >
-                    <path
-                      strokeLinecap='round'
-                      strokeLinejoin='round'
-                      strokeWidth={2}
-                      d='M6 18L18 6M6 6l12 12'
-                    />
-                  </svg>
-                </button>
-              </div>
-              {bookingModal.service && (
-                <p className='text-gray-600 mt-1'>
-                  {bookingModal.service.service_name}
-                </p>
-              )}
-            </div>
+      <BookAppointmentForm
+        providerId={bookingModal.service?.providerId}
+        isOpen={bookingModal.open}
+        onClose={() => setBookingModal({ open: false, service: null })}
+        service={bookingModal.service}
+        returnPath='/dashboard'
+      />
 
-            <div className='p-4 sm:p-6'>
-              <BookAppointmentForm
-                providerId={bookingModal.service?.provider_id}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Reschedule Modal */}
       <RescheduleModal
         isOpen={rescheduleModal.open}
         onClose={() => setRescheduleModal({ open: false, appointment: null })}
         onSubmit={handleReschedule}
-        initialDate={rescheduleModal.appointment?.date}
+        initialDate={rescheduleModal.appointment?.created_at}
       />
     </div>
   );

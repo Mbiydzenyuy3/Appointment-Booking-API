@@ -1,7 +1,7 @@
 import axios from "axios";
 export const createSlot = (slotData) => axios.post("/slots/create", slotData);
 export const getSlotsByProvider = (providerId) =>
-  axios.get(`/slots/${providerId}`);
+  axios.get(`/slots/provider/${providerId}`);
 export const updateSlot = (slotId, updatedData) =>
   axios.put(`/slots/${slotId}`, updatedData);
 export const deleteSlot = (slotId) => axios.delete(`/slots/${slotId}`);

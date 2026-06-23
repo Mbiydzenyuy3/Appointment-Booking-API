@@ -2,9 +2,11 @@
 import {
   createSlot,
   getSlotsByProviderId,
+  getSlotById,
   searchAvailableSlots,
   updateSlot,
   deleteSlot,
+  advanceSlots
 } from "../models/slot-model.js";
 
 import { logError, logInfo } from "../utils/logger.js";
@@ -14,23 +16,33 @@ export async function create({
   startTime,
   endTime,
   serviceId,
-  providerId,
+  providerId
 }) {
   try {
+    console.log("Slot service create called with:", {
+      day,
+      startTime,
+      endTime,
+      serviceId,
+      providerId
+    });
     const slot = await createSlot({
       day,
       startTime,
       endTime,
       serviceId,
-      providerId,
+      providerId
     });
 
     logInfo("Slot created", slot.timeslot_id);
     return slot;
   } catch (err) {
+    console.log("Slot service create error:", err);
     logError("Slot service failed to create slot", err);
     console.error("Detailed slot creation error:", err.message);
-    throw new Error("Unable to create slot");
+    throw new Error(
+      "We're having trouble scheduling this slot right now. Please try again."
+    );
   }
 }
 
@@ -39,7 +51,27 @@ export async function getSlotsByProvider(providerId) {
     return await getSlotsByProviderId(providerId);
   } catch (err) {
     logError("Failed to fetch provider's slots", err);
-    throw new Error("Unable to fetch slots");
+    throw new Error(
+      "We're having trouble loading your available slots. Please refresh and try again."
+    );
+  }
+}
+
+export async function get(slotId) {
+  try {
+    const slot = await getSlotById(slotId);
+    if (!slot) {
+      const err = new Error("Slot not found");
+      err.statusCode = 404;
+      throw err;
+    }
+    return slot;
+  } catch (err) {
+    logError("Failed to fetch slot", err);
+    if (err.statusCode) throw err;
+    throw new Error(
+      "We're having trouble loading this slot. Please try again."
+    );
   }
 }
 
@@ -50,7 +82,9 @@ export async function update(slotId, data, providerId) {
     return slot;
   } catch (err) {
     logError("Slot update failed", err);
-    throw new Error("Unable to update slot");
+    throw new Error(
+      "We're having trouble updating this slot. Please try again."
+    );
   }
 }
 
@@ -61,7 +95,9 @@ export async function remove(slotId, providerId) {
     return deleted;
   } catch (err) {
     logError("Slot deletion failed", err);
-    throw new Error("error occurred while trying to delete slot");
+    throw new Error(
+      "We're having trouble deleting this slot. Please try again."
+    );
   }
 }
 
@@ -70,6 +106,21 @@ export async function search(filters) {
     return await searchAvailableSlots(filters);
   } catch (err) {
     logError("Failed to search available slots", err);
-    throw new Error("Unable to fetch available slots");
+    throw new Error(
+      "We're having trouble finding available slots. Please try again."
+    );
+  }
+}
+
+export async function advanceSlotsService() {
+  try {
+    const result = await advanceSlots();
+    logInfo(`Advanced ${result.updated} slots`);
+    return result;
+  } catch (err) {
+    logError("Failed to advance slots", err);
+    throw new Error(
+      "We're having trouble updating slot availability. Please try again later."
+    );
   }
 }

@@ -2,7 +2,7 @@
 import test from "node:test";
 import assert from "node:assert";
 import request from "supertest";
-import { app } from "../../app.js";
+import app from "../../app.js";
 
 const uniqueEmail = `testuser${Date.now()}@example.com`;
 
@@ -10,9 +10,8 @@ test("Register new client", async () => {
   const res = await request(app).post("/auth/register").send({
     name: "Test User",
     email: uniqueEmail,
-    password: "test123",
-    confirmPassword: "test123",
-    user_type: "client",
+    password: "Test123!",
+    user_type: "client"
   });
 
   assert.strictEqual(res.statusCode, 201);
@@ -22,8 +21,18 @@ test("Register new client", async () => {
 test("Login with wrong password fails", async () => {
   const res = await request(app).post("/auth/login").send({
     email: uniqueEmail,
-    password: "wrongpass",
+    password: "wrongpass"
   });
 
   assert.strictEqual(res.statusCode, 401);
+});
+
+test("Login with correct password succeeds", async () => {
+  const res = await request(app).post("/auth/login").send({
+    email: uniqueEmail,
+    password: "Test123!"
+  });
+
+  assert.strictEqual(res.statusCode, 200);
+  assert.ok(res.body.token);
 });

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -6,27 +6,47 @@ import {
   Navigate
 } from "react-router-dom";
 import { Provider } from "./context/AuthContext.jsx";
+import { GuestProvider } from "./context/GuestContext.jsx";
 import { SocketProvider } from "./context/Socketio.jsx";
 import { AISchedulerProvider } from "./context/AISchedulerContext.jsx";
 import { CurrencyProvider } from "./context/CurrencyContext.jsx";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { initAnalytics } from "./services/analytics.js";
 import HomePage from "./pages/LandingPage.jsx";
 import LoginPage from "./pages/Login.jsx";
 import RegisterPage from "./pages/Register.jsx";
+import ClientRegisterPage from "./pages/ClientRegister.jsx";
+import UserProfile from "./pages/UserProfile.jsx";
 import DashboardPage from "./pages/Dashboard.jsx";
 import ProviderDashboard from "./pages/ProviderDashboard.jsx";
 import TimeSlotsPage from "./pages/TimeSlotPage.jsx";
-import ResponsiveHeader from "./components/Navigation/ResponsiveHeader.jsx";
+import ExplorePage from "./pages/Explore.jsx";
+import ClientDashboardHeader from "./components/Navigation/ClientDashboardHeader.jsx";
+import ProviderDashboardHeader from "./components/Navigation/ProviderDashboardHeader.jsx";
 import AppointmentsPage from "./pages/Appointments.jsx";
 import SlotPage from "./pages/Slots.jsx";
+import Unauthorized from "./pages/Unauthorized.jsx";
+import UserTypeSelection from "./components/Common/UserTypeSelection.jsx";
 import PrivateRoute from "./routes/PrivateRoute.jsx";
+import AuthRoute from "./routes/AuthRoute.jsx";
+import ProviderProfile from "./pages/ProviderProfile.jsx";
 
-// Layout component for authenticated pages
-function AuthLayout({ children }) {
+// Layout component for authenticated client pages
+function ClientAuthLayout({ children }) {
   return (
     <div className='min-h-screen bg-gray-50'>
-      <ResponsiveHeader />
+      <ClientDashboardHeader />
+      <main className='container-mobile py-4 sm:py-6 lg:py-8'>{children}</main>
+    </div>
+  );
+}
+
+// Layout component for authenticated provider pages
+function ProviderAuthLayout({ children }) {
+  return (
+    <div className='min-h-screen bg-gray-50'>
+      <ProviderDashboardHeader />
       <main className='container-mobile py-4 sm:py-6 lg:py-8'>{children}</main>
     </div>
   );
@@ -38,103 +58,192 @@ function PublicLayout({ children }) {
 }
 
 function App() {
+  useEffect(() => {
+    initAnalytics();
+  }, []);
+
   return (
     <CurrencyProvider>
       <Provider>
-        <SocketProvider>
-          <AISchedulerProvider>
-            <Router>
-              <Routes>
-                {/* Public Routes */}
-                <Route
-                  path='/'
-                  element={
-                    <PublicLayout>
-                      <HomePage />
-                    </PublicLayout>
-                  }
-                />
-                <Route
-                  path='/login'
-                  element={
-                    <PublicLayout>
-                      <LoginPage />
-                    </PublicLayout>
-                  }
-                />
-                <Route
-                  path='/register'
-                  element={
-                    <PublicLayout>
-                      <RegisterPage />
-                    </PublicLayout>
-                  }
-                />
+        <GuestProvider>
+          <SocketProvider>
+            <AISchedulerProvider>
+              <Router>
+                <Routes>
+                  {/* Public Routes */}
+                  <Route
+                    path='/'
+                    element={
+                      <PublicLayout>
+                        <HomePage />
+                      </PublicLayout>
+                    }
+                  />
+                  <Route
+                    path='/explore'
+                    element={
+                      <PublicLayout>
+                        <ExplorePage />
+                      </PublicLayout>
+                    }
+                  />
+                  <Route
+                    path='/provider/:bookingSlug'
+                    element={
+                      <PublicLayout>
+                        <ProviderProfile />
+                      </PublicLayout>
+                    }
+                  />
 
-                {/* Protected Routes */}
-                <Route
-                  path='/dashboard'
-                  element={
-                    <PrivateRoute allowedRoles={["client"]}>
-                      <AuthLayout>
-                        <DashboardPage />
-                      </AuthLayout>
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path='/provider/dashboard'
-                  element={
-                    <PrivateRoute allowedRoles={["provider"]}>
-                      <AuthLayout>
-                        <ProviderDashboard />
-                      </AuthLayout>
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path='/slots'
-                  element={
-                    <PrivateRoute>
-                      <AuthLayout>
-                        <SlotPage />
-                      </AuthLayout>
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path='/timeslots'
-                  element={
-                    <PrivateRoute>
-                      <AuthLayout>
-                        <TimeSlotsPage />
-                      </AuthLayout>
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path='/appointments'
-                  element={
-                    <PrivateRoute>
-                      <AuthLayout>
-                        <AppointmentsPage />
-                      </AuthLayout>
-                    </PrivateRoute>
-                  }
-                />
+                  {/* AUTH (logged-in users redirected) */}
+                  <Route
+                    path='/login'
+                    element={
+                      <AuthRoute>
+                        <PublicLayout>
+                          <LoginPage />
+                        </PublicLayout>
+                      </AuthRoute>
+                    }
+                  />
+                  <Route
+                    path='/register'
+                    element={
+                      <AuthRoute>
+                        <PublicLayout>
+                          <UserTypeSelection />
+                        </PublicLayout>
+                      </AuthRoute>
+                    }
+                  />
+                  <Route
+                    path='/register/client'
+                    element={
+                      <AuthRoute>
+                        <PublicLayout>
+                          <ClientRegisterPage />
+                        </PublicLayout>
+                      </AuthRoute>
+                    }
+                  />
+                  <Route
+                    path='/register/provider'
+                    element={
+                      <AuthRoute>
+                        <PublicLayout>
+                          <RegisterPage />
+                        </PublicLayout>
+                      </AuthRoute>
+                    }
+                  />
 
-                {/* Fallback */}
-                <Route path='*' element={<Navigate to='/' />} />
-              </Routes>
-              <ToastContainer
-                position='bottom-right'
-                autoClose={3000}
-                className='toast-container'
-                toastClassName='toast-item'
-              />
-            </Router>
-          </AISchedulerProvider>
-        </SocketProvider>
+                  {/* Protected Routes */}
+                  {/* CLIENT */}
+                  <Route
+                    path='/dashboard'
+                    element={
+                      <PrivateRoute allowedRoles={["client"]}>
+                        <ClientAuthLayout>
+                          <DashboardPage />
+                        </ClientAuthLayout>
+                      </PrivateRoute>
+                    }
+                  />
+
+                  {/* PROVIDER */}
+                  <Route
+                    path='/provider/dashboard'
+                    element={
+                      <PrivateRoute allowedRoles={["provider"]}>
+                        <ProviderAuthLayout>
+                          <ProviderDashboard />
+                        </ProviderAuthLayout>
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path='/slots'
+                    element={
+                      <PrivateRoute>
+                        <ClientAuthLayout>
+                          <SlotPage />
+                        </ClientAuthLayout>
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path='/timeslots'
+                    element={
+                      <PrivateRoute>
+                        <ProviderAuthLayout>
+                          <TimeSlotsPage />
+                        </ProviderAuthLayout>
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path='/appointments'
+                    element={
+                      <PrivateRoute allowedRoles={["provider"]}>
+                        <ProviderAuthLayout>
+                          <AppointmentsPage />
+                        </ProviderAuthLayout>
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path='/my-appointments'
+                    element={
+                      <PrivateRoute allowedRoles={["client"]}>
+                        <ClientAuthLayout>
+                          <AppointmentsPage />
+                        </ClientAuthLayout>
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path='/profile'
+                    element={
+                      <PrivateRoute>
+                        <ClientAuthLayout>
+                          <UserProfile />
+                        </ClientAuthLayout>
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path='/provider/profile'
+                    element={
+                      <PrivateRoute allowedRoles={["provider"]}>
+                        <ProviderAuthLayout>
+                          <UserProfile />
+                        </ProviderAuthLayout>
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path='/unauthorized'
+                    element={
+                      <PublicLayout>
+                        <Unauthorized />
+                      </PublicLayout>
+                    }
+                  />
+
+                  {/* Fallback */}
+                  <Route path='*' element={<Navigate to='/' />} />
+                </Routes>
+                <ToastContainer
+                  position='bottom-right'
+                  autoClose={3000}
+                  className='toast-container'
+                  toastClassName='toast-item'
+                />
+              </Router>
+            </AISchedulerProvider>
+          </SocketProvider>
+        </GuestProvider>
       </Provider>
     </CurrencyProvider>
   );

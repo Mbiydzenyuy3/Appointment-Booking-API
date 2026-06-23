@@ -39,7 +39,7 @@ export default function SlotPage() {
 
   return (
     <div className='p-6'>
-      <h1 className='text-2xl font-bold mb-4'>Available Time Slots</h1>
+      <h1 className='text-2xl font-bold mb-4'>Available Times</h1>
       {isLoading ? (
         <p>Loading...</p>
       ) : (
