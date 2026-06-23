@@ -1,7 +1,13 @@
 import React from "react";
 import { useCurrency } from "../../context/CurrencyContext.jsx";
+import {
+  CheckCircleIcon,
+  PencilIcon,
+  TrashIcon,
+  MapPinIcon
+} from "@heroicons/react/24/outline";
 
-export default function ServiceList({ services = [], onDelete }) {
+export default function ServiceList({ services = [], onDelete, onEdit }) {
   const { selectedCurrency, formatPrice } = useCurrency();
 
   if (!services || services.length === 0) {
@@ -28,19 +34,7 @@ export default function ServiceList({ services = [], onDelete }) {
           <div className='flex items-center justify-between'>
             <div className='flex items-center gap-4 flex-1 min-w-0'>
               <div className='flex-shrink-0 w-12 h-12 bg-gradient-to-br from-green-100 to-blue-100 rounded-full flex items-center justify-center'>
-                <svg
-                  className='w-6 h-6 text-green-600'
-                  fill='none'
-                  stroke='currentColor'
-                  viewBox='0 0 24 24'
-                >
-                  <path
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    strokeWidth={2}
-                    d='M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'
-                  />
-                </svg>
+                <CheckCircleIcon className='w-6 h-6 text-green-600' />
               </div>
               <div className='flex-1 min-w-0'>
                 <h3 className='text-lg font-semibold text-gray-900 truncate'>
@@ -66,40 +60,27 @@ export default function ServiceList({ services = [], onDelete }) {
                   {service.duration} min
                 </div>
               </div>
-              <button
-                onClick={() => onDelete(service.service_id)}
-                className='flex-shrink-0 w-10 h-10 bg-red-50 hover:bg-red-100 text-red-600 rounded-full flex items-center justify-center transition-colors duration-200'
-                aria-label={`Delete service ${service.name}`}
-              >
-                <svg
-                  className='w-4 h-4'
-                  fill='none'
-                  stroke='currentColor'
-                  viewBox='0 0 24 24'
+              <div className='flex gap-2'>
+                <button
+                  onClick={() => onEdit(service)}
+                  className='flex-shrink-0 w-10 h-10 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-full flex items-center justify-center transition-colors duration-200'
+                  aria-label={`Edit service ${service.name}`}
                 >
-                  <path
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    strokeWidth={2}
-                    d='M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16'
-                  />
-                </svg>
-              </button>
+                  <PencilIcon className='w-4 h-4' />
+                </button>
+                <button
+                  onClick={() => onDelete(service.service_id)}
+                  className='flex-shrink-0 w-10 h-10 bg-red-50 hover:bg-red-100 text-red-600 rounded-full flex items-center justify-center transition-colors duration-200'
+                  aria-label={`Delete service ${service.name}`}
+                >
+                  <TrashIcon className='w-4 h-4' />
+                </button>
+              </div>
             </div>
           </div>
           {service.location && (
             <div className='mt-3 flex items-center gap-2 text-sm text-gray-600'>
-              <svg
-                className='w-4 h-4 text-gray-400'
-                fill='currentColor'
-                viewBox='0 0 20 20'
-              >
-                <path
-                  fillRule='evenodd'
-                  d='M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z'
-                  clipRule='evenodd'
-                />
-              </svg>
+              <MapPinIcon className='w-4 h-4 text-gray-400' />
               <span>{service.location}</span>
             </div>
           )}

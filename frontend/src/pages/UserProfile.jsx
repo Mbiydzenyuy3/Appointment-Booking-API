@@ -3,6 +3,7 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api.js";
 import { useAuth } from "../context/AuthContext.jsx";
+import { TrashIcon, ExclamationTriangleIcon } from "@heroicons/react/24/solid";
 
 export default function UserProfile() {
   const navigate = useNavigate();
@@ -134,7 +135,7 @@ export default function UserProfile() {
         phone: profileData.phone || ""
       };
 
-      const response = await api.put("/providers/update", updateData);
+      const response = await api.put("/providers/me", updateData);
 
       if (response.data.success) {
         toast.success("Provider profile updated successfully!");
@@ -432,7 +433,7 @@ export default function UserProfile() {
                         phone: e.target.value
                       }))
                     }
-                    className='mt-1 block w-full border-gray-300 rounded-md shadow-sm   sm:text-sm'
+                    className='mt-1 block w-full border-gray-300 rounded-md shadow-sm   sm:text-sm text-gray-700'
                     placeholder='Enter your phone number'
                   />
                 </div>
@@ -575,36 +576,14 @@ export default function UserProfile() {
                       onClick={() => setShowDeleteConfirm(true)}
                       className='inline-flex items-center px-4 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none'
                     >
-                      <svg
-                        className='w-4 h-4 mr-2'
-                        fill='none'
-                        stroke='currentColor'
-                        viewBox='0 0 24 24'
-                      >
-                        <path
-                          strokeLinecap='round'
-                          strokeLinejoin='round'
-                          strokeWidth={2}
-                          d='M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16'
-                        />
-                      </svg>
+                      <TrashIcon className='w-4 h-4 mr-2' />
                       Delete Account
                     </button>
                   ) : (
                     <div className='border border-red-200 rounded-md p-4 bg-red-50'>
                       <div className='flex'>
                         <div className='flex-shrink-0'>
-                          <svg
-                            className='h-5 w-5 text-red-400'
-                            viewBox='0 0 20 20'
-                            fill='currentColor'
-                          >
-                            <path
-                              fillRule='evenodd'
-                              d='M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z'
-                              clipRule='evenodd'
-                            />
-                          </svg>
+                          <ExclamationTriangleIcon className='h-5 w-5 text-red-400' />
                         </div>
                         <div className='ml-3'>
                           <h3 className='text-sm font-medium text-red-800'>

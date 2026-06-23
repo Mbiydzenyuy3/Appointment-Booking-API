@@ -1,0 +1,267 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - navigation [ref=e8]:
+        - link "B BOOKEasy" [ref=e9] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e11]: B
+          - generic [ref=e12]: BOOKEasy
+        - generic [ref=e13]:
+          - button "How It Works" [ref=e14]
+          - button "Why Trust Us" [ref=e15]
+          - button "Reviews" [ref=e16]
+        - generic [ref=e17]:
+          - link "Sign Up" [ref=e18] [cursor=pointer]:
+            - /url: /register
+          - link "Login" [ref=e19] [cursor=pointer]:
+            - /url: /login
+      - generic [ref=e22]:
+        - generic [ref=e24]: Now live in Douala, Yaoundé & Buea
+        - heading "Stop Wasting Credit on Unanswered Calls." [level=1] [ref=e26]:
+          - text: Stop Wasting Credit on
+          - generic [ref=e27]: Unanswered Calls.
+        - paragraph [ref=e29]: Find trusted barbers, doctors, and coaches in Douala, Yaoundé, and Buea. Book instantly, pay securely, and skip the waiting line.
+        - button "Find Available Services" [ref=e32]:
+          - text: Find Available Services
+          - img [ref=e33]
+        - generic [ref=e35]:
+          - generic [ref=e36]:
+            - img [ref=e38]
+            - generic [ref=e43]:
+              - paragraph [ref=e44]: 500+
+              - paragraph [ref=e45]: Verified Pros
+          - generic [ref=e46]:
+            - img [ref=e48]
+            - generic [ref=e50]:
+              - paragraph [ref=e51]: "4.8"
+              - paragraph [ref=e52]: Average Rating
+          - generic [ref=e53]:
+            - img [ref=e55]
+            - generic [ref=e58]:
+              - paragraph [ref=e59]: 2 min
+              - paragraph [ref=e60]: Avg. Booking Time
+    - generic [ref=e62]:
+      - generic [ref=e63]:
+        - heading "Businesses you can book right now" [level=2] [ref=e64]
+        - paragraph [ref=e65]: Trusted by local experts to manage their schedules and grow their clientele.
+      - generic [ref=e66]:
+        - generic [ref=e67]:
+          - generic [ref=e68]:
+            - img "FreshCuts Barber" [ref=e69]
+            - generic [ref=e70]: VERIFIED
+          - generic [ref=e72]:
+            - heading "FreshCuts Barber" [level=3] [ref=e73]
+            - paragraph [ref=e74]: Grooming • Douala
+            - button "View availability" [ref=e75]
+        - generic [ref=e76]:
+          - generic [ref=e77]:
+            - img "HealthFirst Clinic" [ref=e78]
+            - generic [ref=e79]: VERIFIED
+          - generic [ref=e81]:
+            - heading "HealthFirst Clinic" [level=3] [ref=e82]
+            - paragraph [ref=e83]: Medical • Yaoundé
+            - button "View availability" [ref=e84]
+        - generic [ref=e85]:
+          - generic [ref=e86]:
+            - img "FitPro Coaching" [ref=e87]
+            - generic [ref=e88]: VERIFIED
+          - generic [ref=e90]:
+            - heading "FitPro Coaching" [level=3] [ref=e91]
+            - paragraph [ref=e92]: Fitness • Buea
+            - button "View availability" [ref=e93]
+    - generic [ref=e95]:
+      - generic [ref=e96]:
+        - text: Why Switch?
+        - heading "Why BOOKEasy is Better Than \"Just Call Me\"" [level=2] [ref=e97]:
+          - text: Why BOOKEasy is Better Than
+          - text: "\"Just Call Me\""
+        - paragraph [ref=e98]: We built BOOKEasy because we were tired of the same frustrations. Here's how we fixed them.
+      - generic [ref=e99]:
+        - generic [ref=e100]:
+          - generic [ref=e101]:
+            - img [ref=e103]
+            - generic [ref=e106]:
+              - img [ref=e108]
+              - generic [ref=e110]:
+                - heading "\"Has he read my WhatsApp?\"" [level=3] [ref=e111]
+                - paragraph [ref=e112]: You send a message. One tick. You wait 4 hours for a reply just to hear "I'm busy today."
+          - generic [ref=e114]:
+            - img [ref=e116]
+            - generic [ref=e118]:
+              - img [ref=e120]
+              - generic [ref=e122]:
+                - heading "Instant Confirmation" [level=3] [ref=e123]
+                - paragraph [ref=e124]: See real-time availability. Tap "Book" and get an SMS confirmation in seconds. No chatting required.
+        - generic [ref=e126]:
+          - generic [ref=e127]:
+            - img [ref=e129]
+            - generic [ref=e132]:
+              - img [ref=e134]
+              - generic [ref=e137]:
+                - heading "The \"I'm Coming\" Lie" [level=3] [ref=e138]
+                - paragraph [ref=e139]: You arrive on time, but the barber is eating or "stuck in traffic," and you wait 45 minutes on a plastic chair.
+          - generic [ref=e141]:
+            - img [ref=e143]
+            - generic [ref=e145]:
+              - img [ref=e147]
+              - generic [ref=e150]:
+                - heading "Respect for Your Time" [level=3] [ref=e151]
+                - paragraph [ref=e152]: Professionals on BookLocal are rated for punctuality. You get reminders, they get reminders. You sit in the chair, not the waiting room.
+        - generic [ref=e154]:
+          - generic [ref=e155]:
+            - img [ref=e157]
+            - generic [ref=e160]:
+              - img [ref=e162]
+              - generic [ref=e165]:
+                - heading "Cash Scramble" [level=3] [ref=e166]
+                - paragraph [ref=e167]: "\"Sorry, no change.\" You have to run to the nearest store to break 10,000 CFA."
+          - generic [ref=e169]:
+            - img [ref=e171]
+            - generic [ref=e173]:
+              - img [ref=e175]
+              - generic [ref=e177]:
+                - heading "Seamless Payments" [level=3] [ref=e178]
+                - paragraph [ref=e179]: Pay via MTN MoMo, Orange Money, or Cash. We got you covered with cashless options. Pay via MoMo on site after service.
+    - generic [ref=e182]:
+      - generic [ref=e183]:
+        - generic [ref=e184]:
+          - img [ref=e185]
+          - generic [ref=e188]: Trusted & Verified
+        - heading "Real Pros. Verified Identities." [level=2] [ref=e189]
+        - paragraph [ref=e190]: We take trust seriously. Every professional on BOOKEasy goes through our verification process.
+      - generic [ref=e191]:
+        - generic [ref=e193]:
+          - img [ref=e196]
+          - heading "Identity Checked" [level=3] [ref=e200]
+          - paragraph [ref=e201]: Every "Verified" business has submitted a valid CNI and business location proof. We know exactly who they are.
+        - generic [ref=e203]:
+          - img [ref=e206]
+          - heading "Real Reviews Only" [level=3] [ref=e208]
+          - paragraph [ref=e209]: You can only review a business after you've actually booked and paid. No fake 5-star ratings from cousins and friends.
+        - generic [ref=e211]:
+          - img [ref=e214]
+          - heading "Payment Protection" [level=3] [ref=e216]
+          - paragraph [ref=e217]: No Payments asked until service is confirmed done. Cancel easily if plans change.
+      - generic [ref=e219]:
+        - generic [ref=e220]:
+          - paragraph [ref=e221]: 100%
+          - paragraph [ref=e222]: CNI Verified Pros
+        - generic [ref=e223]:
+          - paragraph [ref=e224]: "0"
+          - paragraph [ref=e225]: Scam Reports
+        - generic [ref=e226]:
+          - paragraph [ref=e227]: 24h
+          - paragraph [ref=e228]: Dispute Resolution
+    - generic [ref=e233]:
+      - generic [ref=e234]:
+        - text: Testimonials
+        - heading "Cameroonians Saving Time with BOOKEasy" [level=2] [ref=e235]:
+          - text: Cameroonians Saving Time
+          - text: with BOOKEasy
+        - paragraph [ref=e236]: Real stories from real people in your neighborhood
+      - generic [ref=e237]:
+        - generic [ref=e238]:
+          - img [ref=e239]
+          - paragraph [ref=e242]: "\"I used to spend my Saturday mornings waiting at the barber in Bonamoussadi. Now, I book my slot on Friday night, walk in at 10:00 AM, and I'm out by 10:45 AM. It feels like VIP treatment.\""
+          - generic [ref=e243]:
+            - generic [ref=e244]:
+              - img "Jean-Claude Mbarga" [ref=e245]
+              - generic [ref=e246]:
+                - paragraph [ref=e247]: Jean-Claude Mbarga
+                - paragraph [ref=e248]: Entrepreneur
+                - generic [ref=e249]:
+                  - img [ref=e250]
+                  - generic [ref=e253]: Douala
+            - generic [ref=e254]:
+              - img [ref=e255]
+              - img [ref=e257]
+              - img [ref=e259]
+        - generic [ref=e261]:
+          - button [ref=e262]:
+            - img [ref=e263]
+          - generic [ref=e265]:
+            - button [ref=e266]
+            - button [ref=e267]
+            - button [ref=e268]
+            - button [ref=e269]
+          - button [ref=e270]:
+            - img [ref=e271]
+    - generic [ref=e275]:
+      - generic [ref=e276]:
+        - img [ref=e279]
+        - heading "Ready to skip the queue?" [level=3] [ref=e281]
+        - paragraph [ref=e282]: Find trusted professionals near you and book your first appointment in under 2 minutes.
+        - button "Book Your First Appointment" [ref=e283]:
+          - text: Book Your First Appointment
+          - img [ref=e284]
+      - generic [ref=e286]:
+        - img [ref=e289]
+        - heading "Run a Service Business?" [level=3] [ref=e292]
+        - paragraph [ref=e293]: Join 500+ Cameroonian pros filling their calendars automatically. Stop chasing clients and start getting booked.
+        - list [ref=e294]:
+          - listitem [ref=e295]: Free to list your business
+          - listitem [ref=e297]: Automatic SMS reminders reduce no-shows
+        - button "List My Business Free" [ref=e299]:
+          - text: List My Business Free
+          - img [ref=e300]
+    - contentinfo [ref=e302]:
+      - generic [ref=e303]:
+        - generic [ref=e304]:
+          - generic [ref=e305]:
+            - generic [ref=e306] [cursor=pointer]:
+              - generic [ref=e308]: B
+              - generic [ref=e309]: BOOKEasy
+            - paragraph [ref=e310]: Connecting Cameroonians with trusted local professionals since 2020.
+          - generic [ref=e311]:
+            - heading "Quick Links" [level=4] [ref=e312]
+            - list [ref=e313]:
+              - listitem [ref=e314]:
+                - link "Find Services" [ref=e315] [cursor=pointer]:
+                  - /url: /explore
+              - listitem [ref=e316]:
+                - link "List Your Business" [ref=e317] [cursor=pointer]:
+                  - /url: /explore
+              - listitem [ref=e318]:
+                - link "How It Works" [ref=e319] [cursor=pointer]:
+                  - /url: "#"
+              - listitem [ref=e320]:
+                - link "Pricing" [ref=e321] [cursor=pointer]:
+                  - /url: "#"
+          - generic [ref=e322]:
+            - heading "Popular Services" [level=4] [ref=e323]
+            - list [ref=e324]:
+              - listitem [ref=e325]:
+                - link "Barbers" [ref=e326] [cursor=pointer]:
+                  - /url: /explore?category=barbers
+              - listitem [ref=e327]:
+                - link "Dentists" [ref=e328] [cursor=pointer]:
+                  - /url: /explore?category=dentists
+              - listitem [ref=e329]:
+                - link "Makeup Artists" [ref=e330] [cursor=pointer]:
+                  - /url: /explore?category=makeup-artists
+              - listitem [ref=e331]:
+                - link "Personal Trainers" [ref=e332] [cursor=pointer]:
+                  - /url: /explore?category=personal-trainers
+          - generic [ref=e333]:
+            - heading "Contact Us" [level=4] [ref=e334]
+            - list [ref=e335]:
+              - listitem [ref=e336]:
+                - img [ref=e337]
+                - text: +237 654168485
+              - listitem [ref=e339]:
+                - img [ref=e340]
+                - text: Yaounde, Cameroon
+        - generic [ref=e343]:
+          - paragraph [ref=e344]: © 2024 BOOKEasy. All rights reserved.
+          - generic [ref=e345]:
+            - link "Privacy Policy" [ref=e346] [cursor=pointer]:
+              - /url: "#"
+            - link "Terms of Service" [ref=e347] [cursor=pointer]:
+              - /url: "#"
+            - link "Support" [ref=e348] [cursor=pointer]:
+              - /url: "#"
+  - region "Notifications Alt+T"
+```

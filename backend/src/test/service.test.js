@@ -44,8 +44,8 @@ test("Fetch services", async () => {
   const res = await request(app).get("/services");
 
   assert.strictEqual(res.statusCode, 200);
-  assert.ok(Array.isArray(res.body.services));
-  assert.ok(res.body.services.length > 0);
+  assert.ok(Array.isArray(res.body.data));
+  assert.ok(res.body.data.length > 0);
 });
 
 test("Search services", async () => {

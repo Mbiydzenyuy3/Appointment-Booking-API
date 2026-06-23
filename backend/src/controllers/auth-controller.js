@@ -4,6 +4,7 @@ import crypto from "crypto";
 import { logError, logInfo } from "../utils/logger.js";
 import { query, withTransaction } from "../config/db.js";
 import ProviderModel from "../models/provider-model.js";
+import { sendPasswordResetEmail } from "../services/email-service.js";
 
 /* ---------------------------------------
    AUTH HELPERS
@@ -174,7 +175,7 @@ export async function getUserProfile(req, res, next) {
         "SELECT provider_id, bio, phone, hourly_rate, referral_code, booking_slug FROM providers WHERE user_id = $1",
         [userId]
       );
-      providerInfo = providerRows[0] || null;
+      providerInfo = providerRows.rows[0] || null;
     }
 
     res
@@ -265,10 +266,13 @@ export async function forgotPassword(req, res, next) {
     const { rows } = await query("SELECT user_id FROM users WHERE email=$1", [
       email
     ]);
-    if (!rows.length)
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found." });
+
+    if (!rows.length) {
+      return res.status(200).json({
+        success: true,
+        message: "If an account with that email exists, a password reset link has been sent."
+      });
+    }
 
     const userId = rows[0].user_id;
     const resetToken = crypto.randomBytes(32).toString("hex");
@@ -279,13 +283,11 @@ export async function forgotPassword(req, res, next) {
       [resetToken, expires, userId]
     );
 
-    // TODO: Send token via email
-    logInfo(`Password reset token for ${email}: ${resetToken}`);
+    await sendPasswordResetEmail(email, resetToken);
 
     res.status(200).json({
       success: true,
-      message: "Password reset token generated. Please check your email.",
-      resetToken // remove this in production
+      message: "If an account with that email exists, a password reset link has been sent."
     });
   } catch (err) {
     logError("Forgot password error:", err);

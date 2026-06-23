@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import SuccessOverlay from "../components/Common/SuccessOverlay.tsx";
+import { ExclamationTriangleIcon } from "@heroicons/react/24/solid";
 
 const ClientRegisterSchema = Yup.object().shape({
   name: Yup.string().required("Full name is required"),
@@ -95,17 +96,7 @@ export default function ClientRegister() {
               {formError && (
                 <div className='bg-red-50 border border-red-200 rounded-lg p-4'>
                   <p className='text-sm text-red-700 text-center flex items-center justify-center'>
-                    <svg
-                      className='w-4 h-4 mr-2'
-                      fill='currentColor'
-                      viewBox='0 0 20 20'
-                    >
-                      <path
-                        fillRule='evenodd'
-                        d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z'
-                        clipRule='evenodd'
-                      />
-                    </svg>
+                    <ExclamationTriangleIcon className='w-4 h-4 mr-2' />
                     {formError}
                   </p>
                 </div>

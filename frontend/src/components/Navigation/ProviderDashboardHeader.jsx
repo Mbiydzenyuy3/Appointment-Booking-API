@@ -2,6 +2,13 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
 import CurrencySelector from "../Common/CurrencySelector.jsx";
+import {
+  ChevronDownIcon,
+  UserIcon,
+  ArrowRightOnRectangleIcon,
+  CalendarDaysIcon,
+  ClockIcon
+} from "@heroicons/react/24/outline";
 
 export default function ProviderDashboardHeader() {
   const { user, logout } = useAuth();
@@ -30,15 +37,13 @@ export default function ProviderDashboardHeader() {
       <div className='container-mobile bg-white'>
         <div className='flex items-center justify-between h-16'>
           {/* Logo */}
-          <Link
-            to='/'
-            className='flex items-center space-x-2 text-xl font-bold text-gray-800 touch-target'
-          >
-            <span className='text-2xl'>📅</span>
-            <span className='hidden sm:inline'>BOOKEasy</span>
+          <Link to='/' className='flex items-center gap-2'>
+            <div className='w-10 h-10 bg-[#1B4332] rounded-xl flex items-center justify-center'>
+              <span className='text-white font-bold text-lg'>B</span>
+            </div>
+            <span className='text-2xl font-bold text-[#1B4332]'>BOOKEasy</span>
             <span className='sm:hidden text-lg'>BOOKEasy</span>
           </Link>
-
           {/* Desktop Navigation */}
           <nav
             className='hidden md:flex items-center space-x-6'
@@ -74,21 +79,11 @@ export default function ProviderDashboardHeader() {
                     : user?.email?.charAt(0).toUpperCase()}
                 </div>
 
-                <svg
+                <ChevronDownIcon
                   className={`w-4 h-4 text-gray-500 transition-transform duration-200 hover:text-gray-700 ${
                     isProfileOpen ? "rotate-180" : ""
                   }`}
-                  fill='none'
-                  stroke='currentColor'
-                  viewBox='0 0 24 24'
-                >
-                  <path
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    strokeWidth={2}
-                    d='M19 9l-7 7-7-7'
-                  />
-                </svg>
+                />
               </div>
 
               {/* Dropdown Menu */}
@@ -112,19 +107,7 @@ export default function ProviderDashboardHeader() {
                       onClick={() => setIsProfileOpen(false)}
                       className='flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors'
                     >
-                      <svg
-                        className='w-4 h-4 mr-3'
-                        fill='none'
-                        stroke='currentColor'
-                        viewBox='0 0 24 24'
-                      >
-                        <path
-                          strokeLinecap='round'
-                          strokeLinejoin='round'
-                          strokeWidth={2}
-                          d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'
-                        />
-                      </svg>
+                      <UserIcon className='w-4 h-4 mr-3' />
                       My Profile
                     </Link>
                     {/* 
@@ -133,19 +116,7 @@ export default function ProviderDashboardHeader() {
                       onClick={() => setIsProfileOpen(false)}
                       className='flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors'
                     >
-                      <svg
-                        className='w-4 h-4 mr-3'
-                        fill='none'
-                        stroke='currentColor'
-                        viewBox='0 0 24 24'
-                      >
-                        <path
-                          strokeLinecap='round'
-                          strokeLinejoin='round'
-                          strokeWidth={2}
-                          d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'
-                        />
-                      </svg>
+                      <CalendarDaysIcon className='w-4 h-4 mr-3' />
                       Appointment Requests
                     </Link> */}
 
@@ -154,19 +125,7 @@ export default function ProviderDashboardHeader() {
                       onClick={() => setIsProfileOpen(false)}
                       className='flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors'
                     >
-                      <svg
-                        className='w-4 h-4 mr-3'
-                        fill='none'
-                        stroke='currentColor'
-                        viewBox='0 0 24 24'
-                      >
-                        <path
-                          strokeLinecap='round'
-                          strokeLinejoin='round'
-                          strokeWidth={2}
-                          d='M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'
-                        />
-                      </svg>
+                      <ClockIcon className='w-4 h-4 mr-3' />
                       Time Slots
                     </Link> */}
 
@@ -178,19 +137,7 @@ export default function ProviderDashboardHeader() {
                         }}
                         className='flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors'
                       >
-                        <svg
-                          className='w-4 h-4 mr-3'
-                          fill='none'
-                          stroke='currentColor'
-                          viewBox='0 0 24 24'
-                        >
-                          <path
-                            strokeLinecap='round'
-                            strokeLinejoin='round'
-                            strokeWidth={2}
-                            d='M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1'
-                          />
-                        </svg>
+                        <ArrowRightOnRectangleIcon className='w-4 h-4 mr-3' />
                         Sign Out
                       </button>
                     </div>

@@ -203,6 +203,119 @@ export const sendAppointmentCancellationEmail = async (
   }
 };
 
+// Send appointment booking notification to provider
+export const sendAppointmentBookingEmailToProvider = async (
+  providerEmail,
+  providerName,
+  clientName,
+  serviceName,
+  appointmentDate,
+  appointmentTime,
+  isGuestBooking = false
+) => {
+  try {
+    const clientType = isGuestBooking ? "guest" : "registered user";
+
+    const msg = {
+      to: providerEmail,
+      from: {
+        email: process.env.SENDGRID_FROM_EMAIL || "support@bookeasy.com",
+        name: "BOOKEasy Support"
+      },
+      subject: "New Appointment Booked - BOOKEasy",
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>New Appointment Booked - BOOKEasy</title>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 30px 20px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: white; padding: 30px 20px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px; }
+            .button { display: inline-block; background: #10b981; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 20px 0; }
+            .footer { text-align: center; margin-top: 30px; color: #6b7280; font-size: 14px; }
+            .appointment-details { background: #f0fdf4; padding: 20px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #10b981; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1 style="margin: 0; font-size: 24px;">📅 BOOKEasy</h1>
+            <p style="margin: 10px 0 0 0;">New Appointment Booked!</p>
+          </div>
+
+          <div class="content">
+            <h2>Hello ${providerName}!</h2>
+
+            <p>Great news! You have a new appointment booked on your BOOKEasy profile. A ${clientType} has scheduled time with you.</p>
+
+            <div class="appointment-details">
+              <h3 style="margin-top: 0; color: #059669;">New Appointment Details:</h3>
+              <p><strong>Service:</strong> ${serviceName}</p>
+              <p><strong>Client:</strong> ${clientName}</p>
+              <p><strong>Date:</strong> ${appointmentDate}</p>
+              <p><strong>Time:</strong> ${appointmentTime}</p>
+              <p><strong>Booking Type:</strong> ${clientType}</p>
+            </div>
+
+            <p>Please log in to your BOOKEasy dashboard to view the full appointment details and manage your schedule.</p>
+
+            <div style="text-align: center;">
+              <a href="${process.env.FRONTEND_URL}/provider/dashboard" class="button">View in Dashboard</a>
+            </div>
+
+            <p>If you have any questions about this booking or need to make changes, you can do so directly in your dashboard.</p>
+
+            <p>Thank you for being part of the BOOKEasy community!</p>
+
+            <p>Best regards,<br>The BOOKEasy Team</p>
+          </div>
+
+          <div class="footer">
+            <p>This email was sent to you because you have a service listed on BOOKEasy.</p>
+            <p>If you no longer wish to receive these emails, you can update your account settings.</p>
+          </div>
+        </body>
+        </html>
+      `,
+      text: `
+        BOOKEasy - New Appointment Booked!
+
+        Hello ${providerName}!
+
+        Great news! You have a new appointment booked on your BOOKEasy profile. A ${clientType} has scheduled time with you.
+
+        New Appointment Details:
+        Service: ${serviceName}
+        Client: ${clientName}
+        Date: ${appointmentDate}
+        Time: ${appointmentTime}
+        Booking Type: ${clientType}
+
+        Please log in to your BOOKEasy dashboard to view the full appointment details.
+
+        View in dashboard: ${process.env.FRONTEND_URL}/provider/dashboard
+
+        Thank you for being part of the BOOKEasy community!
+
+        Best regards,
+        The BOOKEasy Team
+      `
+    };
+
+    const result = await sgMail.send(msg);
+    logInfo(
+      `Appointment booking notification sent to provider ${providerEmail}`
+    );
+
+    return { success: true, messageId: result[0]?.headers?.["x-message-id"] };
+  } catch (error) {
+    logError("Error sending appointment booking email to provider", error);
+    throw new Error("Failed to send appointment booking notification");
+  }
+};
+
 // Test email connection
 export const testEmailConnection = async () => {
   try {

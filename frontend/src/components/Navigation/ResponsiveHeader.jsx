@@ -3,6 +3,11 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
 // import MobileNav from "./MobileNav.jsx";
 import CurrencySelector from "../Common/CurrencySelector.jsx";
+import {
+  ArrowRightOnRectangleIcon,
+  Bars3Icon,
+  XMarkIcon
+} from "@heroicons/react/24/outline";
 
 export default function ResponsiveHeader() {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
@@ -133,25 +138,7 @@ export default function ResponsiveHeader() {
                       className='text-sm flex items-center gap-1 font-medium bg-green-800 text-green-800 hover:text-green-600 px-4 py-2 rounded-lg hover:bg-green-700 transition-all duration-200 touch-target z-10 border border-green-700'
                     >
                       Logout
-                      <span className='logout-icon'>
-                        <svg
-                          height='24'
-                          width='24'
-                          viewBox='0 0 24 24'
-                          xmlns='http://www.w3.org/2000/svg'
-                        >
-                          <g
-                            fill='none'
-                            stroke='currentColor'
-                            strokeLinecap='round'
-                            strokeLinejoin='round'
-                            strokeWidth='2'
-                          >
-                            <path d='M14 8V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2v-2' />
-                            <path d='M9 12h12l-3-3m0 6l3-3' />
-                          </g>
-                        </svg>
-                      </span>
+                      <ArrowRightOnRectangleIcon className='w-5 h-5' />
                     </button>
                   </div>
                 </div>
@@ -166,29 +153,11 @@ export default function ResponsiveHeader() {
               aria-expanded={isMobileNavOpen}
               aria-controls='mobile-navigation'
             >
-              <svg
-                className='w-6 h-6 text-black'
-                fill='none'
-                stroke='currentColor'
-                viewBox='0 0 24 24'
-                aria-hidden='true'
-              >
-                {isMobileNavOpen ? (
-                  <path
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    strokeWidth={2}
-                    d='M6 18L18 6M6 6l12 12'
-                  />
-                ) : (
-                  <path
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    strokeWidth={2}
-                    d='M4 6h16M4 12h16M4 18h16'
-                  />
-                )}
-              </svg>
+              {isMobileNavOpen ? (
+                <XMarkIcon className='w-6 h-6' />
+              ) : (
+                <Bars3Icon className='w-6 h-6' />
+              )}
             </button>
           </div>
         </div>

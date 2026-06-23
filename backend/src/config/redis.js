@@ -1,34 +1,20 @@
 import { createClient } from "redis";
 import { logError, logInfo } from "../utils/logger.js";
 
-// Redis configuration
-const redisConfig = {
-  host: process.env.REDIS_HOST || "localhost",
-  port: process.env.REDIS_PORT || 6379,
-  password: process.env.REDIS_PASSWORD || undefined,
-  database: process.env.REDIS_DB || 0,
-  retryDelayOnFailover: 100,
-  enableReadyCheck: true,
-  maxRetriesPerRequest: 3,
-  lazyConnect: true,
-  retryDelayOnClusterDown: 300,
-  maxRetriesPerRequest: null // For cluster mode
-};
+const MAX_REDIS_RETRIES = 3;
 
 // Create Redis client
 const redisClient = createClient({
-  url: `redis://${redisConfig.host}:${redisConfig.port}`,
-  password: redisConfig.password,
-  database: redisConfig.database,
+  url: process.env.REDIS_URL ||
+    `redis://${process.env.REDIS_HOST || "localhost"}:${process.env.REDIS_PORT || 6379}`,
+  password: process.env.REDIS_PASSWORD || undefined,
+  database: Number(process.env.REDIS_DB) || 0,
   socket: {
     reconnectStrategy: (retries) => {
-      if (
-        redisConfig.maxRetriesPerRequest &&
-        retries > redisConfig.maxRetriesPerRequest
-      ) {
-        return new Error("Max retries reached");
+      if (retries >= MAX_REDIS_RETRIES) {
+        return new Error(`Redis unavailable after ${MAX_REDIS_RETRIES} retries`);
       }
-      return Math.min(retries * 50, 2000);
+      return Math.min(retries * 100, 500);
     }
   }
 });
@@ -70,26 +56,17 @@ const cacheConfig = {
   }
 };
 
-// Event handlers
+let _redisErrorLogged = false;
 redisClient.on("error", (error) => {
-  logError("Redis Client Error:", error);
+  if (!_redisErrorLogged) {
+    logError("Redis Client Error:", error);
+    _redisErrorLogged = true;
+  }
 });
 
-redisClient.on("connect", () => {
-  logInfo("Redis Client Connected");
-});
-
-redisClient.on("ready", () => {
-  logInfo("Redis Client Ready");
-});
-
-redisClient.on("end", () => {
-  logInfo("Redis Client Disconnected");
-});
-
-redisClient.on("reconnecting", () => {
-  logInfo("Redis Client Reconnecting...");
-});
+redisClient.on("connect", () => { _redisErrorLogged = false; logInfo("Redis Client Connected"); });
+redisClient.on("ready", () => { logInfo("Redis Client Ready"); });
+redisClient.on("end", () => { logInfo("Redis Client Disconnected"); });
 
 // Initialize Redis connection
 export const initializeRedis = async () => {
@@ -169,5 +146,5 @@ const parseRedisInfo = (info) => {
   return parsed;
 };
 
-export { redisClient, redisConfig, cacheConfig };
+export { redisClient, cacheConfig };
 export default redisClient;

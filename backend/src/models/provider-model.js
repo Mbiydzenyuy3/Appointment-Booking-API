@@ -101,6 +101,19 @@ const ProviderModel = {
     }
   },
 
+  async findByBookingSlug(booking_slug) {
+    try {
+      const { rows } = await query(
+        `SELECT * FROM providers WHERE booking_slug = $1`,
+        [booking_slug]
+      );
+      return rows[0];
+    } catch (err) {
+      logError("DB Error (find provider by booking slug):", err);
+      throw err;
+    }
+  },
+
   async markReferralUsed(user_id, referral_code) {
     try {
       await query(

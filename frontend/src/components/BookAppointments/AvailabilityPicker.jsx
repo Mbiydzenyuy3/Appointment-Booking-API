@@ -1,10 +1,20 @@
 import React, { useState, useEffect } from "react";
 import api from "../../services/api.js";
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  CalendarDaysIcon
+} from "@heroicons/react/24/solid";
 
 // Get user's time zone
 const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-const AvailabilityPicker = ({ providerId, onSlotSelect, selectedSlotId }) => {
+const AvailabilityPicker = ({
+  providerId,
+  serviceId,
+  onSlotSelect,
+  selectedSlotId
+}) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [availableSlots, setAvailableSlots] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -12,7 +22,7 @@ const AvailabilityPicker = ({ providerId, onSlotSelect, selectedSlotId }) => {
 
   // Fetch available slots for the current month
   const fetchAvailableSlots = async (month = currentMonth) => {
-    if (!providerId) return;
+    if (!providerId || !serviceId) return;
 
     setLoading(true);
     try {
@@ -22,15 +32,17 @@ const AvailabilityPicker = ({ providerId, onSlotSelect, selectedSlotId }) => {
 
       // Fetch slots for the entire month
       const response = await api.get(
-        `/slots/search/available?providerId=${providerId}&limit=1000`
+        `/slots/search/available?providerId=${providerId}&serviceId=${serviceId}&limit=1000`
       );
       const slots = response.data.data || [];
+      console.log("Fetched slots:", slots);
 
       // Filter slots for current month
       const monthSlots = slots.filter((slot) => {
         const slotDate = new Date(slot.day);
         return slotDate >= startOfMonth && slotDate <= endOfMonth;
       });
+      console.log("Month slots:", monthSlots);
 
       setAvailableSlots(monthSlots);
     } catch (error) {
@@ -43,20 +55,27 @@ const AvailabilityPicker = ({ providerId, onSlotSelect, selectedSlotId }) => {
 
   useEffect(() => {
     fetchAvailableSlots();
-  }, [providerId, currentMonth]);
+  }, [providerId, serviceId, currentMonth]);
 
   // Check if a date has available slots
   const hasAvailableSlots = (date) => {
-    return availableSlots.some((slot) => slot.day === date);
+    return availableSlots.some((slot) => {
+      const slotDate = new Date(slot.day).toISOString().split("T")[0];
+      return slotDate === date;
+    });
   };
 
   // Get slots for a specific date
   const getSlotsForDate = (date) => {
-    return availableSlots.filter((slot) => slot.day === date);
+    return availableSlots.filter((slot) => {
+      const slotDate = new Date(slot.day).toISOString().split("T")[0];
+      return slotDate === date;
+    });
   };
 
   // Navigate to previous month
-  const goToPreviousMonth = () => {
+  const goToPreviousMonth = (e) => {
+    e.preventDefault();
     setCurrentMonth(
       (prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1)
     );
@@ -64,7 +83,8 @@ const AvailabilityPicker = ({ providerId, onSlotSelect, selectedSlotId }) => {
   };
 
   // Navigate to next month
-  const goToNextMonth = () => {
+  const goToNextMonth = (e) => {
+    e.preventDefault();
     setCurrentMonth(
       (prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1)
     );
@@ -122,175 +142,153 @@ const AvailabilityPicker = ({ providerId, onSlotSelect, selectedSlotId }) => {
   const calendarDays = generateCalendarDays();
 
   return (
-    <div className='availability-picker'>
-      {/* Month Navigation */}
-      <div className='flex items-center justify-between mb-4'>
-        <button
-          onClick={goToPreviousMonth}
-          className='p-2 hover:bg-gray-100 rounded-lg transition-colors'
-          aria-label='Previous month'
-        >
-          <svg
-            className='w-5 h-5'
-            fill='none'
-            stroke='currentColor'
-            viewBox='0 0 24 24'
+    <div className='availability-picker flex flex-col md:flex-row h-full md:min-h-[400px]'>
+      {/* Left Side: Calendar */}
+      <div className='flex-1 md:pr-6'>
+        <div className='flex items-center justify-center relative mb-6'>
+          <button
+            onClick={goToPreviousMonth}
+            className='absolute left-0 p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600'
+            aria-label='Previous month'
           >
-            <path
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth={2}
-              d='M15 19l-7-7 7-7'
-            />
-          </svg>
-        </button>
-
-        <div className='text-center'>
-          <h3 className='text-lg font-semibold text-gray-900'>
+            <ChevronLeftIcon className='w-5 h-5' />
+          </button>
+          <h3 className='text-lg font-bold text-gray-900'>
             {currentMonth.toLocaleDateString("en-US", {
               month: "long",
               year: "numeric"
             })}
           </h3>
-          <p className='text-xs text-gray-500 mt-1'>
-            Times shown in {userTimeZone.replace("_", " ")}
-          </p>
+          <button
+            onClick={goToNextMonth}
+            className='absolute right-0 p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600'
+            aria-label='Next month'
+          >
+            <ChevronRightIcon className='w-5 h-5' />
+          </button>
         </div>
 
-        <button
-          onClick={goToNextMonth}
-          className='p-2 hover:bg-gray-100 rounded-lg transition-colors'
-          aria-label='Next month'
-        >
-          <svg
-            className='w-5 h-5'
-            fill='none'
-            stroke='currentColor'
-            viewBox='0 0 24 24'
-          >
-            <path
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth={2}
-              d='M9 5l7 7-7 7'
-            />
-          </svg>
-        </button>
-      </div>
-
-      {/* Calendar Grid */}
-      <div className='grid grid-cols-7 gap-1 mb-4'>
-        {/* Day headers */}
-        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-          <div
-            key={day}
-            className='p-2 text-center text-sm font-medium text-gray-500'
-          >
-            {day}
-          </div>
-        ))}
-
-        {/* Calendar days */}
-        {calendarDays.map((day, index) => (
-          <button
-            key={index}
-            onClick={() => handleDateSelect(day.dateString)}
-            disabled={!day.hasSlots || day.isPast}
-            className={`
-              p-2 text-center text-sm rounded-lg transition-all duration-200 touch-target
-              ${day.isCurrentMonth ? "text-gray-900" : "text-gray-400"}
-              ${day.isToday ? "bg-blue-100 text-blue-600 font-semibold" : ""}
-              ${day.isSelected ? "bg-green-500 text-white" : ""}
-              ${
-                day.hasSlots && !day.isPast && !day.isSelected
-                  ? "hover:bg-green-100 hover:text-green-700 bg-green-50 text-green-700"
-                  : ""
-              }
-              ${
-                (!day.hasSlots || day.isPast) && day.isCurrentMonth
-                  ? "text-gray-300 cursor-not-allowed"
-                  : ""
-              }
-              ${!day.isCurrentMonth ? "cursor-default" : ""}
-            `}
-          >
-            {day.date.getDate()}
-          </button>
-        ))}
-      </div>
-
-      {/* Time Slots for Selected Date */}
-      {selectedDate && (
-        <div className='border-t pt-4'>
-          <h4 className='text-md font-medium text-gray-900 mb-3'>
-            Available times for{" "}
-            {new Date(selectedDate).toLocaleDateString("en-US", {
-              weekday: "long",
-              month: "short",
-              day: "numeric"
-            })}
-          </h4>
-
-          {getSlotsForDate(selectedDate).length === 0 ? (
-            <div className='text-center py-8 text-gray-500'>
-              <svg className='w-12 h-12 mx-auto mb-3 text-gray-300' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={1} d='M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' />
-              </svg>
-              <p className='text-sm'>No available time slots for this date</p>
-              <p className='text-xs mt-1'>Try selecting a different date</p>
+        <div className='grid grid-cols-7 gap-1 mb-2'>
+          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+            <div
+              key={day}
+              className='text-center text-xs font-semibold text-gray-400 uppercase tracking-wider py-2'
+            >
+              {day.charAt(0)}
             </div>
-          ) : (
-            <div className='grid grid-cols-2 gap-2 max-h-48 overflow-y-auto'>
-              {getSlotsForDate(selectedDate).map((slot) => (
-                <button
-                  key={slot.timeslot_id}
-                  onClick={() => handleSlotSelect(slot)}
-                  className={`
-                    p-3 text-center rounded-lg border-2 transition-all duration-200 touch-target
-                    ${
-                      selectedSlotId === slot.timeslot_id
-                        ? "border-green-500 bg-green-50 text-green-700 shadow-md transform scale-105"
-                        : "border-gray-200 hover:border-green-300 hover:bg-green-50 text-gray-700 hover:shadow-sm"
-                    }
-                  `}
-                  aria-label={`Select time slot ${new Date(`2000-01-01T${slot.start_time}`).toLocaleTimeString(
-                    "en-US",
-                    {
-                      hour: "numeric",
-                      minute: "2-digit",
-                      hour12: true
-                    }
-                  )} - ${slot.name}`}
-                >
-                  <div className='font-medium'>
-                    {new Date(`2000-01-01T${slot.start_time}`).toLocaleTimeString(
-                      "en-US",
-                      {
+          ))}
+
+          {calendarDays.map((day, index) => (
+            <button
+              key={index}
+              onClick={(e) => {
+                e.preventDefault();
+                handleDateSelect(day.dateString);
+              }}
+              disabled={!day.hasSlots || day.isPast}
+              className={`
+                relative h-10 w-10 mx-auto flex items-center justify-center text-sm rounded-full transition-all duration-200
+                ${
+                  day.isSelected
+                    ? "bg-green-600 text-white font-bold shadow-md"
+                    : day.hasSlots && !day.isPast
+                      ? "bg-green-50 text-green-700 font-semibold hover:bg-green-100"
+                      : "text-gray-400 cursor-default"
+                }
+                ${day.isToday && !day.isSelected ? "ring-1 ring-green-600 text-green-700" : ""}
+                ${!day.isCurrentMonth ? "opacity-0 pointer-events-none" : ""}
+              `}
+            >
+              {day.date.getDate()}
+              {day.hasSlots && !day.isPast && !day.isSelected && (
+                <span className='absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-green-500 rounded-full'></span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Timezone Footer */}
+        <div className='mt-6 pt-4 border-t border-gray-100 hidden md:block'>
+          <p className='text-xs font-semibold text-gray-500 flex items-center gap-1'>
+            🌍 {userTimeZone.replace("_", " ")}
+          </p>
+        </div>
+      </div>
+
+      {/* Right Side: Slots */}
+      <div className='md:w-72 md:border-l border-gray-200 md:pl-6 flex flex-col mt-6 md:mt-0'>
+        {selectedDate ? (
+          <>
+            <h4 className='text-md font-semibold text-gray-900 mb-4 sticky top-0 bg-white z-10'>
+              {new Date(selectedDate).toLocaleDateString("en-US", {
+                weekday: "long",
+                month: "short",
+                day: "numeric"
+              })}
+            </h4>
+
+            <div className='flex-1 overflow-y-auto pr-2 max-h-[300px] md:max-h-[360px] space-y-2 custom-scrollbar'>
+              {getSlotsForDate(selectedDate).length === 0 ? (
+                <div className='text-center py-8 text-gray-500'>
+                  <p className='text-sm'>No available time slots</p>
+                </div>
+              ) : (
+                getSlotsForDate(selectedDate).map((slot) => {
+                  const slotDateTime = new Date(
+                    `${selectedDate}T${slot.start_time}`
+                  );
+                  const now = new Date();
+                  const oneHourFromNow = new Date(
+                    now.getTime() + 60 * 60 * 1000
+                  );
+                  const isPast = slotDateTime < oneHourFromNow;
+                  const isDisabled = isPast;
+
+                  return (
+                    <button
+                      key={slot.timeslot_id}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (!isDisabled) handleSlotSelect(slot);
+                      }}
+                      disabled={isDisabled}
+                      className={`
+                        w-full py-3 px-4 text-center rounded-lg border transition-all duration-200 font-semibold text-sm
+                        ${
+                          selectedSlotId === slot.timeslot_id
+                            ? "bg-green-600 border-green-600 text-white shadow-md"
+                            : isDisabled
+                              ? "border-gray-200 text-gray-300 cursor-not-allowed bg-gray-50"
+                              : "border-green-200 text-green-700 hover:border-green-600 hover:bg-green-50"
+                        }
+                      `}
+                    >
+                      {new Date(
+                        `2000-01-01T${slot.start_time}`
+                      ).toLocaleTimeString("en-US", {
                         hour: "numeric",
                         minute: "2-digit",
                         hour12: true
-                      }
-                    )}
-                  </div>
-                  <div className='text-xs text-gray-500 mt-1'>{slot.name}</div>
-                  {selectedSlotId === slot.timeslot_id && (
-                    <div className='mt-1'>
-                      <svg className='w-4 h-4 mx-auto text-green-600' fill='currentColor' viewBox='0 0 20 20'>
-                        <path fillRule='evenodd' d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z' clipRule='evenodd' />
-                      </svg>
-                    </div>
-                  )}
-                </button>
-              ))}
+                      })}
+                    </button>
+                  );
+                })
+              )}
             </div>
-          )}
-        </div>
-      )}
+          </>
+        ) : (
+          <div className='flex flex-col items-center justify-center h-full text-gray-400 py-12 md:py-0'>
+            <div className='w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3'>
+              <CalendarDaysIcon className='w-6 h-6 text-gray-400' />
+            </div>
+            <p className='text-sm font-medium'>Select a date to view times</p>
+          </div>
+        )}
+      </div>
 
       {loading && (
-        <div className='text-center py-4'>
-          <div className='inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-green-600'></div>
-          <p className='text-sm text-gray-600 mt-2'>Loading availability...</p>
+        <div className='absolute inset-0 bg-white/80 flex items-center justify-center z-20'>
+          <div className='inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-green-600'></div>
         </div>
       )}
     </div>

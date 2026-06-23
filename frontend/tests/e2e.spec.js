@@ -4,11 +4,12 @@
  */
 
 import { test, expect } from "@playwright/test";
-import { injectAxe, getAxeResults } from "@axe-core/playwright";
+import { AxeBuilder } from "@axe-core/playwright";
 
 const runAccessibilityTests = async (page) => {
-  await injectAxe(page);
-  return await getAxeResults(page);
+  const axeBuilder = new AxeBuilder({ page });
+  const results = await axeBuilder.analyze();
+  return results;
 };
 
 // Test user workflows for appointment booking system

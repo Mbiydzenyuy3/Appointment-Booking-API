@@ -133,9 +133,22 @@ const initializeDbSchema = async () => {
         user_type VARCHAR(20) CHECK (user_type IN ('client','provider')),
         reset_password_token VARCHAR(255),
         reset_password_expires TIMESTAMP,
+        google_access_token TEXT,
+        google_refresh_token TEXT,
+        google_token_expiry TIMESTAMP,
+        calendar_sync_enabled BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+    `);
+
+    // Add Google Calendar columns if they don't exist
+    await client.query(`
+      ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS google_access_token TEXT,
+      ADD COLUMN IF NOT EXISTS google_refresh_token TEXT,
+      ADD COLUMN IF NOT EXISTS google_token_expiry TIMESTAMP,
+      ADD COLUMN IF NOT EXISTS calendar_sync_enabled BOOLEAN DEFAULT FALSE;
     `);
 
     await client.query(`
@@ -168,6 +181,12 @@ const initializeDbSchema = async () => {
       );
     `);
 
+    // Add category column if it doesn't exist
+    await client.query(`
+      ALTER TABLE services
+      ADD COLUMN IF NOT EXISTS category VARCHAR(100);
+    `);
+
     await client.query(`
       CREATE TABLE IF NOT EXISTS time_slots (
         timeslot_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -198,6 +217,19 @@ const initializeDbSchema = async () => {
         is_guest_booking BOOLEAN DEFAULT FALSE,
         status VARCHAR(20) DEFAULT 'pending'
           CHECK (status IN ('pending','confirmed','cancelled','completed','no_show')),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS provider_reviews (
+        review_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        provider_id UUID NOT NULL REFERENCES providers(provider_id) ON DELETE CASCADE,
+        booking_id UUID REFERENCES appointments(appointment_id) ON DELETE CASCADE,
+        reviewer_user_id UUID REFERENCES users(user_id) ON DELETE CASCADE,
+        rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+        comment TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useGuest } from "../../context/GuestContext.jsx";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import api from "../../services/api.js";
 import AvailabilityPicker from "./AvailabilityPicker.jsx";
 import {
@@ -9,12 +10,14 @@ import {
   trackBookingFailed,
   trackEvent
 } from "../../services/analytics.js";
+import { ChevronLeftIcon, XMarkIcon } from "@heroicons/react/24/solid";
 
 export default function BookAppointmentForm({
   providerId,
   isOpen,
   onClose,
-  service
+  service,
+  returnPath = "/"
 }) {
   const { user } = useAuth();
   const { saveGuestBooking, markSignUpPrompted } = useGuest();
@@ -159,7 +162,6 @@ export default function BookAppointmentForm({
     try {
       const endpoint = user ? "/appointments/book" : "/appointments/guest-book";
       const response = await api.post(endpoint, payload);
-      setMessage("Appointment booked successfully! 🎉");
 
       trackBookingCompleted(
         response.data.data?.appointment_id,
@@ -167,6 +169,9 @@ export default function BookAppointmentForm({
         service?.service_name,
         !user
       );
+
+      // Show success toast
+      toast.success("Appointment booked successfully! 🎉");
 
       if (!user) {
         saveGuestBooking({
@@ -180,6 +185,7 @@ export default function BookAppointmentForm({
           appointment_time: payload.appointment_time
         });
 
+        // For guests, show sign-up prompt after success
         setTimeout(() => {
           setShowSignUpPrompt(true);
           trackEvent("Sign Up Prompt Shown", {
@@ -187,6 +193,17 @@ export default function BookAppointmentForm({
             service_name: service?.service_name,
             booking_type: "guest"
           });
+          // Close modal after showing prompt
+          setTimeout(() => {
+            onClose();
+            navigate(returnPath);
+          }, 5000); // Give time to see the prompt
+        }, 2000);
+      } else {
+        // For logged-in users, close modal and navigate after a delay
+        setTimeout(() => {
+          onClose();
+          navigate(returnPath);
         }, 2000);
       }
 
@@ -254,40 +271,39 @@ export default function BookAppointmentForm({
     <div className='fixed inset-0 bg-gray-50 bg-opacity-20 backdrop-blur-md flex items-center justify-center z-50 p-4 safe-area-bottom'>
       <div
         ref={modalRef}
-        className='bg-white rounded-2xl flex flex-col shadow-2xl w-full max-w-md max-h-[85vh] sm:max-h-[90vh] overflow-hidden'
+        className={`bg-white rounded-2xl flex flex-col shadow-2xl w-full ${
+          currentStep === 2 ? "max-w-5xl" : "max-w-md"
+        } max-h-[85vh] sm:max-h-[90vh] overflow-hidden transition-all duration-300 ease-in-out`}
         role='dialog'
         aria-modal='true'
       >
         {/* Header */}
         <div className='flex-shrink-0 px-6 py-4 border-b border-gray-100'>
           <div className='flex items-center justify-between'>
-            <div>
-              <h3 className='text-xl font-bold text-gray-900'>
-                Book Appointment
-              </h3>
-              {service && (
-                <p className='text-gray-600 mt-1 text-sm'>
-                  {service.service_name}
-                </p>
-              )}
+            <div className='flex items-center'>
+              <button
+                onClick={onClose}
+                className='p-2 hover:bg-gray-100 rounded-lg mr-3'
+                aria-label='Go back'
+              >
+                <ChevronLeftIcon className='w-5 h-5' />
+              </button>
+              <div>
+                <h3 className='text-xl font-bold text-gray-900'>
+                  Book Appointment
+                </h3>
+                {service && (
+                  <p className='text-gray-600 mt-1 text-sm'>
+                    {service.service_name}
+                  </p>
+                )}
+              </div>
             </div>
             <button
               onClick={onClose}
               className='p-2 hover:bg-gray-100 rounded-lg'
             >
-              <svg
-                className='w-5 h-5'
-                fill='none'
-                stroke='currentColor'
-                viewBox='0 0 24 24'
-              >
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth={2}
-                  d='M6 18L18 6M6 6l12 12'
-                />
-              </svg>
+              <XMarkIcon className='w-5 h-5' />
             </button>
           </div>
         </div>
@@ -332,14 +348,16 @@ export default function BookAppointmentForm({
 
             {/* Step 2: Availability */}
             <div>
-              <label className='block text-sm font-medium text-gray-700 mb-2'>
-                Select Date & Time
-              </label>
-              <p className='text-xs text-gray-500 mb-2'>
-                Pick a convenient slot to continue.
-              </p>
+              {currentStep === 2 && (
+                <div className='mb-4'>
+                  <h2 className='text-lg font-semibold text-gray-900'>
+                    Select a Date & Time
+                  </h2>
+                </div>
+              )}
               <AvailabilityPicker
                 providerId={providerId}
+                serviceId={service?.service_id}
                 onSlotSelect={(slot) => {
                   setSelectedTimeslotId(slot.timeslot_id);
                   setSelectedSlot(slot);
@@ -484,14 +502,16 @@ export default function BookAppointmentForm({
                 ? "Book Appointment"
                 : "Book as Guest"}
           </button>
-          {message && <p className='text-sm text-center mt-3'>{message}</p>}
+          {message && (
+            <p className='text-sm text-center mt-3 text-red-600'>{message}</p>
+          )}
         </div>
 
         {/* Sign-up Prompt */}
         {showSignUpPrompt && (
           <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4'>
             <div className='bg-white rounded-xl p-6 max-w-sm w-full mx-4 text-center'>
-              <h3 className='text-lg font-semibold mb-2'>Booking Confirmed!</h3>
+              <h3 className='text-lg font-semibold mb-2'>Booking Confirmed</h3>
               <p className='text-gray-600 mb-4'>
                 Create an account to manage your appointments and get
                 recommendations.

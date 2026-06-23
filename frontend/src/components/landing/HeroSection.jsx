@@ -1,16 +1,13 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Search, MapPin, ArrowRight, Star, Users, Clock } from "lucide-react";
+import { ArrowRight, Star, Users, Clock } from "lucide-react";
 // eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import { useAuth } from "../../context/AuthContext.jsx";
 
 export default function HeroSection() {
   const { user } = useAuth();
-  const [service, setService] = useState("");
-  const [location, setLocation] = useState("");
   const navigate = useNavigate();
 
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
@@ -242,39 +239,11 @@ export default function HeroSection() {
               transition={{ duration: 0.6, delay: 0.3 }}
             >
               <div className='flex flex-col md:flex-row gap-3'>
-                <div className='flex-1 relative flex pl-3'>
-                  <Search className='absolute left-2 top-1/2 right-3 -translate-y-1/2 w-5 h-5 text-gray-400' />
-                  <Input
-                    placeholder='What do you need? (e.g., Barber, Dentist, Makeup)'
-                    value={service}
-                    onChange={(e) => setService(e.target.value)}
-                    className='pl-10 h-14 border-0 bg-gray-50 rounded-xl text-gray-600 focus-visible:ring-[#1B4332]'
-                  />
-                </div>
-                <div className='flex-1 relative pl-4'>
-                  <MapPin className='absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400' />
-                  <Input
-                    placeholder='Where? (e.g., Akwa, Bonanjo, Molyko)'
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    className='pl-12 pr-4 h-14 border-0 bg-gray-50 text-gray-600 rounded-xl text-shadow-gray-500 focus-visible:ring-[#1B4332]'
-                  />
-                </div>
                 <button
-                  onClick={() => {
-                    const params = new URLSearchParams();
-                    if (service.trim())
-                      params.append("service", service.trim());
-                    if (location.trim())
-                      params.append("location", location.trim());
-                    const queryString = params.toString();
-                    navigate(
-                      queryString ? `/explore?${queryString}` : "/explore"
-                    );
-                  }}
+                  onClick={() => navigate("/explore")}
                   className='h-14 px-8 flex items-center justify-center gap-4 text-white rounded-xl font-semibold transition-colors bg-green-800 z-50'
                 >
-                  Find Appointments
+                  Find Available Services
                   <ArrowRight className='ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform' />
                 </button>
               </div>
