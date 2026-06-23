@@ -26,7 +26,6 @@ import serviceRoutes from "./src/routes/service.js";
 import calendarRouter from "./src/routes/calendar.js";
 import aiSchedulerRouter from "./src/routes/ai-scheduler.js";
 import performanceRouter from "./src/routes/performance.js";
-import debugAuthRouter from "./src/routes/debug-auth.js";
 
 const app = express();
 
@@ -74,9 +73,7 @@ app.use((req, res, next) => {
 // Routes
 app.use("/", indexRouter);
 app.use("/auth", authRouter);
-if (process.env.NODE_ENV !== "production") {
-  app.use("/debug-auth", debugAuthRouter);
-}
+
 app.use("/appointments", appointmentRouter);
 app.use("/slots", slotRouter);
 app.use("/providers", providerRouter);
