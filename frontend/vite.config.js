@@ -55,25 +55,14 @@ export default defineConfig({
         dir: "ltr"
       },
       workbox: {
+        skipWaiting: true,
+        clientsClaim: true,
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,jpg,jpeg}"],
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/api\./,
-            handler: "NetworkFirst",
-            options: {
-              cacheName: "api-cache",
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 2 // 2 hours
-              },
-              networkTimeoutSeconds: 3,
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          },
-          {
-            urlPattern: /^https:\/\/.*\.(?:png|jpg|jpeg|svg|gif|webp|avif)$/,
+            urlPattern: ({ url }) =>
+              /\.(png|jpg|jpeg|svg|gif|webp|avif)$/.test(url.pathname) &&
+              !url.hostname.includes("onrender.com"),
             handler: "CacheFirst",
             options: {
               cacheName: "images-cache",
