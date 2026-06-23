@@ -191,11 +191,20 @@ export async function cancel(appointmentId, userId, userType) {
     let appointment = apptRes.rows[0];
     if (!appointment) throw new Error("Appointment not found");
 
-    // Check authorization: client can cancel their own, provider can cancel their service appointments
+    // Check authorization: client can cancel their own, provider can cancel their service appointments.
+    // userId is user_id from JWT; provider_id is a different UUID from the providers table.
     const isClientCancelling =
       userType === "client" && appointment.user_id === userId;
-    const isProviderCancelling =
-      userType === "provider" && appointment.provider_id === userId;
+
+    let isProviderCancelling = false;
+    if (userType === "provider") {
+      const providerRes = await client.query(
+        "SELECT provider_id FROM providers WHERE user_id = $1",
+        [userId]
+      );
+      const providerId = providerRes.rows[0]?.provider_id;
+      isProviderCancelling = !!providerId && appointment.provider_id === providerId;
+    }
 
     if (!isClientCancelling && !isProviderCancelling) {
       throw new Error("Not authorized");
