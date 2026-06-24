@@ -25,7 +25,11 @@ export const serviceSchema = Joi.object({
 
   category: Joi.string().optional().allow(""),
 
-  location: Joi.string().optional().allow(""),
+  location: Joi.string().min(2).required().messages({
+    "string.empty": "Location is required",
+    "string.min": "Location must be at least 2 characters",
+    "any.required": "Location is required"
+  }),
 
   additionalDescription: Joi.string().optional().allow(""),
 

@@ -35,37 +35,32 @@ export default function UserProfile() {
 
   const fetchProfile = async () => {
     try {
-      // For providers, use the provider endpoint
-      const endpoint =
-        user?.user_type === "provider" ? "/providers/me" : "/auth/profile";
-      const response = await api.get(endpoint);
+      // /auth/profile returns user fields (name, email, user_type) + provider_info
+      // for providers, so it works for both user types.
+      const response = await api.get("/auth/profile");
       if (response.data.success) {
         const data = response.data.data;
-        if (user?.user_type === "provider") {
-          // For providers, map the data to expected format
-          setProfileData({
-            name: data.name || "",
-            email: data.email || "",
-            phone: data.phone || "",
-            address: "",
-            bio: data.bio || "",
-            profile_picture: "",
-            user_type: "provider",
-            provider_info: {
-              bio: data.bio || ""
-            }
-          });
-        } else {
-          setProfileData(data);
-        }
+        setProfileData({
+          name: data.name || "",
+          email: data.email || "",
+          phone: data.provider_info?.phone || data.phone || "",
+          address: data.address || "",
+          bio: data.provider_info?.bio || data.bio || "",
+          profile_picture: data.profile_picture || "",
+          user_type: data.user_type || user?.user_type || "",
+          provider_info: data.provider_info
+            ? {
+                bio: data.provider_info.bio || "",
+                phone: data.provider_info.phone || "",
+                hourly_rate: data.provider_info.hourly_rate || "",
+                booking_slug: data.provider_info.booking_slug || ""
+              }
+            : null
+        });
       }
     } catch (error) {
       console.error("Error fetching profile:", error);
-      if (error.response?.status === 404) {
-        toast.error(
-          "Profile endpoint not available. Please check backend configuration."
-        );
-      } else if (error.response?.status === 401) {
+      if (error.response?.status === 401) {
         toast.error("Session expired. Please log in again.");
       } else {
         toast.error("Failed to load profile data");

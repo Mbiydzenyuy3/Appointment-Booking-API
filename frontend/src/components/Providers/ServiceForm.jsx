@@ -3,7 +3,7 @@ import { useCurrency } from "../../context/CurrencyContext.jsx";
 import CurrencySelector from "../Common/CurrencySelector.jsx";
 import { XMarkIcon, PencilIcon, PlusIcon } from "@heroicons/react/24/outline";
 
-const REQUIRED = ["service_name", "price", "duration_minutes"];
+const REQUIRED = ["service_name", "price", "duration_minutes", "location"];
 
 const INITIAL = {
   service_name: "",
@@ -27,6 +27,8 @@ function validate(service) {
   const dur = Number(service.duration_minutes);
   if (service.duration_minutes === "" || service.duration_minutes === null) errors.duration_minutes = "Duration is required";
   else if (isNaN(dur) || dur <= 0) errors.duration_minutes = "Duration must be greater than 0";
+
+  if (!service.location.trim()) errors.location = "Location is required so clients know where to find you";
 
   if (service.image_url && service.image_url.trim()) {
     try { new URL(service.image_url.trim()); }
@@ -198,10 +200,10 @@ export default function ServiceForm({ onCreate, onUpdate, editingService, onCanc
           <FieldError field="description" />
         </div>
 
-        {/* Location — optional */}
+        {/* Location — required */}
         <div>
           <label htmlFor="location" className="block text-sm font-semibold text-gray-700 mb-2">
-            Location <OptionalBadge />
+            Location <RequiredStar />
           </label>
           <input
             id="location"
@@ -210,7 +212,7 @@ export default function ServiceForm({ onCreate, onUpdate, editingService, onCanc
             value={service.location}
             onChange={handleChange}
             onBlur={handleBlur}
-            placeholder="e.g. 123 Main St, Douala"
+            placeholder="e.g. Douala, Yaoundé, Buea — helps clients find you"
             className={inputClass("location")}
             autoComplete="off"
           />
