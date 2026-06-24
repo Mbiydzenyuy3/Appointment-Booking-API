@@ -1,134 +1,237 @@
 import React, { useState, useEffect } from "react";
 import api from "../../services/api.js";
 import { toast } from "react-toastify";
-import { TrashIcon, PlusIcon, PhotoIcon } from "@heroicons/react/24/outline";
+import { TrashIcon, PlusIcon, PhotoIcon, PencilIcon, CheckIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 const GALLERY_LIMIT = 20;
 
 function detectUrlType(url) {
   if (!url || !url.trim()) return null;
-  try {
-    new URL(url.trim());
-  } catch {
-    return null;
-  }
+  try { new URL(url.trim()); } catch { return null; }
   const u = url.trim().toLowerCase();
   if (u.includes("tiktok.com")) return "tiktok";
-  if (u.includes("youtube.com/watch") || u.includes("youtu.be/")) return "youtube";
+  if (u.includes("youtube.com") || u.includes("youtu.be/")) return "youtube";
+  if (u.includes("vimeo.com")) return "vimeo";
   return "image";
 }
 
 function getYoutubeEmbedUrl(url) {
   try {
     const u = new URL(url.trim());
-    const videoId = u.searchParams.get("v") || u.pathname.split("/").pop();
-    return `https://www.youtube.com/embed/${videoId}`;
-  } catch {
+    const v = u.searchParams.get("v");
+    if (v) return `https://www.youtube.com/embed/${v}`;
+    if (u.hostname === "youtu.be") return `https://www.youtube.com/embed/${u.pathname.slice(1)}`;
+    if (u.pathname.startsWith("/shorts/")) return `https://www.youtube.com/embed/${u.pathname.replace("/shorts/", "")}`;
+    if (u.pathname.startsWith("/embed/")) return url.trim();
     return null;
-  }
+  } catch { return null; }
+}
+
+function getTikTokEmbedUrl(url) {
+  try {
+    const u = new URL(url.trim());
+    const match = u.pathname.match(/\/video\/(\d+)/);
+    if (match) return `https://www.tiktok.com/embed/v2/${match[1]}`;
+    return null;
+  } catch { return null; }
+}
+
+function getVimeoEmbedUrl(url) {
+  try {
+    const u = new URL(url.trim());
+    const match = u.pathname.match(/\/(?:video\/)?(\d+)/);
+    if (match) return `https://player.vimeo.com/video/${match[1]}`;
+    return null;
+  } catch { return null; }
 }
 
 function UrlPreview({ type, imageUrl }) {
   if (!type) return null;
-
   if (type === "image") {
     return (
       <div className="mt-2 flex items-center gap-2">
-        <img
-          src={imageUrl}
-          alt="Preview"
-          className="w-10 h-10 object-cover rounded-md border border-gray-200"
-          onError={(e) => {
-            e.target.style.display = "none";
-          }}
-        />
+        <img src={imageUrl} alt="Preview" className="w-10 h-10 object-cover rounded-md border border-gray-200" onError={(e) => { e.target.style.display = "none"; }} />
         <span className="text-xs text-gray-500">Image preview</span>
       </div>
     );
   }
+  const labels = { youtube: { icon: "🎬", label: "YouTube video" }, tiktok: { icon: "🎵", label: "TikTok video" }, vimeo: { icon: "🎬", label: "Vimeo video" } };
+  const info = labels[type];
+  if (!info) return null;
+  return (
+    <div className="mt-2 flex items-center gap-2">
+      <div className="w-10 h-10 bg-gray-100 rounded-md flex items-center justify-center text-lg">{info.icon}</div>
+      <span className="text-xs text-gray-500">{info.label}</span>
+    </div>
+  );
+}
+
+function MediaEmbed({ imageUrl, caption, type: propType }) {
+  const type = propType || detectUrlType(imageUrl);
 
   if (type === "youtube") {
-    return (
-      <div className="mt-2 flex items-center gap-2">
-        <div className="w-10 h-10 bg-red-100 rounded-md flex items-center justify-center text-lg">
-          🎬
-        </div>
-        <span className="text-xs text-gray-500">YouTube video</span>
-      </div>
+    const embedUrl = getYoutubeEmbedUrl(imageUrl);
+    return embedUrl ? (
+      <iframe
+        src={embedUrl}
+        className="w-full h-full"
+        title={caption || "YouTube video"}
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowFullScreen
+      />
+    ) : (
+      <div className="w-full h-full flex items-center justify-center bg-red-50 text-4xl">🎬</div>
     );
   }
 
   if (type === "tiktok") {
+    const embedUrl = getTikTokEmbedUrl(imageUrl);
+    return embedUrl ? (
+      <iframe
+        src={embedUrl}
+        className="w-full h-full"
+        title={caption || "TikTok video"}
+        allow="autoplay; gyroscope;"
+        allowFullScreen
+      />
+    ) : (
+      <a
+        href={imageUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="w-full h-full bg-gray-900 flex flex-col items-center justify-center gap-2 no-underline"
+      >
+        <span className="text-4xl">🎵</span>
+        <span className="text-xs text-gray-300 font-medium">Watch on TikTok</span>
+      </a>
+    );
+  }
+
+  if (type === "vimeo") {
+    const embedUrl = getVimeoEmbedUrl(imageUrl);
+    return embedUrl ? (
+      <iframe
+        src={embedUrl}
+        className="w-full h-full"
+        title={caption || "Vimeo video"}
+        allow="autoplay; fullscreen; picture-in-picture"
+        allowFullScreen
+      />
+    ) : (
+      <div className="w-full h-full flex items-center justify-center bg-blue-50 text-4xl">🎬</div>
+    );
+  }
+
+  return (
+    <img
+      src={imageUrl}
+      alt={caption || "Gallery image"}
+      className="w-full h-full object-cover"
+    />
+  );
+}
+
+function GalleryItemCard({ item, onDelete, onUpdate }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editUrl, setEditUrl] = useState(item.image_url);
+  const [editCaption, setEditCaption] = useState(item.caption || "");
+  const [isSaving, setIsSaving] = useState(false);
+
+  const type = detectUrlType(item.image_url);
+  const isVideo = type === "youtube" || type === "tiktok" || type === "vimeo";
+
+  const handleSave = async () => {
+    if (!editUrl.trim()) return;
+    try { new URL(editUrl.trim()); } catch { toast.error("Please enter a valid URL."); return; }
+    setIsSaving(true);
+    try {
+      await onUpdate(item.gallery_id, { imageUrl: editUrl.trim(), caption: editCaption.trim() });
+      setIsEditing(false);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setEditUrl(item.image_url);
+    setEditCaption(item.caption || "");
+    setIsEditing(false);
+  };
+
+  if (isEditing) {
     return (
-      <div className="mt-2 flex items-center gap-2">
-        <div className="w-10 h-10 bg-gray-900 rounded-md flex items-center justify-center text-lg">
-          🎵
+      <div className="rounded-xl border-2 border-green-400 bg-white p-3 shadow-md space-y-3">
+        <div>
+          <label className="block text-xs font-semibold text-gray-700 mb-1">URL</label>
+          <input
+            type="url"
+            value={editUrl}
+            onChange={(e) => setEditUrl(e.target.value)}
+            className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500"
+            placeholder="https://..."
+            maxLength={2000}
+          />
         </div>
-        <span className="text-xs text-gray-500">TikTok post</span>
+        <div>
+          <label className="block text-xs font-semibold text-gray-700 mb-1">Caption</label>
+          <input
+            type="text"
+            value={editCaption}
+            onChange={(e) => setEditCaption(e.target.value)}
+            className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500"
+            placeholder="Optional caption..."
+            maxLength={255}
+          />
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white text-xs font-medium rounded-lg transition-colors"
+          >
+            <CheckIcon className="w-3 h-3" />
+            {isSaving ? "Saving..." : "Save"}
+          </button>
+          <button
+            onClick={handleCancel}
+            className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium rounded-lg transition-colors"
+          >
+            <XMarkIcon className="w-3 h-3" />
+            Cancel
+          </button>
+        </div>
       </div>
     );
   }
 
-  return null;
-}
-
-function GalleryItemCard({ item, onDelete }) {
-  const type = detectUrlType(item.image_url);
-
-  const renderMedia = () => {
-    if (type === "youtube") {
-      const embedUrl = getYoutubeEmbedUrl(item.image_url);
-      return embedUrl ? (
-        <iframe
-          src={embedUrl}
-          className="w-full h-full"
-          title={item.caption || "YouTube video"}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-        />
-      ) : (
-        <div className="w-full h-full flex items-center justify-center bg-red-50 text-4xl">
-          🎬
-        </div>
-      );
-    }
-
-    if (type === "tiktok") {
-      return (
-        <div className="w-full h-full flex items-center justify-center bg-gray-900 text-4xl">
-          🎵
-        </div>
-      );
-    }
-
-    return (
-      <img
-        src={item.image_url}
-        alt={item.caption || "Gallery image"}
-        className="w-full h-full object-cover"
-      />
-    );
-  };
-
   return (
     <div className="rounded-xl overflow-hidden shadow-md border border-gray-200 bg-white group">
-      <div className="relative aspect-square">
-        {renderMedia()}
-        <button
-          onClick={() => {
-            if (window.confirm("Delete this photo from your gallery?")) {
-              onDelete(item.gallery_id);
-            }
-          }}
-          className="absolute top-2 right-2 w-8 h-8 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-          aria-label="Delete gallery item"
-        >
-          <TrashIcon className="w-4 h-4" />
-        </button>
+      <div className={`relative ${isVideo ? "aspect-video" : "aspect-square"}`}>
+        <MediaEmbed imageUrl={item.image_url} caption={item.caption} type={type} />
+        <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <button
+            onClick={() => setIsEditing(true)}
+            className="w-7 h-7 bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center shadow-md"
+            aria-label="Edit gallery item"
+          >
+            <PencilIcon className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={() => {
+              if (window.confirm("Delete this item from your gallery?")) {
+                onDelete(item.gallery_id);
+              }
+            }}
+            className="w-7 h-7 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center shadow-md"
+            aria-label="Delete gallery item"
+          >
+            <TrashIcon className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
       {item.caption && (
         <div className="px-3 py-2">
-          <p className="text-sm text-gray-600 truncate">{item.caption}</p>
+          <p className="text-sm text-gray-700 truncate">{item.caption}</p>
         </div>
       )}
     </div>
@@ -145,10 +248,7 @@ export default function GalleryManager({ providerId }) {
   const [previewType, setPreviewType] = useState(null);
 
   useEffect(() => {
-    if (!providerId) {
-      setIsLoading(false);
-      return;
-    }
+    if (!providerId) { setIsLoading(false); return; }
     api
       .get(`/providers/${providerId}/gallery`)
       .then((r) => setItems(r.data.data))
@@ -160,61 +260,35 @@ export default function GalleryManager({ providerId }) {
     const val = e.target.value;
     setImageUrl(val);
     setUrlError("");
-    if (val.trim()) {
-      setPreviewType(detectUrlType(val));
-    } else {
-      setPreviewType(null);
-    }
+    setPreviewType(val.trim() ? detectUrlType(val) : null);
   };
 
   const validateForm = () => {
-    if (!imageUrl.trim()) {
-      setUrlError("URL is required.");
-      return false;
-    }
-    if (imageUrl.trim().length > 2000) {
-      setUrlError("URL must be 2000 characters or fewer.");
-      return false;
-    }
-    try {
-      new URL(imageUrl.trim());
-    } catch {
-      setUrlError("Please enter a valid URL.");
-      return false;
-    }
-    if (caption.length > 255) {
-      toast.error("Caption must be 255 characters or fewer.");
-      return false;
-    }
+    if (!imageUrl.trim()) { setUrlError("URL is required."); return false; }
+    if (imageUrl.trim().length > 2000) { setUrlError("URL must be 2000 characters or fewer."); return false; }
+    try { new URL(imageUrl.trim()); } catch { setUrlError("Please enter a valid URL."); return false; }
+    if (caption.length > 255) { toast.error("Caption must be 255 characters or fewer."); return false; }
     return true;
   };
 
   const handleAdd = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-
     setIsAdding(true);
     try {
-      const res = await api.post("/providers/me/gallery", {
-        imageUrl: imageUrl.trim(),
-        caption: caption.trim()
-      });
-      const newItem = res.data.data;
-      setItems((prev) => [newItem, ...prev]);
+      const res = await api.post("/providers/me/gallery", { imageUrl: imageUrl.trim(), caption: caption.trim() });
+      setItems((prev) => [res.data.data, ...prev]);
       setImageUrl("");
       setCaption("");
       setPreviewType(null);
       setUrlError("");
-      toast.success("Photo added to your gallery!");
+      toast.success("Added to your gallery!");
     } catch (error) {
       const msg = error.response?.data?.message || "";
-      if (
-        error.response?.status === 400 &&
-        msg.toLowerCase().includes("limit")
-      ) {
-        toast.error("Gallery limit reached. Delete a photo to add new ones.");
+      if (error.response?.status === 400 && msg.toLowerCase().includes("limit")) {
+        toast.error("Gallery limit reached. Delete an item to add new ones.");
       } else {
-        toast.error(msg || "Failed to add photo. Please try again.");
+        toast.error(msg || "Failed to add. Please try again.");
       }
     } finally {
       setIsAdding(false);
@@ -225,9 +299,21 @@ export default function GalleryManager({ providerId }) {
     try {
       await api.delete(`/providers/me/gallery/${galleryId}`);
       setItems((prev) => prev.filter((item) => item.gallery_id !== galleryId));
-      toast.success("Photo removed from gallery.");
+      toast.success("Removed from gallery.");
     } catch {
-      toast.error("Failed to delete photo. Please try again.");
+      toast.error("Failed to delete. Please try again.");
+    }
+  };
+
+  const handleUpdate = async (galleryId, updates) => {
+    try {
+      const res = await api.put(`/providers/me/gallery/${galleryId}`, updates);
+      const updated = res.data.data;
+      setItems((prev) => prev.map((item) => item.gallery_id === galleryId ? updated : item));
+      toast.success("Gallery item updated.");
+    } catch {
+      toast.error("Failed to update. Please try again.");
+      throw new Error("update failed");
     }
   };
 
@@ -248,46 +334,30 @@ export default function GalleryManager({ providerId }) {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
             <PhotoIcon className="w-5 h-5 text-green-600" />
-            Photo Gallery
+            Photo &amp; Video Gallery
           </h2>
-          <p className="text-sm text-gray-500 mt-1">
-            Showcase your work with photos and videos.
-          </p>
+          <p className="text-sm text-gray-500 mt-1">Showcase your work with photos and videos.</p>
         </div>
-        <div className="text-right">
-          <span
-            className={`text-sm font-medium px-3 py-1 rounded-full ${
-              isAtLimit
-                ? "bg-red-100 text-red-700"
-                : isNearLimit
-                ? "bg-amber-100 text-amber-700"
-                : "bg-gray-100 text-gray-600"
-            }`}
-          >
-            {count} / {GALLERY_LIMIT} photos
-          </span>
-        </div>
+        <span className={`text-sm font-medium px-3 py-1 rounded-full ${isAtLimit ? "bg-red-100 text-red-700" : isNearLimit ? "bg-amber-100 text-amber-700" : "bg-gray-100 text-gray-600"}`}>
+          {count} / {GALLERY_LIMIT}
+        </span>
       </div>
 
-      {/* Limit warnings */}
       {isAtLimit && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
-          Gallery full — delete a photo to add new ones.
+          Gallery full — delete an item to add new ones.
         </div>
       )}
       {isNearLimit && (
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-700">
-          Almost at limit — {GALLERY_LIMIT - count} photo
-          {GALLERY_LIMIT - count === 1 ? "" : "s"} remaining.
+          Almost at limit — {GALLERY_LIMIT - count} slot{GALLERY_LIMIT - count === 1 ? "" : "s"} remaining.
         </div>
       )}
 
-      {/* Add form */}
       {!isAtLimit && (
         <div className="bg-white rounded-xl shadow-md border border-gray-200 p-5">
           <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
@@ -296,10 +366,7 @@ export default function GalleryManager({ providerId }) {
           </h3>
           <form onSubmit={handleAdd} className="space-y-4">
             <div>
-              <label
-                htmlFor="gallery-url"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
+              <label htmlFor="gallery-url" className="block text-sm font-medium text-gray-700 mb-1">
                 Image or Video URL <span className="text-red-500">*</span>
               </label>
               <input
@@ -307,40 +374,30 @@ export default function GalleryManager({ providerId }) {
                 type="url"
                 value={imageUrl}
                 onChange={handleUrlChange}
-                placeholder="https://example.com/photo.jpg or YouTube/TikTok URL"
-                className={`w-full px-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 ${
-                  urlError ? "border-red-400" : "border-gray-300"
-                }`}
+                placeholder="https://example.com/photo.jpg  •  YouTube  •  TikTok  •  Vimeo"
+                className={`w-full px-4 py-2 border rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 ${urlError ? "border-red-400" : "border-gray-300"}`}
                 maxLength={2000}
                 disabled={isAdding}
               />
-              {urlError && (
-                <p className="mt-1 text-xs text-red-600">{urlError}</p>
-              )}
+              {urlError && <p className="mt-1 text-xs text-red-600">{urlError}</p>}
               <UrlPreview type={previewType} imageUrl={imageUrl} />
             </div>
 
             <div>
-              <label
-                htmlFor="gallery-caption"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Caption{" "}
-                <span className="text-gray-400 font-normal">(optional)</span>
+              <label htmlFor="gallery-caption" className="block text-sm font-medium text-gray-700 mb-1">
+                Caption <span className="text-gray-400 font-normal">(optional)</span>
               </label>
               <input
                 id="gallery-caption"
                 type="text"
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
-                placeholder="Describe this photo..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="Describe this photo or video..."
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
                 maxLength={255}
                 disabled={isAdding}
               />
-              <p className="mt-1 text-xs text-gray-400 text-right">
-                {caption.length} / 255
-              </p>
+              <p className="mt-1 text-xs text-gray-400 text-right">{caption.length} / 255</p>
             </div>
 
             <button
@@ -355,16 +412,11 @@ export default function GalleryManager({ providerId }) {
         </div>
       )}
 
-      {/* Gallery grid */}
       {items.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-xl shadow-md border border-gray-200">
           <div className="text-5xl mb-4">📷</div>
-          <p className="text-lg font-medium text-gray-700 mb-2">
-            No photos yet
-          </p>
-          <p className="text-sm text-gray-400">
-            Add your first photo to showcase your work!
-          </p>
+          <p className="text-lg font-medium text-gray-700 mb-2">No items yet</p>
+          <p className="text-sm text-gray-400">Add your first photo or video to showcase your work!</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -373,6 +425,7 @@ export default function GalleryManager({ providerId }) {
               key={item.gallery_id}
               item={item}
               onDelete={handleDelete}
+              onUpdate={handleUpdate}
             />
           ))}
         </div>

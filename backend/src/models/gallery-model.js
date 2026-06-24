@@ -45,6 +45,32 @@ export async function deleteItem(galleryId, providerId) {
   }
 }
 
+// Update caption and/or image_url for a gallery item
+export async function updateItem(galleryId, providerId, updates) {
+  const fields = [];
+  const values = [];
+
+  if (updates.image_url !== undefined) {
+    fields.push(`image_url = $${values.length + 1}`);
+    values.push(updates.image_url);
+  }
+  if (updates.caption !== undefined) {
+    fields.push(`caption = $${values.length + 1}`);
+    values.push(updates.caption);
+  }
+
+  if (fields.length === 0) throw new Error("No fields to update");
+
+  values.push(galleryId, providerId);
+  const { rows } = await query(
+    `UPDATE provider_gallery SET ${fields.join(", ")}
+     WHERE gallery_id = $${values.length - 1} AND provider_id = $${values.length}
+     RETURNING *`,
+    values
+  );
+  return rows[0];
+}
+
 // Count items for a provider
 export async function countByProvider(providerId) {
   try {

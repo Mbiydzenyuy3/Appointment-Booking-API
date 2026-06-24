@@ -20,6 +20,7 @@ export default function UserProfile() {
     address: "",
     bio: "",
     profile_picture: "",
+    logo_url: "",
     user_type: user?.user_type || "",
     provider_info: null
   });
@@ -47,13 +48,15 @@ export default function UserProfile() {
           address: data.address || "",
           bio: data.provider_info?.bio || data.bio || "",
           profile_picture: data.profile_picture || "",
+          logo_url: data.provider_info?.logo_url || "",
           user_type: data.user_type || user?.user_type || "",
           provider_info: data.provider_info
             ? {
                 bio: data.provider_info.bio || "",
                 phone: data.provider_info.phone || "",
                 hourly_rate: data.provider_info.hourly_rate || "",
-                booking_slug: data.provider_info.booking_slug || ""
+                booking_slug: data.provider_info.booking_slug || "",
+                logo_url: data.provider_info.logo_url || ""
               }
             : null
         });
@@ -127,7 +130,8 @@ export default function UserProfile() {
     try {
       const updateData = {
         bio: profileData.provider_info?.bio || "",
-        phone: profileData.phone || ""
+        phone: profileData.phone || "",
+        logo_url: profileData.logo_url || null
       };
 
       const response = await api.put("/providers/me", updateData);
@@ -428,9 +432,44 @@ export default function UserProfile() {
                         phone: e.target.value
                       }))
                     }
-                    className='mt-1 block w-full border-gray-300 rounded-md shadow-sm   sm:text-sm text-gray-700'
+                    className='mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm text-gray-700'
                     placeholder='Enter your phone number'
                   />
+                </div>
+
+                <div>
+                  <label className='block text-sm font-medium text-gray-700'>
+                    Logo / Shop Image URL
+                  </label>
+                  <input
+                    type='url'
+                    name='logo_url'
+                    value={profileData.logo_url || ""}
+                    onChange={(e) =>
+                      setProfileData((prev) => ({
+                        ...prev,
+                        logo_url: e.target.value,
+                        provider_info: prev.provider_info
+                          ? { ...prev.provider_info, logo_url: e.target.value }
+                          : prev.provider_info
+                      }))
+                    }
+                    className='mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-sm text-gray-700'
+                    placeholder='https://example.com/your-logo.jpg'
+                  />
+                  <p className='mt-1 text-xs text-gray-500'>
+                    Paste a direct image URL. This will replace the initial letter on your public profile.
+                  </p>
+                  {profileData.logo_url && (
+                    <div className='mt-2'>
+                      <img
+                        src={profileData.logo_url}
+                        alt='Logo preview'
+                        className='w-16 h-16 rounded-full object-cover border border-gray-200'
+                        onError={(e) => { e.target.style.display = "none"; }}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <div className='flex justify-end'>

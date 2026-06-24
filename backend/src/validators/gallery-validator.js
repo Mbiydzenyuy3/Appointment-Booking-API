@@ -10,3 +10,10 @@ export const addGalleryItemSchema = Joi.object({
   }),
   caption: Joi.string().max(255).optional().allow("")
 });
+
+export const updateGalleryItemSchema = Joi.object({
+  imageUrl: Joi.string().uri().max(2000).optional().messages({
+    "string.uri": "Image URL must be a valid URL"
+  }),
+  caption: Joi.string().max(255).optional().allow("").allow(null)
+}).min(1);

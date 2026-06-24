@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useCurrency } from "../context/CurrencyContext.jsx";
+import { useAuth } from "../context/AuthContext.jsx";
 import BookAppointmentForm from "../components/BookAppointments/BookAppointment.jsx";
 import ProgressiveImage from "../components/Common/ProgressiveImage.jsx";
 import { useConnectionSpeed } from "../hooks/useConnectionSpeed.js";
@@ -25,6 +26,7 @@ const ProviderProfile = () => {
   const { bookingSlug } = useParams();
   const navigate = useNavigate();
   const { formatPrice } = useCurrency();
+  const { user } = useAuth();
 
   // Enable connection speed detection for slow network optimizations
   useConnectionSpeed();
@@ -33,10 +35,13 @@ const ProviderProfile = () => {
   const [services, setServices] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [bookingModal, setBookingModal] = useState({
-    open: false,
-    service: null
-  });
+  const [bookingModal, setBookingModal] = useState({ open: false, service: null });
+
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewHover, setReviewHover] = useState(0);
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewState, setReviewState] = useState("idle"); // idle | submitting | success | no_booking | already_reviewed | error
+  const [reviewError, setReviewError] = useState("");
 
   const fetchProviderProfile = async () => {
     try {
@@ -162,17 +167,67 @@ const ProviderProfile = () => {
     if (!url || !url.trim()) return "image";
     const u = url.trim().toLowerCase();
     if (u.includes("tiktok.com")) return "tiktok";
-    if (u.includes("youtube.com/watch") || u.includes("youtu.be/")) return "youtube";
+    if (u.includes("youtube.com") || u.includes("youtu.be/")) return "youtube";
+    if (u.includes("vimeo.com")) return "vimeo";
     return "image";
   }
 
   function getYoutubeEmbedUrl(url) {
     try {
       const u = new URL(url.trim());
-      const videoId = u.searchParams.get("v") || u.pathname.split("/").pop();
-      return `https://www.youtube.com/embed/${videoId}`;
+      const v = u.searchParams.get("v");
+      if (v) return `https://www.youtube.com/embed/${v}`;
+      if (u.hostname === "youtu.be") return `https://www.youtube.com/embed/${u.pathname.slice(1)}`;
+      if (u.pathname.startsWith("/shorts/")) return `https://www.youtube.com/embed/${u.pathname.replace("/shorts/", "")}`;
+      if (u.pathname.startsWith("/embed/")) return url.trim();
+      return null;
     } catch { return null; }
   }
+
+  function getTikTokEmbedUrl(url) {
+    try {
+      const u = new URL(url.trim());
+      const match = u.pathname.match(/\/video\/(\d+)/);
+      if (match) return `https://www.tiktok.com/embed/v2/${match[1]}`;
+      return null;
+    } catch { return null; }
+  }
+
+  function getVimeoEmbedUrl(url) {
+    try {
+      const u = new URL(url.trim());
+      const match = u.pathname.match(/\/(?:video\/)?(\d+)/);
+      if (match) return `https://player.vimeo.com/video/${match[1]}`;
+      return null;
+    } catch { return null; }
+  }
+
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
+    if (reviewRating === 0) { setReviewError("Please select a star rating."); return; }
+    setReviewState("submitting");
+    setReviewError("");
+    try {
+      const res = await api.post("/providers/reviews", {
+        provider_id: provider.provider_id,
+        rating: reviewRating,
+        comment: reviewComment.trim()
+      });
+      const newReview = res.data.data;
+      setReviews((prev) => [{ ...newReview, reviewer_name: user?.name || "You" }, ...prev]);
+      setReviewState("success");
+    } catch (err) {
+      const code = err.response?.data?.error_code;
+      if (code === "REVIEW_NOT_ALLOWED") {
+        setReviewState("no_booking");
+      } else if (code === "REVIEW_ALREADY_EXISTS") {
+        setReviewState("already_reviewed");
+      } else {
+        setReviewState("error");
+        setReviewError(err.response?.data?.message || "Failed to submit review. Please try again.");
+      }
+    }
+  };
 
   return (
     <div className='min-h-screen bg-gray-50 relative'>
@@ -189,7 +244,21 @@ const ProviderProfile = () => {
         <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6 critical-content progressive-content'>
           <div className='flex flex-col md:flex-row items-start md:items-center justify-between mb-6'>
             <div className='flex items-center space-x-4 mb-4 md:mb-0'>
-              <div className='w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg'>
+              {provider.logo_url ? (
+                <img
+                  src={provider.logo_url}
+                  alt={provider.name}
+                  className='w-20 h-20 rounded-full object-cover shadow-lg border-2 border-white'
+                  onError={(e) => {
+                    e.target.style.display = "none";
+                    e.target.nextSibling.style.display = "flex";
+                  }}
+                />
+              ) : null}
+              <div
+                className='w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg'
+                style={{ display: provider.logo_url ? "none" : "flex" }}
+              >
                 <span className='text-3xl font-bold text-white'>
                   {provider.name?.charAt(0)?.toUpperCase() || "P"}
                 </span>
@@ -299,37 +368,58 @@ const ProviderProfile = () => {
             <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
               {provider.gallery.slice(0, 12).map((item) => {
                 const urlType = detectUrlType(item.image_url);
+                const isVideo = urlType === "youtube" || urlType === "tiktok" || urlType === "vimeo";
                 return (
-                  <div
-                    key={item.gallery_id}
-                    className='aspect-square rounded-lg overflow-hidden bg-gray-100'
-                  >
-                    {urlType === "youtube" ? (
-                      <iframe
-                        src={getYoutubeEmbedUrl(item.image_url)}
-                        className='w-full h-full'
-                        frameBorder='0'
-                        allowFullScreen
-                        title={item.caption || "Video"}
-                      />
-                    ) : urlType === "tiktok" ? (
-                      <div className='w-full h-full bg-gray-900 flex flex-col items-center justify-center'>
-                        <span className='text-3xl mb-2'>🎵</span>
-                        {item.caption && (
-                          <p className='text-white text-xs text-center px-2 truncate w-full'>
-                            {item.caption}
-                          </p>
-                        )}
-                      </div>
-                    ) : (
-                      <img
-                        src={item.image_url}
-                        alt={item.caption || "Gallery photo"}
-                        className='w-full h-full object-cover hover:scale-105 transition-transform duration-200'
-                      />
-                    )}
-                    {urlType !== "tiktok" && item.caption && (
-                      <p className='text-xs text-gray-600 text-center px-1 mt-1 truncate'>
+                  <div key={item.gallery_id} className='rounded-lg overflow-hidden bg-gray-100'>
+                    <div className={isVideo ? "aspect-video" : "aspect-square"}>
+                      {urlType === "youtube" ? (
+                        <iframe
+                          src={getYoutubeEmbedUrl(item.image_url)}
+                          className='w-full h-full'
+                          frameBorder='0'
+                          allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
+                          allowFullScreen
+                          title={item.caption || "YouTube video"}
+                        />
+                      ) : urlType === "tiktok" ? (
+                        (() => {
+                          const embedUrl = getTikTokEmbedUrl(item.image_url);
+                          return embedUrl ? (
+                            <iframe
+                              src={embedUrl}
+                              className='w-full h-full'
+                              frameBorder='0'
+                              allow='autoplay; gyroscope;'
+                              allowFullScreen
+                              title={item.caption || "TikTok video"}
+                            />
+                          ) : (
+                            <a href={item.image_url} target='_blank' rel='noopener noreferrer'
+                               className='w-full h-full bg-gray-900 flex flex-col items-center justify-center gap-2 no-underline'>
+                              <span className='text-3xl'>🎵</span>
+                              <span className='text-xs text-gray-300'>Watch on TikTok</span>
+                            </a>
+                          );
+                        })()
+                      ) : urlType === "vimeo" ? (
+                        <iframe
+                          src={getVimeoEmbedUrl(item.image_url)}
+                          className='w-full h-full'
+                          frameBorder='0'
+                          allow='autoplay; fullscreen; picture-in-picture'
+                          allowFullScreen
+                          title={item.caption || "Vimeo video"}
+                        />
+                      ) : (
+                        <img
+                          src={item.image_url}
+                          alt={item.caption || "Gallery photo"}
+                          className='w-full h-full object-cover hover:scale-105 transition-transform duration-200'
+                        />
+                      )}
+                    </div>
+                    {item.caption && (
+                      <p className='text-xs text-gray-600 text-center px-2 py-1 truncate'>
                         {item.caption}
                       </p>
                     )}
@@ -413,7 +503,7 @@ const ProviderProfile = () => {
                       {renderStars(review.rating)}
                     </div>
                   </div>
-                  <p className='text-gray-700'>{review.review_text}</p>
+                  <p className='text-gray-700'>{review.comment}</p>
                   <p className='text-xs text-gray-500 mt-1'>
                     {new Date(review.created_at).toLocaleDateString()}
                   </p>
@@ -429,6 +519,87 @@ const ProviderProfile = () => {
                   View all {reviews.length} reviews
                 </button>
               </div>
+            )}
+          </div>
+        )}
+
+        {/* Leave a Review */}
+        {user && user.user_type !== "provider" && (
+          <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6'>
+            <h2 className='text-xl font-semibold text-gray-900 mb-4'>Leave a Review</h2>
+
+            {reviewState === "success" && (
+              <div className='bg-green-50 border border-green-200 rounded-lg p-4 text-green-800 text-sm font-medium'>
+                ✅ Thank you! Your review has been submitted.
+              </div>
+            )}
+
+            {reviewState === "no_booking" && (
+              <div className='bg-amber-50 border border-amber-200 rounded-lg p-4 text-amber-800 text-sm'>
+                You can only leave a review after completing an appointment with this provider.
+              </div>
+            )}
+
+            {reviewState === "already_reviewed" && (
+              <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 text-blue-800 text-sm'>
+                You have already reviewed this provider.
+              </div>
+            )}
+
+            {(reviewState === "idle" || reviewState === "error" || reviewState === "submitting") && (
+              <form onSubmit={handleSubmitReview} className='space-y-4'>
+                <div>
+                  <p className='text-sm font-medium text-gray-700 mb-2'>Your Rating <span className='text-red-500'>*</span></p>
+                  <div className='flex gap-1'>
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type='button'
+                        onClick={() => setReviewRating(star)}
+                        onMouseEnter={() => setReviewHover(star)}
+                        onMouseLeave={() => setReviewHover(0)}
+                        className='text-3xl focus:outline-none transition-transform hover:scale-110'
+                        aria-label={`Rate ${star} star${star > 1 ? "s" : ""}`}
+                      >
+                        {star <= (reviewHover || reviewRating)
+                          ? <StarIcon className='w-8 h-8 text-yellow-400' />
+                          : <StarOutlineIcon className='w-8 h-8 text-gray-300' />}
+                      </button>
+                    ))}
+                    {reviewRating > 0 && (
+                      <span className='ml-2 text-sm text-gray-500 self-center'>
+                        {["", "Poor", "Fair", "Good", "Very Good", "Excellent"][reviewRating]}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label className='block text-sm font-medium text-gray-700 mb-1'>
+                    Comment <span className='text-gray-400 font-normal'>(optional)</span>
+                  </label>
+                  <textarea
+                    value={reviewComment}
+                    onChange={(e) => setReviewComment(e.target.value)}
+                    placeholder='Share your experience with this provider...'
+                    rows={3}
+                    maxLength={1000}
+                    className='w-full px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 resize-none'
+                  />
+                </div>
+
+                {reviewError && (
+                  <p className='text-sm text-red-600'>{reviewError}</p>
+                )}
+
+                <button
+                  type='submit'
+                  disabled={reviewState === "submitting" || reviewRating === 0}
+                  className='px-6 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium text-sm rounded-lg transition-colors'
+                >
+                  {reviewState === "submitting" ? "Submitting..." : "Submit Review"}
+                </button>
+              </form>
             )}
           </div>
         )}

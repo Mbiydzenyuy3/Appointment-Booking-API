@@ -171,21 +171,22 @@ export async function getProviderProfile(req, res, next) {
   try {
     const provider = await getProviderByBookingSlug(req.params.bookingSlug);
     const { rows: services } = await query(
-      `
-      SELECT service_id, service_name, description, duration_minutes, price
-      FROM services
-      WHERE provider_id = $1
-      ORDER BY service_name
-    `,
+      `SELECT service_id, service_name AS name, description, duration_minutes AS duration, price,
+              location, additional_description, image_url
+       FROM services WHERE provider_id = $1 ORDER BY service_name`,
       [provider.provider_id]
     );
 
     const { rows: galleryRows } = await query(
-      "SELECT gallery_id, image_url, caption, display_order FROM provider_gallery WHERE provider_id=$1 ORDER BY display_order ASC, created_at ASC",
+      `SELECT gallery_id, image_url, caption, display_order
+       FROM provider_gallery WHERE provider_id = $1
+       ORDER BY display_order ASC, created_at ASC`,
       [provider.provider_id]
     );
 
-    res.json({ success: true, data: { ...provider, services, gallery: galleryRows } });
+    const reviews = await ReviewModel.findByProvider(provider.provider_id);
+
+    res.json({ success: true, data: { ...provider, services, gallery: galleryRows, reviews } });
   } catch (err) {
     logError("Get provider profile failed", err);
     next(err);
@@ -226,12 +227,13 @@ export async function getBookingLink(req, res, next) {
 export async function addReview(req, res, next) {
   try {
     const reviewer_user_id = req.user?.user_id;
-    const { provider_id, booking_id, rating, comment } = req.body;
+    if (!reviewer_user_id)
+      return res.status(401).json({ success: false, error_code: "UNAUTHORIZED" });
 
-    if (!provider_id || !booking_id || rating == null)
-      return res
-        .status(400)
-        .json({ success: false, error_code: "INVALID_INPUT" });
+    const { provider_id, rating, comment } = req.body;
+
+    if (!provider_id || rating == null)
+      return res.status(400).json({ success: false, error_code: "INVALID_INPUT" });
     if (rating < 1 || rating > 5)
       return res.status(400).json({
         success: false,
@@ -239,33 +241,30 @@ export async function addReview(req, res, next) {
         message: "Rating must be between 1 and 5."
       });
 
+    // Require at least one completed appointment with this provider
     const booking = await query(
-      `
-      SELECT appointment_id
-      FROM appointments
-      WHERE appointment_id = $1 AND user_id = $2 AND status = 'completed'
-    `,
-      [booking_id, reviewer_user_id]
+      `SELECT appointment_id FROM appointments
+       WHERE user_id = $1 AND provider_id = $2 AND status = 'completed'
+       LIMIT 1`,
+      [reviewer_user_id, provider_id]
     );
-
     if (!booking.rowCount)
-      return res
-        .status(403)
-        .json({ success: false, error_code: "REVIEW_NOT_ALLOWED" });
+      return res.status(403).json({
+        success: false,
+        error_code: "REVIEW_NOT_ALLOWED",
+        message: "You can only review a provider after completing an appointment with them."
+      });
 
-    const existingReview = await ReviewModel.findByBooking(booking_id);
-    if (existingReview)
-      return res
-        .status(409)
-        .json({ success: false, error_code: "REVIEW_ALREADY_EXISTS" });
+    // One review per user per provider
+    const existing = await ReviewModel.findByReviewerAndProvider(reviewer_user_id, provider_id);
+    if (existing)
+      return res.status(409).json({
+        success: false,
+        error_code: "REVIEW_ALREADY_EXISTS",
+        message: "You have already reviewed this provider."
+      });
 
-    const review = await ReviewModel.create({
-      provider_id,
-      booking_id,
-      reviewer_user_id,
-      rating,
-      comment
-    });
+    const review = await ReviewModel.create({ provider_id, reviewer_user_id, rating, comment });
     await updateProviderRating(provider_id);
     await logProviderActivity(provider_id, "review_added", { rating });
 

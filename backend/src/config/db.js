@@ -337,6 +337,22 @@ async function _runPostMigrations() {
     )`,
     "create provider_gallery table"
   );
+
+  // Ensure provider_reviews has correct columns (handles tables created with old schema
+  // that used 'user_id'/'review_text' instead of 'reviewer_user_id'/'comment')
+  await safeAlter(
+    `ALTER TABLE provider_reviews
+       ADD COLUMN IF NOT EXISTS reviewer_user_id UUID REFERENCES users(user_id),
+       ADD COLUMN IF NOT EXISTS comment TEXT,
+       ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`,
+    "provider_reviews column additions"
+  );
+
+  // Provider logo URL (added after initial schema deployment)
+  await safeAlter(
+    `ALTER TABLE providers ADD COLUMN IF NOT EXISTS logo_url TEXT`,
+    "providers.logo_url"
+  );
 }
 
 export { pool, query, withTransaction, connectToDb, initializeDbSchema };
