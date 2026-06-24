@@ -13,6 +13,7 @@ import {
 } from "../validators/appointment-validator.js";
 import { validate } from "../middlewares/validate-middleware.js";
 import authMiddleware from "../middlewares/auth-middleware.js";
+import { idempotencyGuard } from "../middlewares/idempotency-middleware.js";
 
 const router = express.Router();
 
@@ -20,6 +21,7 @@ const router = express.Router();
 router.post(
   "/guest-book",
   validate(guestAppointmentSchema),
+  idempotencyGuard(),
   CreateGuestAppointment
 );
 
@@ -50,7 +52,7 @@ router.use(authMiddleware);
  *         description: Forbidden – only clients allowed
  */
 
-router.post("/book", validate(appointmentSchema), CreateAppointment);
+router.post("/book", validate(appointmentSchema), idempotencyGuard(), CreateAppointment);
 
 /**
  * @swagger
