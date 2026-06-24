@@ -11,6 +11,8 @@ import {
   ClockIcon,
   CalendarDaysIcon
 } from "@heroicons/react/24/outline";
+import ConversationList from "../components/Messaging/ConversationList.jsx";
+import MessageThread from "../components/Messaging/MessageThread.jsx";
 
 const UserDashboard = () => {
   const { user, isLoading } = useAuth();
@@ -30,6 +32,7 @@ const UserDashboard = () => {
     open: false,
     service: null
   });
+  const [activeConversation, setActiveConversation] = useState(null);
 
   const handleReschedule = async (newDate) => {
     const appt = rescheduleModal.appointment;
@@ -325,6 +328,28 @@ const UserDashboard = () => {
         onSubmit={handleReschedule}
         initialDate={rescheduleModal.appointment?.created_at}
       />
+
+      {/* Messages Section */}
+      <section className='mt-8'>
+        <h2 className='text-xl sm:text-2xl font-semibold text-gray-900 mb-4'>
+          Messages
+        </h2>
+        <div
+          className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden'
+          style={{ minHeight: 280 }}
+        >
+          {activeConversation ? (
+            <MessageThread
+              conversation={activeConversation}
+              onBack={() => setActiveConversation(null)}
+            />
+          ) : (
+            <div className='p-4'>
+              <ConversationList onSelect={setActiveConversation} />
+            </div>
+          )}
+        </div>
+      </section>
     </div>
   );
 };

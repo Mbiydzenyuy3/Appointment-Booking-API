@@ -14,8 +14,11 @@ import {
   LightBulbIcon,
   CalendarDaysIcon,
   LinkIcon,
-  PhotoIcon
+  PhotoIcon,
+  ChatBubbleLeftRightIcon
 } from "@heroicons/react/24/outline";
+import ConversationList from "../components/Messaging/ConversationList.jsx";
+import MessageThread from "../components/Messaging/MessageThread.jsx";
 
 export default function ProviderDashboard() {
   const { user } = useAuth();
@@ -27,6 +30,7 @@ export default function ProviderDashboard() {
   const [bookingLink, setBookingLink] = useState("");
   const [profileComplete, setProfileComplete] = useState(false);
   const [editingService, setEditingService] = useState(null);
+  const [activeConversation, setActiveConversation] = useState(null);
 
   useEffect(() => {
     if (!user?.provider_id) {
@@ -288,6 +292,19 @@ export default function ProviderDashboard() {
                     Marketing
                   </div>
                 </button>
+                <button
+                  onClick={() => setActiveTab("messages")}
+                  className={`py-3 px-4 rounded-lg font-medium text-sm touch-target transition-all duration-200 ${
+                    activeTab === "messages"
+                      ? "bg-green-600 text-white"
+                      : "text-gray-600 hover:text-green-600 hover:bg-green-50"
+                  }`}
+                >
+                  <div className='flex items-center justify-center'>
+                    <ChatBubbleLeftRightIcon className='w-4 h-4 mr-2' />
+                    Messages
+                  </div>
+                </button>
               </div>
             </div>
           </div>
@@ -345,6 +362,16 @@ export default function ProviderDashboard() {
                     }`}
                   >
                     Calendar
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("messages")}
+                    className={`flex-1 py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
+                      activeTab === "messages"
+                        ? "bg-green-600 text-white"
+                        : "text-gray-600 hover:text-green-600 hover:bg-green-50"
+                    }`}
+                  >
+                    Messages
                   </button>
                 </div>
               </div>
@@ -539,6 +566,24 @@ export default function ProviderDashboard() {
             )}
 
             {activeTab === "calendar" && <CalendarSync />}
+
+            {activeTab === "messages" && (
+              <div
+                className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden'
+                style={{ minHeight: 340 }}
+              >
+                {activeConversation ? (
+                  <MessageThread
+                    conversation={activeConversation}
+                    onBack={() => setActiveConversation(null)}
+                  />
+                ) : (
+                  <div className='p-4'>
+                    <ConversationList onSelect={setActiveConversation} />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Mobile Content */}
@@ -630,6 +675,24 @@ export default function ProviderDashboard() {
                     )}
                   </div>
                 </div>
+              </div>
+            )}
+
+            {activeTab === "messages" && (
+              <div
+                className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden'
+                style={{ minHeight: 280 }}
+              >
+                {activeConversation ? (
+                  <MessageThread
+                    conversation={activeConversation}
+                    onBack={() => setActiveConversation(null)}
+                  />
+                ) : (
+                  <div className='p-4'>
+                    <ConversationList onSelect={setActiveConversation} />
+                  </div>
+                )}
               </div>
             )}
 

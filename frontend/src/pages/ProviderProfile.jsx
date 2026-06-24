@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useCurrency } from "../context/CurrencyContext.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import BookAppointmentForm from "../components/BookAppointments/BookAppointment.jsx";
+import MessageThread from "../components/Messaging/MessageThread.jsx";
+import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
 import ProgressiveImage from "../components/Common/ProgressiveImage.jsx";
 import { useConnectionSpeed } from "../hooks/useConnectionSpeed.js";
 import api from "../services/api.js";
@@ -731,6 +733,48 @@ const ProviderProfile = () => {
             </div>
           )}
         </section>
+
+        {/* Messaging Section — visible to logged-in clients only */}
+        {user && user.user_type !== "provider" && provider?.provider_id && (
+          <section className='mt-8'>
+            <div className='flex items-center gap-2 mb-4'>
+              <ChatBubbleLeftRightIcon className='w-5 h-5 text-green-600' />
+              <h2 className='text-xl font-semibold text-gray-900'>
+                Message {provider.name}
+              </h2>
+            </div>
+            <div
+              className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden'
+              style={{ minHeight: 360 }}
+            >
+              <MessageThread
+                conversation={{ provider_id: provider.provider_id, provider_name: provider.name }}
+                onBack={null}
+              />
+            </div>
+          </section>
+        )}
+
+        {/* Prompt non-logged-in visitors to sign in to message */}
+        {!user && provider?.provider_id && (
+          <section className='mt-8'>
+            <div className='bg-green-50 border border-green-100 rounded-xl p-6 text-center'>
+              <ChatBubbleLeftRightIcon className='w-8 h-8 text-green-600 mx-auto mb-3' />
+              <h3 className='font-semibold text-gray-900 mb-1'>
+                Have questions? Message {provider.name}
+              </h3>
+              <p className='text-gray-600 text-sm mb-4'>
+                Sign in to ask about pricing, location, or anything else before booking.
+              </p>
+              <button
+                onClick={() => navigate("/login")}
+                className='bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-lg font-medium transition-colors'
+              >
+                Sign in to message
+              </button>
+            </div>
+          </section>
+        )}
 
         {/* Back to Explore */}
         <div className='mt-8 text-center'>
