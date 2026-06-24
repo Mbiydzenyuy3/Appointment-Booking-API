@@ -3,12 +3,10 @@ import { logError, logInfo } from "../utils/logger.js";
 
 const MAX_REDIS_RETRIES = 3;
 
-// Create Redis client
+// Create Redis client — REDIS_URL encodes host, port, password and db in one string.
+// Do not pass separate password/database options; they would override the URL's credentials.
 const redisClient = createClient({
-  url: process.env.REDIS_URL ||
-    `redis://${process.env.REDIS_HOST || "localhost"}:${process.env.REDIS_PORT || 6379}`,
-  password: process.env.REDIS_PASSWORD || undefined,
-  database: Number(process.env.REDIS_DB) || 0,
+  url: process.env.REDIS_URL || "redis://localhost:6379",
   socket: {
     reconnectStrategy: (retries) => {
       if (retries >= MAX_REDIS_RETRIES) {
