@@ -158,6 +158,22 @@ const ProviderProfile = () => {
       ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
       : 0;
 
+  function detectUrlType(url) {
+    if (!url || !url.trim()) return "image";
+    const u = url.trim().toLowerCase();
+    if (u.includes("tiktok.com")) return "tiktok";
+    if (u.includes("youtube.com/watch") || u.includes("youtu.be/")) return "youtube";
+    return "image";
+  }
+
+  function getYoutubeEmbedUrl(url) {
+    try {
+      const u = new URL(url.trim());
+      const videoId = u.searchParams.get("v") || u.pathname.split("/").pop();
+      return `https://www.youtube.com/embed/${videoId}`;
+    } catch { return null; }
+  }
+
   return (
     <div className='min-h-screen bg-gray-50 relative'>
       {/* Back Button */}
@@ -252,12 +268,12 @@ const ProviderProfile = () => {
                 </span>
               </div>
             )}
-            {provider.business_photos &&
-              provider.business_photos.length > 0 && (
+            {provider.gallery &&
+              provider.gallery.length > 0 && (
                 <div className='flex items-center space-x-2'>
                   <PhotoIcon className='w-5 h-5 text-purple-600' />
                   <span className='text-sm font-medium text-gray-700'>
-                    Business Photos Available
+                    Portfolio Available
                   </span>
                 </div>
               )}
@@ -274,31 +290,56 @@ const ProviderProfile = () => {
           <p className='text-gray-600 leading-relaxed'>{provider.bio}</p>
         </div>
 
-        {/* Business Photos Gallery - Non-critical content */}
-        {provider.business_photos && provider.business_photos.length > 0 && (
+        {/* Portfolio & Gallery - Non-critical content */}
+        {provider.gallery && provider.gallery.length > 0 && (
           <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6 non-critical'>
             <h2 className='text-xl font-semibold text-gray-900 mb-4'>
-              Business Gallery
+              Portfolio &amp; Gallery
             </h2>
             <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
-              {provider.business_photos.slice(0, 8).map((photo, index) => (
-                <div
-                  key={index}
-                  className='aspect-square rounded-lg overflow-hidden bg-gray-100'
-                >
-                  <ProgressiveImage
-                    src={photo}
-                    webpSrc={photo} // Assuming photos are already WebP from backend
-                    alt={`Business photo ${index + 1}`}
-                    className='w-full h-full object-cover hover:scale-105 transition-transform duration-200'
-                    priority={index < 2} // Load first 2 images immediately
-                  />
-                </div>
-              ))}
+              {provider.gallery.slice(0, 12).map((item) => {
+                const urlType = detectUrlType(item.image_url);
+                return (
+                  <div
+                    key={item.gallery_id}
+                    className='aspect-square rounded-lg overflow-hidden bg-gray-100'
+                  >
+                    {urlType === "youtube" ? (
+                      <iframe
+                        src={getYoutubeEmbedUrl(item.image_url)}
+                        className='w-full h-full'
+                        frameBorder='0'
+                        allowFullScreen
+                        title={item.caption || "Video"}
+                      />
+                    ) : urlType === "tiktok" ? (
+                      <div className='w-full h-full bg-gray-900 flex flex-col items-center justify-center'>
+                        <span className='text-3xl mb-2'>🎵</span>
+                        {item.caption && (
+                          <p className='text-white text-xs text-center px-2 truncate w-full'>
+                            {item.caption}
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <img
+                        src={item.image_url}
+                        alt={item.caption || "Gallery photo"}
+                        className='w-full h-full object-cover hover:scale-105 transition-transform duration-200'
+                      />
+                    )}
+                    {urlType !== "tiktok" && item.caption && (
+                      <p className='text-xs text-gray-600 text-center px-1 mt-1 truncate'>
+                        {item.caption}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
             </div>
-            {provider.business_photos.length > 8 && (
+            {provider.gallery.length > 12 && (
               <p className='text-sm text-gray-500 mt-4 text-center'>
-                +{provider.business_photos.length - 8} more photos
+                +{provider.gallery.length - 12} more items
               </p>
             )}
           </div>
