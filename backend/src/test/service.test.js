@@ -32,13 +32,13 @@ test("Create service", async () => {
       name: "Haircut Service",
       description: "Professional haircut",
       price: 50,
-      duration: 60,
+      durationMinutes: 60,
       category: "Beauty"
     });
 
   assert.strictEqual(res.statusCode, 201);
-  assert.ok(res.body.service);
-  serviceId = res.body.service.id;
+  assert.ok(res.body.data);
+  serviceId = res.body.data.service_id;
 });
 
 test("Fetch services", async () => {
@@ -53,5 +53,5 @@ test("Search services", async () => {
   const res = await request(app).get("/services/search?q=Haircut");
 
   assert.strictEqual(res.statusCode, 200);
-  assert.ok(Array.isArray(res.body.services));
+  assert.ok(Array.isArray(res.body.data));
 });

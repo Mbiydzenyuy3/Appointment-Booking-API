@@ -252,6 +252,32 @@ const initializeDbSchema = async () => {
       );
     `);
 
+    // Idempotent migrations to support guest bookings on existing appointments table
+    // Make user_id nullable to allow guest bookings without a registered account
+    await client.query(`
+      ALTER TABLE appointments ALTER COLUMN user_id DROP NOT NULL;
+    `).catch(() => { /* already nullable, ignore */ });
+
+    // Add guest booking columns if they don't exist
+    await client.query(`
+      ALTER TABLE appointments
+        ADD COLUMN IF NOT EXISTS guest_name VARCHAR(255),
+        ADD COLUMN IF NOT EXISTS guest_email VARCHAR(255),
+        ADD COLUMN IF NOT EXISTS guest_phone VARCHAR(50),
+        ADD COLUMN IF NOT EXISTS is_guest_booking BOOLEAN DEFAULT FALSE;
+    `);
+
+    // Fix status check constraint to allow all statuses used in code
+    // (ignore errors — constraint may already be correct or table may differ)
+    await client.query(`
+      ALTER TABLE appointments DROP CONSTRAINT IF EXISTS appointments_status_check;
+    `).catch(() => {});
+    await client.query(`
+      ALTER TABLE appointments
+        ADD CONSTRAINT appointments_status_check
+        CHECK (status IN ('booked','canceled','cancelled','completed','no-show','no_show','pending','confirmed'));
+    `).catch(() => {});
+
     await client.query("COMMIT");
     logInfo("🎉 Database schema ready");
   } catch (err) {

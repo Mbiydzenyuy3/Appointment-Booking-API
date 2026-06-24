@@ -205,7 +205,7 @@ export async function update(req, res, next) {
 export async function remove(req, res, next) {
   try {
     const { serviceId } = req.params;
-    const userId = req.user?.sub;
+    const userId = req.user?.user_id;
 
     // Verify provider ownership
     let provider = await ProviderModel.findByUserId(userId);

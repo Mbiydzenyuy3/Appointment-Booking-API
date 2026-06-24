@@ -123,6 +123,25 @@ const ProviderModel = {
       logError("DB Error (mark referral used):", err);
       throw err;
     }
+  },
+
+  async listAll({ limit = 10, offset = 0 } = {}) {
+    try {
+      const { rows } = await query(
+        `SELECT p.provider_id, p.user_id, p.bio, p.hourly_rate,
+                p.booking_slug, p.referral_code, p.created_at,
+                u.name, u.email
+         FROM providers p
+         JOIN users u ON p.user_id = u.user_id
+         ORDER BY p.created_at DESC
+         LIMIT $1 OFFSET $2`,
+        [limit, offset]
+      );
+      return rows;
+    } catch (err) {
+      logError("DB Error (list all providers):", err);
+      throw err;
+    }
   }
 };
 

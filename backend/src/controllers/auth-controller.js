@@ -294,11 +294,16 @@ export async function forgotPassword(req, res, next) {
     const expires = new Date(Date.now() + 3600 * 1000); // 1 hour
 
     await query(
-      "UPDATE users SET reset_password_token=$1, reset_password_expires=$2 WHERE user_id=$3",
+      "UPDATE users SET reset_token=$1, reset_token_expiry=$2 WHERE user_id=$3",
       [resetToken, expires, userId]
     );
 
-    await sendPasswordResetEmail(email, resetToken);
+    try {
+      await sendPasswordResetEmail(email, resetToken);
+    } catch (emailErr) {
+      // Log email failure but don't expose it — the token is saved; user can retry.
+      logError("Failed to send password reset email:", emailErr);
+    }
 
     res.status(200).json({
       success: true,
@@ -333,7 +338,7 @@ export async function resetPassword(req, res, next) {
 
   try {
     const { rows } = await query(
-      "SELECT user_id, reset_password_expires FROM users WHERE reset_password_token=$1",
+      "SELECT user_id, reset_token_expiry FROM users WHERE reset_token=$1",
       [token]
     );
 
@@ -343,7 +348,7 @@ export async function resetPassword(req, res, next) {
         .json({ success: false, message: "Invalid reset token." });
 
     const user = rows[0];
-    if (new Date(user.reset_password_expires) < new Date()) {
+    if (new Date(user.reset_token_expiry) < new Date()) {
       return res
         .status(400)
         .json({ success: false, message: "Reset token has expired." });
@@ -352,7 +357,7 @@ export async function resetPassword(req, res, next) {
     const hashed = await bcrypt.hash(newPassword, 10);
 
     await query(
-      "UPDATE users SET password=$1, reset_password_token=NULL, reset_password_expires=NULL, updated_at=NOW() WHERE user_id=$2",
+      "UPDATE users SET password=$1, reset_token=NULL, reset_token_expiry=NULL, updated_at=NOW() WHERE user_id=$2",
       [hashed, user.user_id]
     );
 

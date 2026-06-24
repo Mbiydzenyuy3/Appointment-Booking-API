@@ -54,7 +54,7 @@ export async function findAllServices() {
   }
 }
 
-export async function searchServices(query, location = null) {
+export async function searchServices(searchTerm, location = null) {
   try {
     let sql = `SELECT s.service_id, s.provider_id, s.service_name, s.description, s.price, s.duration_minutes, s.category, u.name as provider_name, p.booking_slug
                FROM services s
@@ -63,13 +63,13 @@ export async function searchServices(query, location = null) {
     const params = [];
     let whereClauses = [];
 
-    if (query && query.trim() !== "") {
+    if (searchTerm && searchTerm.trim() !== "") {
       whereClauses.push(
         `(LOWER(s.service_name) LIKE LOWER($${
           params.length + 1
         }) OR LOWER(u.name) LIKE LOWER($${params.length + 1}))`
       );
-      params.push(`%${query}%`);
+      params.push(`%${searchTerm}%`);
     }
 
     if (whereClauses.length > 0) {

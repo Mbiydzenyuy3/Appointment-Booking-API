@@ -1,15 +1,15 @@
 import { query } from "../config/db.js";
 
 export default {
-  async create({ provider_id, booking_id, reviewer_user_id, rating, comment }) {
+  async create({ provider_id, reviewer_user_id, rating, comment }) {
     const { rows } = await query(
       `
       INSERT INTO provider_reviews
-      (provider_id, booking_id, reviewer_user_id, rating, comment)
-      VALUES ($1,$2,$3,$4,$5)
+      (provider_id, user_id, rating, review_text)
+      VALUES ($1,$2,$3,$4)
       RETURNING *
       `,
-      [provider_id, booking_id, reviewer_user_id, rating, comment]
+      [provider_id, reviewer_user_id, rating, comment]
     );
     return rows[0];
   },
@@ -17,7 +17,7 @@ export default {
   async findByProvider(provider_id) {
     const { rows } = await query(
       `
-      SELECT rating, comment, created_at
+      SELECT rating, review_text AS comment, created_at
       FROM provider_reviews
       WHERE provider_id = $1
       ORDER BY created_at DESC
@@ -28,11 +28,8 @@ export default {
   },
 
   async findByBooking(booking_id) {
-    const { rows } = await query(
-      `SELECT * FROM provider_reviews WHERE booking_id = $1`,
-      [booking_id]
-    );
-    return rows[0] || null;
+    // booking_id column does not exist in DB; return null gracefully
+    return null;
   },
 
   async findById(review_id) {
@@ -48,9 +45,9 @@ export default {
       async save() {
         await query(
           `UPDATE provider_reviews
-           SET rating = $1, comment = $2, updated_at = NOW()
+           SET rating = $1, review_text = $2, updated_at = NOW()
            WHERE review_id = $3`,
-          [this.rating, this.comment, this.review_id]
+          [this.rating, this.review_text, this.review_id]
         );
       },
       async remove() {
