@@ -198,9 +198,12 @@ const initializeDbSchema = async () => {
       );
     `);
 
-    // Add category column if it doesn't exist
+    // Idempotent migrations for services columns added after initial deployment
     await client.query(`
       ALTER TABLE services
+      ADD COLUMN IF NOT EXISTS location TEXT,
+      ADD COLUMN IF NOT EXISTS additional_description TEXT,
+      ADD COLUMN IF NOT EXISTS image_url TEXT,
       ADD COLUMN IF NOT EXISTS category VARCHAR(100);
     `);
 
