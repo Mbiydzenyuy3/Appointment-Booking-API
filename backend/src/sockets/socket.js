@@ -21,7 +21,21 @@ export const initSocket = (server) => {
   });
 
   io.use((socket, next) => {
-    const token = socket.handshake.auth?.token;
+    // Primary: explicit token (for future clients that pass it)
+    let token = socket.handshake.auth?.token;
+
+    // Fallback: parse JWT from httpOnly cookie sent with polling handshake
+    if (!token) {
+      const cookieStr = socket.handshake.headers.cookie || "";
+      for (const part of cookieStr.split(";")) {
+        const [k, ...v] = part.trim().split("=");
+        if (k?.trim() === "token") {
+          token = decodeURIComponent(v.join("="));
+          break;
+        }
+      }
+    }
+
     if (!token) return next(new Error("Unauthorized"));
 
     try {

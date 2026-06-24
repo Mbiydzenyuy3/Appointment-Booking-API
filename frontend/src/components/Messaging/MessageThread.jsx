@@ -1,7 +1,46 @@
 import React, { useEffect, useRef, useState } from "react";
 import api from "../../services/api.js";
+import { getSocket } from "../../services/socket.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { PaperAirplaneIcon, ArrowLeftIcon } from "@heroicons/react/24/solid";
+
+function Ticks({ status }) {
+  if (status === "sending") {
+    return <span className="text-green-200 text-xs ml-1 leading-none">⏱</span>;
+  }
+  if (status === "read") {
+    return (
+      <span className="ml-1 leading-none inline-flex gap-px">
+        <svg className="w-3 h-3 text-blue-300" viewBox="0 0 12 8" fill="none">
+          <path d="M1 4L4 7L11 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+        <svg className="w-3 h-3 text-blue-300 -ml-1.5" viewBox="0 0 12 8" fill="none">
+          <path d="M1 4L4 7L11 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </span>
+    );
+  }
+  if (status === "delivered") {
+    return (
+      <span className="ml-1 leading-none inline-flex gap-px">
+        <svg className="w-3 h-3 text-green-200" viewBox="0 0 12 8" fill="none">
+          <path d="M1 4L4 7L11 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+        <svg className="w-3 h-3 text-green-200 -ml-1.5" viewBox="0 0 12 8" fill="none">
+          <path d="M1 4L4 7L11 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </span>
+    );
+  }
+  // "sent"
+  return (
+    <span className="ml-1 leading-none">
+      <svg className="w-3 h-3 text-green-200 inline" viewBox="0 0 12 8" fill="none">
+        <path d="M1 4L4 7L11 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    </span>
+  );
+}
 
 export default function MessageThread({ conversation, onBack }) {
   const { user } = useAuth();
@@ -9,13 +48,17 @@ export default function MessageThread({ conversation, onBack }) {
   const [newMessage, setNewMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [deliveredIds, setDeliveredIds] = useState(new Set());
   const bottomRef = useRef(null);
 
   const providerId = conversation.provider_id;
   const isProvider = user?.user_type === "provider";
   const clientUserId = isProvider ? conversation.other_user_id : undefined;
 
+  // Load conversation thread
   useEffect(() => {
+    setLoading(true);
+    setMessages([]);
     const url = clientUserId
       ? `/messages/conversations/${providerId}?client_user_id=${clientUserId}`
       : `/messages/conversations/${providerId}`;
@@ -26,6 +69,43 @@ export default function MessageThread({ conversation, onBack }) {
       .finally(() => setLoading(false));
   }, [providerId, clientUserId]);
 
+  // Socket: real-time incoming messages + delivery/read receipts
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket) return;
+
+    const handleNewMessage = (msg) => {
+      if (msg.provider_id !== providerId) return;
+      const participantId = clientUserId || user?.user_id;
+      if (msg.sender_id !== participantId && msg.receiver_id !== participantId) return;
+      setMessages((prev) => {
+        if (prev.some((m) => m.message_id === msg.message_id)) return prev;
+        return [...prev, msg];
+      });
+    };
+
+    const handleDelivered = ({ message_id }) => {
+      setDeliveredIds((prev) => new Set([...prev, message_id]));
+    };
+
+    const handleMessagesRead = ({ message_ids }) => {
+      setMessages((prev) =>
+        prev.map((m) => (message_ids.includes(m.message_id) ? { ...m, is_read: true } : m))
+      );
+    };
+
+    socket.on("new_message", handleNewMessage);
+    socket.on("message_delivered", handleDelivered);
+    socket.on("messages_read", handleMessagesRead);
+
+    return () => {
+      socket.off("new_message", handleNewMessage);
+      socket.off("message_delivered", handleDelivered);
+      socket.off("messages_read", handleMessagesRead);
+    };
+  }, [providerId, clientUserId, user?.user_id]);
+
+  // Auto-scroll to latest message
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -33,18 +113,41 @@ export default function MessageThread({ conversation, onBack }) {
   const handleSend = async (e) => {
     e.preventDefault();
     if (!newMessage.trim() || sending) return;
+
+    const content = newMessage.trim();
+    const tempId = `temp-${Date.now()}`;
+    const optimistic = {
+      message_id: tempId,
+      sender_id: user.user_id,
+      content,
+      is_read: false,
+      created_at: new Date().toISOString(),
+      _sending: true
+    };
+
+    setMessages((prev) => [...prev, optimistic]);
+    setNewMessage("");
     setSending(true);
+
     try {
-      const body = { provider_id: providerId, content: newMessage.trim() };
+      const body = { provider_id: providerId, content };
       if (clientUserId) body.client_user_id = clientUserId;
       const res = await api.post("/messages", body);
-      setMessages((prev) => [...prev, res.data.data]);
-      setNewMessage("");
+      setMessages((prev) =>
+        prev.map((m) => (m.message_id === tempId ? res.data.data : m))
+      );
     } catch {
-      // message stays in input so user can retry
+      setMessages((prev) => prev.filter((m) => m.message_id !== tempId));
     } finally {
       setSending(false);
     }
+  };
+
+  const getTickStatus = (msg) => {
+    if (msg._sending) return "sending";
+    if (msg.is_read) return "read";
+    if (deliveredIds.has(msg.message_id)) return "delivered";
+    return "sent";
   };
 
   const otherName = conversation.provider_name || conversation.other_user_name || "User";
@@ -82,6 +185,7 @@ export default function MessageThread({ conversation, onBack }) {
         ) : (
           messages.map((msg) => {
             const isMine = msg.sender_id === user?.user_id;
+            const tickStatus = isMine ? getTickStatus(msg) : null;
             return (
               <div key={msg.message_id} className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
                 <div
@@ -92,9 +196,10 @@ export default function MessageThread({ conversation, onBack }) {
                   }`}
                 >
                   <p className="text-sm leading-relaxed break-words">{msg.content}</p>
-                  <p className={`text-xs mt-1 ${isMine ? "text-green-200" : "text-gray-400"}`}>
-                    {formatTime(msg.created_at)}
-                  </p>
+                  <div className={`flex items-center justify-end gap-1 mt-0.5 ${isMine ? "text-green-200" : "text-gray-400"}`}>
+                    <span className="text-xs">{formatTime(msg.created_at)}</span>
+                    {isMine && <Ticks status={tickStatus} />}
+                  </div>
                 </div>
               </div>
             );

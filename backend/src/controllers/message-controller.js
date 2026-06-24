@@ -39,11 +39,17 @@ export async function sendMessage(req, res, next) {
       content: content.trim()
     });
 
-    // Real-time push to receiver (best-effort — not critical if socket unavailable)
+    // Real-time push to receiver + delivery signal to sender if receiver is online
     try {
       const io = getSocket();
       io.to(`user:${receiverId}`).emit("new_message", message);
-    } catch { /* socket not initialized or receiver offline */ }
+
+      // If receiver's socket room is occupied they're currently online → notify sender
+      const room = io.sockets.adapter.rooms.get(`user:${receiverId}`);
+      if (room && room.size > 0) {
+        io.to(`user:${senderId}`).emit("message_delivered", { message_id: message.message_id });
+      }
+    } catch { /* socket not initialized or receiver offline — not critical */ }
 
     res.status(201).json({ success: true, data: message });
   } catch (err) {
@@ -84,6 +90,25 @@ export async function getConversation(req, res, next) {
     }
 
     const messages = await MessageModel.getConversation(providerId, clientUserId);
+
+    // Auto-mark messages addressed to the current viewer as read
+    const unreadForMe = messages.filter(m => m.receiver_id === userId && !m.is_read);
+    if (unreadForMe.length > 0) {
+      const markedMessages = await MessageModel.markConversationAsRead(providerId, userId);
+      // Notify senders their messages were read
+      const bySender = {};
+      for (const m of markedMessages) {
+        if (!bySender[m.sender_id]) bySender[m.sender_id] = [];
+        bySender[m.sender_id].push(m.message_id);
+      }
+      try {
+        const io = getSocket();
+        for (const [senderId, messageIds] of Object.entries(bySender)) {
+          io.to(`user:${senderId}`).emit("messages_read", { message_ids: messageIds });
+        }
+      } catch { }
+    }
+
     res.json({ success: true, data: messages });
   } catch (err) {
     logError("Get conversation failed", err);

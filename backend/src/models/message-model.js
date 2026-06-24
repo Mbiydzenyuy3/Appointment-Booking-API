@@ -32,7 +32,7 @@ export async function getProviderConversations(providerUserId) {
   const { rows } = await query(
     `SELECT DISTINCT ON (other_id)
             m.provider_id,
-            other_id,
+            other_id AS other_user_id,
             u.name AS other_user_name,
             m.content AS last_message,
             m.created_at AS last_message_at,
@@ -83,4 +83,16 @@ export async function markAsRead(messageId, receiverId) {
     [messageId, receiverId]
   );
   return rows[0] || null;
+}
+
+// Bulk mark all unread messages in a conversation as read for a specific receiver.
+// Returns [{ message_id, sender_id }] so callers can emit read receipts to senders.
+export async function markConversationAsRead(providerId, receiverId) {
+  const { rows } = await query(
+    `UPDATE messages SET is_read = true
+     WHERE provider_id = $1 AND receiver_id = $2 AND is_read = false
+     RETURNING message_id, sender_id`,
+    [providerId, receiverId]
+  );
+  return rows;
 }

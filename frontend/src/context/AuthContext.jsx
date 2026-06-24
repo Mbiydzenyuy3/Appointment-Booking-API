@@ -1,6 +1,7 @@
 import React from "react";
 import { createContext, useContext, useState, useEffect } from "react";
 import api from "../services/api.js";
+import { connectSocket, disconnectSocket } from "../services/socket.js";
 import {
   trackLogin,
   trackRegistrationCompleted
@@ -17,6 +18,7 @@ export const Provider = ({ children }) => {
       .get("/auth/profile")
       .then((response) => {
         setUser(response.data.data);
+        connectSocket();
       })
       .catch(() => {
         setUser(null);
@@ -32,6 +34,7 @@ export const Provider = ({ children }) => {
       const userData = response.data.data;
 
       setUser(userData);
+      connectSocket();
 
       // Track login event
       trackLogin(userData.user_id, userData.user_type);
@@ -59,6 +62,7 @@ export const Provider = ({ children }) => {
       const newUser = response.data.data;
 
       setUser(newUser);
+      connectSocket();
 
       // Track registration completion
       trackRegistrationCompleted(newUser.user_id, newUser.user_type);
@@ -86,6 +90,7 @@ export const Provider = ({ children }) => {
     } catch {
       // Ignore errors — cookie will be cleared on the server anyway
     }
+    disconnectSocket();
     setUser(null);
   };
 
