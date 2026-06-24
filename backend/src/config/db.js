@@ -204,7 +204,9 @@ const initializeDbSchema = async () => {
       ADD COLUMN IF NOT EXISTS location TEXT,
       ADD COLUMN IF NOT EXISTS additional_description TEXT,
       ADD COLUMN IF NOT EXISTS image_url TEXT,
-      ADD COLUMN IF NOT EXISTS category VARCHAR(100);
+      ADD COLUMN IF NOT EXISTS category VARCHAR(100),
+      ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
     `);
 
     await client.query(`

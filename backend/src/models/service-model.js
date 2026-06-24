@@ -14,7 +14,9 @@ export async function createService({
   category
 }) {
   try {
-    const queryText = `INSERT INTO services (provider_id, service_name, description, price, duration_minutes, location, additional_description, image_url, category, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW()) RETURNING *`;
+    // Omit created_at/updated_at from column list — production table may predate
+    // those columns; the DEFAULT CURRENT_TIMESTAMP handles them automatically.
+    const queryText = `INSERT INTO services (provider_id, service_name, description, price, duration_minutes, location, additional_description, image_url, category) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`;
     const params = [
       providerId,
       service_name,
@@ -120,21 +122,20 @@ export async function deleteById(serviceId) {
 
 export async function updateById(serviceId, updates) {
   try {
-    const { service_name, description, price, duration_minutes, category } =
-      updates;
+    const { service_name, description, price, duration_minutes, category, location, additional_description, image_url } = updates;
     const { rows } = await query(
-      `
-      UPDATE services
-      SET service_name = $1,
-          description = $2,
-          price = $3,
-          duration_minutes = $4,
-          category = $5,
-          updated_at = NOW()
-      WHERE service_id = $6
-      RETURNING *;
-      `,
-      [service_name, description, price, duration_minutes, category, serviceId]
+      `UPDATE services
+       SET service_name = $1,
+           description = $2,
+           price = $3,
+           duration_minutes = $4,
+           category = $5,
+           location = $6,
+           additional_description = $7,
+           image_url = $8
+       WHERE service_id = $9
+       RETURNING *`,
+      [service_name, description, price, duration_minutes, category, location, additional_description, image_url, serviceId]
     );
     return rows[0];
   } catch (err) {

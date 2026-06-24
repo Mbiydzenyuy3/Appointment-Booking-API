@@ -11,14 +11,16 @@ export async function create(req, res, next) {
       description,
       price,
       durationMinutes: duration_minutes,
-      category
+      category,
+      location,
+      additionalDescription: additional_description,
+      imageUrl: image_url
     } = req.body;
 
-    if (!service_name || !description || !price || !duration_minutes) {
+    if (!service_name || !price || !duration_minutes) {
       return res.status(400).json({
         success: false,
-        message:
-          "Please provide service name, description, price, and duration."
+        message: "Please provide service name, price, and duration."
       });
     }
 
@@ -64,7 +66,10 @@ export async function create(req, res, next) {
       description,
       price,
       duration_minutes,
-      category
+      category,
+      location,
+      additional_description,
+      image_url
     });
 
     return res.status(201).json({
@@ -125,15 +130,17 @@ export async function update(req, res, next) {
       description,
       price,
       durationMinutes: duration_minutes,
-      category
+      category,
+      location,
+      additionalDescription: additional_description,
+      imageUrl: image_url
     } = req.body;
     const userId = req.user?.user_id;
 
-    if (!service_name || !description || !price || !duration_minutes) {
+    if (!service_name || !price || !duration_minutes) {
       return res.status(400).json({
         success: false,
-        message:
-          "Please provide service name, description, price, and duration."
+        message: "Please provide service name, price, and duration."
       });
     }
 
@@ -186,7 +193,10 @@ export async function update(req, res, next) {
       description,
       price,
       duration_minutes,
-      category
+      category,
+      location,
+      additional_description,
+      image_url
     };
     const updated = await ServiceService.updateService(serviceId, updates);
 
