@@ -92,6 +92,7 @@ test("G1: Create service → 201, save serviceId", async () => {
       description: "Service for CRUD tests",
       price: 75,
       durationMinutes: 45,
+      location: "Douala, Akwa",
       category: "Testing"
     });
 
@@ -99,6 +100,9 @@ test("G1: Create service → 201, save serviceId", async () => {
   assert.ok(res.body.data, "response must have data");
   svcServiceId = res.body.data.service_id;
   assert.ok(svcServiceId, "service_id must be returned");
+  // Verify aliases — frontend reads .name and .duration
+  assert.ok(res.body.data.name !== undefined, "create response must include 'name' alias");
+  assert.ok(res.body.data.duration !== undefined, "create response must include 'duration' alias");
 });
 
 test("G1: Update service → 200, verify updated name", async () => {
@@ -110,6 +114,7 @@ test("G1: Update service → 200, verify updated name", async () => {
       description: "Updated description",
       price: 100,
       durationMinutes: 60,
+      location: "Douala, Akwa",
       category: "Testing"
     });
 
@@ -122,7 +127,7 @@ test("G1: Update service → 200, verify updated name", async () => {
   );
 });
 
-test("G1: List services by provider → array contains our service", async () => {
+test("G1: List services by provider → array contains our service with name+duration aliases", async () => {
   // Route: GET /services/provider/:providerId — expects provider_id (not user_id)
   const res = await request(app)
     .get(`/services/provider/${svcProviderId}`)
@@ -130,8 +135,13 @@ test("G1: List services by provider → array contains our service", async () =>
 
   assert.strictEqual(res.statusCode, 200, `list by provider failed: ${JSON.stringify(res.body)}`);
   assert.ok(Array.isArray(res.body.data), "data must be an array");
-  const found = res.body.data.some((s) => s.service_id === svcServiceId);
+  const found = res.body.data.find((s) => s.service_id === svcServiceId);
   assert.ok(found, `service ${svcServiceId} not found in provider list`);
+  // Verify field name aliases — frontend ServiceList reads .name and .duration
+  assert.ok(found.name !== undefined, `response must include 'name' alias (got: ${JSON.stringify(Object.keys(found))})`);
+  assert.ok(found.duration !== undefined, `response must include 'duration' alias (got: ${JSON.stringify(Object.keys(found))})`);
+  assert.strictEqual(found.name, "Updated Service Name", `name alias must equal the service name`);
+  assert.strictEqual(found.duration, 60, `duration alias must equal 60 minutes`);
 });
 
 test("G1: Delete service → 200", async () => {
@@ -191,6 +201,7 @@ test("G2: Create service for slot CRUD", async () => {
       description: "For slot CRUD",
       price: 50,
       durationMinutes: 30,
+      location: "Yaoundé, Centre",
       category: "Testing"
     });
 
@@ -307,6 +318,7 @@ test("G3: Create service for appointment booking", async () => {
       description: "For booking tests",
       price: 80,
       durationMinutes: 60,
+      location: "Buea, South West",
       category: "Testing"
     });
 

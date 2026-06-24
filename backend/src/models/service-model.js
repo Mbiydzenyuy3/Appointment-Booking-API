@@ -16,7 +16,13 @@ export async function createService({
   try {
     // Omit created_at/updated_at from column list — production table may predate
     // those columns; the DEFAULT CURRENT_TIMESTAMP handles them automatically.
-    const queryText = `INSERT INTO services (provider_id, service_name, description, price, duration_minutes, location, additional_description, image_url, category) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`;
+    const queryText = `INSERT INTO services (provider_id, service_name, description, price, duration_minutes, location, additional_description, image_url, category)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      RETURNING service_id, provider_id,
+                service_name AS name,
+                description, price,
+                duration_minutes AS duration,
+                location, additional_description, image_url, category`;
     const params = [
       providerId,
       service_name,
@@ -89,7 +95,12 @@ export async function searchServices(searchTerm, location = null) {
 export async function findById(serviceId) {
   try {
     const { rows } = await query(
-      `SELECT service_id, provider_id, service_name, description, price, duration_minutes, category FROM services WHERE service_id = $1`,
+      `SELECT service_id, provider_id,
+              service_name AS name,
+              description, price,
+              duration_minutes AS duration,
+              location, additional_description, image_url, category
+       FROM services WHERE service_id = $1`,
       [serviceId]
     );
     return rows[0];
@@ -102,7 +113,13 @@ export async function findById(serviceId) {
 export async function findByProviderId(providerId) {
   try {
     const { rows } = await query(
-      `SELECT service_id, provider_id, service_name, description, price, duration_minutes, category FROM services WHERE provider_id = $1`,
+      `SELECT service_id, provider_id,
+              service_name AS name,
+              description, price,
+              duration_minutes AS duration,
+              location, additional_description, image_url, category
+       FROM services WHERE provider_id = $1
+       ORDER BY created_at DESC NULLS LAST`,
       [providerId]
     );
     return rows;
@@ -122,7 +139,10 @@ export async function deleteById(serviceId) {
 
 export async function updateById(serviceId, updates) {
   try {
-    const { service_name, description, price, duration_minutes, category, location, additional_description, image_url } = updates;
+    // Accept both aliased (name/duration) and raw (service_name/duration_minutes) keys
+    const service_name = updates.service_name ?? updates.name;
+    const duration_minutes = updates.duration_minutes ?? updates.duration;
+    const { description, price, category, location, additional_description, image_url } = updates;
     const { rows } = await query(
       `UPDATE services
        SET service_name = $1,
@@ -134,7 +154,11 @@ export async function updateById(serviceId, updates) {
            additional_description = $7,
            image_url = $8
        WHERE service_id = $9
-       RETURNING *`,
+       RETURNING service_id, provider_id,
+                 service_name AS name,
+                 description, price,
+                 duration_minutes AS duration,
+                 location, additional_description, image_url, category`,
       [service_name, description, price, duration_minutes, category, location, additional_description, image_url, serviceId]
     );
     return rows[0];

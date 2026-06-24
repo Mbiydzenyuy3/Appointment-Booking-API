@@ -38,18 +38,34 @@ function validate(service) {
   return errors;
 }
 
+function minutesToDisplay(minutes, unit) {
+  if (!minutes && minutes !== 0) return "";
+  const m = Number(minutes);
+  if (isNaN(m)) return "";
+  return unit === "hr" ? String(m / 60) : String(m);
+}
+
 export default function ServiceForm({ onCreate, onUpdate, editingService, onCancelEdit }) {
   const { selectedCurrency, formatPrice } = useCurrency();
   const [service, setService] = useState(INITIAL);
+  const [durationUnit, setDurationUnit] = useState("min");
+  const [durationDisplay, setDurationDisplay] = useState("");
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
 
   useEffect(() => {
     if (editingService) {
+      const rawMinutes = editingService.duration ?? editingService.duration_minutes ?? "";
+      const mins = Number(rawMinutes);
+      // Use hours unit if duration is a whole number of hours ≥ 60
+      const unit = mins >= 60 && mins % 60 === 0 ? "hr" : "min";
+      const displayVal = unit === "hr" ? String(mins / 60) : String(rawMinutes);
+      setDurationUnit(unit);
+      setDurationDisplay(displayVal);
       setService({
-        service_name: editingService.name || "",
+        service_name: editingService.name || editingService.service_name || "",
         description: editingService.description || "",
-        duration_minutes: editingService.duration || "",
+        duration_minutes: String(rawMinutes),
         price: editingService.price || "",
         location: editingService.location || "",
         additional_description: editingService.additional_description || "",
@@ -57,6 +73,8 @@ export default function ServiceForm({ onCreate, onUpdate, editingService, onCanc
       });
     } else {
       setService(INITIAL);
+      setDurationUnit("min");
+      setDurationDisplay("");
     }
     setErrors({});
     setTouched({});
@@ -68,6 +86,29 @@ export default function ServiceForm({ onCreate, onUpdate, editingService, onCanc
     if (touched[e.target.name]) {
       setErrors(validate(updated));
     }
+  };
+
+  const handleDurationChange = (e) => {
+    const raw = e.target.value;
+    setDurationDisplay(raw);
+    const num = parseFloat(raw);
+    const mins = durationUnit === "hr"
+      ? (isNaN(num) ? "" : String(Math.round(num * 60)))
+      : (isNaN(num) ? "" : String(Math.round(num)));
+    const updated = { ...service, duration_minutes: mins };
+    setService(updated);
+    if (touched.duration_minutes) setErrors(validate(updated));
+  };
+
+  const handleUnitToggle = (newUnit) => {
+    if (newUnit === durationUnit) return;
+    const mins = Number(service.duration_minutes);
+    if (!isNaN(mins) && mins > 0) {
+      setDurationDisplay(
+        newUnit === "hr" ? String(mins / 60) : String(mins)
+      );
+    }
+    setDurationUnit(newUnit);
   };
 
   const handleBlur = (e) => {
@@ -305,21 +346,59 @@ export default function ServiceForm({ onCreate, onUpdate, editingService, onCanc
           </div>
 
           <div>
-            <label htmlFor="duration_minutes" className="block text-sm font-semibold text-gray-700 mb-2">
-              Duration (minutes) <RequiredStar />
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Duration <RequiredStar />
             </label>
-            <input
-              id="duration_minutes"
-              type="number"
-              name="duration_minutes"
-              value={service.duration_minutes}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              placeholder="30"
-              min="1"
-              max="480"
-              className={inputClass("duration_minutes")}
-            />
+            {/* Unit toggle */}
+            <div className="flex mb-2 rounded-lg overflow-hidden border-2 border-gray-200 w-fit">
+              <button
+                type="button"
+                onClick={() => handleUnitToggle("min")}
+                className={`px-4 py-1.5 text-sm font-medium transition-colors duration-150 ${
+                  durationUnit === "min"
+                    ? "bg-green-600 text-white"
+                    : "bg-white text-gray-500 hover:bg-gray-50"
+                }`}
+              >
+                Minutes
+              </button>
+              <button
+                type="button"
+                onClick={() => handleUnitToggle("hr")}
+                className={`px-4 py-1.5 text-sm font-medium transition-colors duration-150 ${
+                  durationUnit === "hr"
+                    ? "bg-green-600 text-white"
+                    : "bg-white text-gray-500 hover:bg-gray-50"
+                }`}
+              >
+                Hours
+              </button>
+            </div>
+            <div className="relative">
+              <input
+                id="duration_minutes"
+                type="number"
+                name="duration_minutes"
+                value={durationDisplay}
+                onChange={handleDurationChange}
+                onBlur={(e) => {
+                  setTouched(prev => ({ ...prev, duration_minutes: true }));
+                  setErrors(validate(service));
+                }}
+                placeholder={durationUnit === "hr" ? "e.g. 1.5" : "e.g. 45"}
+                min="0.1"
+                step={durationUnit === "hr" ? "0.5" : "5"}
+                className={inputClass("duration_minutes") + " pr-16"}
+              />
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-gray-500 pointer-events-none">
+                {durationUnit === "hr" ? "hr" : "min"}
+              </span>
+            </div>
+            {service.duration_minutes && !errors.duration_minutes && (
+              <p className="text-xs text-gray-500 mt-1">
+                = {service.duration_minutes} minutes total
+              </p>
+            )}
             <FieldError field="duration_minutes" />
           </div>
         </div>
