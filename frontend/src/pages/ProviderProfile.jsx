@@ -44,6 +44,7 @@ const ProviderProfile = () => {
   const [reviewComment, setReviewComment] = useState("");
   const [reviewState, setReviewState] = useState("idle"); // idle | submitting | success | no_booking | already_reviewed | error
   const [reviewError, setReviewError] = useState("");
+  const [hasBooked, setHasBooked] = useState(false);
 
   const fetchProviderProfile = async () => {
     try {
@@ -81,6 +82,14 @@ const ProviderProfile = () => {
       fetchProviderProfile();
     }
   }, [bookingSlug]);
+
+  // After provider data loads, check if this logged-in client has a booking with them
+  useEffect(() => {
+    if (!user || user.user_type !== "client" || !provider?.provider_id) return;
+    api.get(`/appointments/has-booked?providerId=${provider.provider_id}`)
+      .then((res) => setHasBooked(res.data.data?.hasBooked === true))
+      .catch(() => setHasBooked(false));
+  }, [user, provider?.provider_id]);
 
   const handleBookClick = (service) => {
     setBookingModal({ open: true, service });
@@ -326,9 +335,15 @@ const ProviderProfile = () => {
             {provider.phone && (
               <div className='flex items-center space-x-2'>
                 <PhoneIcon className='w-5 h-5 text-green-600' />
-                <span className='text-sm font-medium text-gray-700'>
-                  {provider.phone}
-                </span>
+                {hasBooked ? (
+                  <span className='text-sm font-medium text-gray-700'>
+                    {provider.phone}
+                  </span>
+                ) : (
+                  <span className='text-sm text-gray-400 italic'>
+                    Book to see contact
+                  </span>
+                )}
               </div>
             )}
             {provider.certifications && provider.certifications.length > 0 && (
@@ -734,8 +749,8 @@ const ProviderProfile = () => {
           )}
         </section>
 
-        {/* Messaging Section — visible to logged-in clients only */}
-        {user && user.user_type !== "provider" && provider?.provider_id && (
+        {/* Messaging Section — only for clients who have booked with this provider */}
+        {user && user.user_type !== "provider" && provider?.provider_id && hasBooked && (
           <section className='mt-8'>
             <div className='flex items-center gap-2 mb-4'>
               <ChatBubbleLeftRightIcon className='w-5 h-5 text-green-600' />
@@ -755,22 +770,46 @@ const ProviderProfile = () => {
           </section>
         )}
 
-        {/* Prompt non-logged-in visitors to sign in to message */}
+        {/* Show "book first" prompt to clients who haven't booked yet */}
+        {user && user.user_type !== "provider" && provider?.provider_id && !hasBooked && (
+          <section className='mt-8'>
+            <div className='bg-green-50 border border-green-100 rounded-xl p-6 text-center'>
+              <ChatBubbleLeftRightIcon className='w-8 h-8 text-green-600 mx-auto mb-3' />
+              <h3 className='font-semibold text-gray-900 mb-1'>
+                Book first to message {provider.name}
+              </h3>
+              <p className='text-gray-600 text-sm mb-4'>
+                Messaging and full contact details are available to clients who have booked an appointment.
+                Book a service below to unlock direct messaging.
+              </p>
+              {services.length > 0 && (
+                <button
+                  onClick={() => handleBookClick(services[0])}
+                  className='bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-lg font-medium transition-colors'
+                >
+                  Book an appointment
+                </button>
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* Prompt non-logged-in visitors to sign in */}
         {!user && provider?.provider_id && (
           <section className='mt-8'>
             <div className='bg-green-50 border border-green-100 rounded-xl p-6 text-center'>
               <ChatBubbleLeftRightIcon className='w-8 h-8 text-green-600 mx-auto mb-3' />
               <h3 className='font-semibold text-gray-900 mb-1'>
-                Have questions? Message {provider.name}
+                Want to message {provider.name}?
               </h3>
               <p className='text-gray-600 text-sm mb-4'>
-                Sign in to ask about pricing, location, or anything else before booking.
+                Sign in and book an appointment to unlock direct messaging and full contact details.
               </p>
               <button
                 onClick={() => navigate("/login")}
                 className='bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-lg font-medium transition-colors'
               >
-                Sign in to message
+                Sign in
               </button>
             </div>
           </section>

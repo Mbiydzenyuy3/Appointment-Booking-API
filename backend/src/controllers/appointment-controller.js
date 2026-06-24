@@ -295,6 +295,74 @@ export async function cancelAppointment(req, res, next) {
   }
 }
 
+// Provider marks appointment as completed — this unlocks the client's ability to leave a review.
+export async function completeAppointment(req, res, next) {
+  try {
+    const { appointmentId } = req.params;
+    const { query } = await import("../config/db.js");
+
+    // Only the provider who owns the appointment can mark it complete
+    const { rows: existing } = await query(
+      `SELECT a.appointment_id, a.provider_id, a.status, p.user_id AS provider_user_id
+       FROM appointments a
+       JOIN providers p ON p.provider_id = a.provider_id
+       WHERE a.appointment_id = $1`,
+      [appointmentId]
+    );
+
+    if (!existing.length) {
+      return res.status(404).json({ success: false, message: "Appointment not found." });
+    }
+
+    const appt = existing[0];
+
+    if (appt.provider_user_id !== req.user.user_id) {
+      return res.status(403).json({ success: false, message: "Only the provider can mark this appointment as completed." });
+    }
+
+    if (appt.status === "completed") {
+      return res.status(400).json({ success: false, message: "Appointment is already marked as completed." });
+    }
+
+    if (appt.status === "cancelled") {
+      return res.status(400).json({ success: false, message: "Cannot complete a cancelled appointment." });
+    }
+
+    const { rows } = await query(
+      `UPDATE appointments SET status = 'completed', updated_at = NOW()
+       WHERE appointment_id = $1
+       RETURNING *`,
+      [appointmentId]
+    );
+
+    return res.json({ success: true, data: rows[0] });
+  } catch (err) {
+    logError("Complete appointment failed", err);
+    next(err);
+  }
+}
+
+// Lightweight check: has this client booked with a specific provider?
+// Used by the frontend to gate contact details and messaging.
+export async function hasBookedWithProvider(req, res, next) {
+  try {
+    const userId = req.user.user_id;
+    const { providerId } = req.query;
+    if (!providerId) {
+      return res.status(400).json({ success: false, message: "providerId query param required." });
+    }
+    const { query } = await import("../config/db.js");
+    const { rows } = await query(
+      `SELECT 1 FROM appointments WHERE user_id = $1 AND provider_id = $2 LIMIT 1`,
+      [userId, providerId]
+    );
+    res.json({ success: true, data: { hasBooked: rows.length > 0 } });
+  } catch (err) {
+    logError("hasBookedWithProvider failed", err);
+    next(err);
+  }
+}
+
 export async function listAppointments(req, res, next) {
   try {
     const userId = req.user?.user_id;

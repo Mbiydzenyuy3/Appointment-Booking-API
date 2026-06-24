@@ -4,7 +4,9 @@ import {
   CreateAppointment,
   CreateGuestAppointment,
   cancelAppointment,
-  listAppointments
+  listAppointments,
+  hasBookedWithProvider,
+  completeAppointment
 } from "../controllers/appointment-controller.js";
 import {
   appointmentSchema,
@@ -133,5 +135,11 @@ router.delete(
  */
 
 router.get("/list", listAppointments);
+
+// Check if current client has any booking with a provider (used to gate contacts/messaging)
+router.get("/has-booked", hasBookedWithProvider);
+
+// Provider marks an appointment as completed — unlocks client review
+router.put("/:appointmentId/complete", completeAppointment);
 
 export default router;
