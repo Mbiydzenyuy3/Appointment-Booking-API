@@ -180,7 +180,12 @@ export async function getProviderProfile(req, res, next) {
       [provider.provider_id]
     );
 
-    res.json({ success: true, data: { ...provider, services } });
+    const { rows: galleryRows } = await query(
+      "SELECT gallery_id, image_url, caption, display_order FROM provider_gallery WHERE provider_id=$1 ORDER BY display_order ASC, created_at ASC",
+      [provider.provider_id]
+    );
+
+    res.json({ success: true, data: { ...provider, services, gallery: galleryRows } });
   } catch (err) {
     logError("Get provider profile failed", err);
     next(err);

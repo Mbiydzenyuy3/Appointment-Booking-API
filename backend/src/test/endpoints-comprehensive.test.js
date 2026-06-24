@@ -534,3 +534,50 @@ test("G6: Protected route without token → 401", async () => {
 
   assert.strictEqual(res.statusCode, 401, `expected 401 without token, got ${res.statusCode}`);
 });
+
+/* ============================================================
+   GROUP 7 — Provider gallery CRUD
+   ============================================================ */
+
+let galleryItemId = "";
+
+test("G7: Add gallery item → 201, has gallery_id and image_url", async () => {
+  const res = await request(app)
+    .post("/providers/me/gallery")
+    .set("Authorization", `Bearer ${svcProviderToken}`)
+    .send({ imageUrl: "https://picsum.photos/400/400", caption: "Test photo" });
+
+  assert.strictEqual(res.statusCode, 201, `add gallery item failed: ${JSON.stringify(res.body)}`);
+  assert.ok(res.body.data, "response must have data");
+  galleryItemId = res.body.data.gallery_id;
+  assert.ok(galleryItemId, "gallery_id must be returned");
+  assert.ok(res.body.data.image_url, "image_url must be returned");
+});
+
+test("G7: List provider gallery (public) → 200, array contains our item", async () => {
+  const res = await request(app)
+    .get(`/providers/${svcProviderId}/gallery`);
+
+  assert.strictEqual(res.statusCode, 200, `list gallery failed: ${JSON.stringify(res.body)}`);
+  assert.ok(Array.isArray(res.body.data), "data must be an array");
+  const found = res.body.data.some((item) => item.gallery_id === galleryItemId);
+  assert.ok(found, `gallery item ${galleryItemId} not found in provider gallery`);
+});
+
+test("G7: Delete gallery item → 200", async () => {
+  const res = await request(app)
+    .delete(`/providers/me/gallery/${galleryItemId}`)
+    .set("Authorization", `Bearer ${svcProviderToken}`);
+
+  assert.strictEqual(res.statusCode, 200, `delete gallery item failed: ${JSON.stringify(res.body)}`);
+});
+
+test("G7: Verify gallery item gone after delete → 200, empty array", async () => {
+  const res = await request(app)
+    .get(`/providers/${svcProviderId}/gallery`);
+
+  assert.strictEqual(res.statusCode, 200, `list gallery failed: ${JSON.stringify(res.body)}`);
+  assert.ok(Array.isArray(res.body.data), "data must be an array");
+  const found = res.body.data.some((item) => item.gallery_id === galleryItemId);
+  assert.ok(!found, `deleted gallery item ${galleryItemId} should NOT appear in provider gallery`);
+});

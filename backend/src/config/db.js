@@ -257,6 +257,17 @@ const initializeDbSchema = async () => {
       );
     `);
 
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS provider_gallery (
+        gallery_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        provider_id UUID NOT NULL REFERENCES providers(provider_id) ON DELETE CASCADE,
+        image_url TEXT NOT NULL,
+        caption VARCHAR(255),
+        display_order INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
     await client.query("COMMIT");
     logInfo("🎉 Database schema ready");
   } catch (err) {
@@ -312,6 +323,19 @@ async function _runPostMigrations() {
        CHECK (status IN ('booked','canceled','cancelled','completed',
                          'no-show','no_show','pending','confirmed'))`,
     "add new status check"
+  );
+
+  // Provider gallery table (added after initial schema deployment)
+  await safeAlter(
+    `CREATE TABLE IF NOT EXISTS provider_gallery (
+      gallery_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      provider_id UUID NOT NULL REFERENCES providers(provider_id) ON DELETE CASCADE,
+      image_url TEXT NOT NULL,
+      caption VARCHAR(255),
+      display_order INTEGER DEFAULT 0,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`,
+    "create provider_gallery table"
   );
 }
 
