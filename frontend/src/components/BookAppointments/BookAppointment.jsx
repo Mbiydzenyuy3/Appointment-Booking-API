@@ -278,30 +278,30 @@ export default function BookAppointmentForm({
         aria-modal='true'
       >
         {/* Header */}
-        <div className='flex-shrink-0 px-6 py-4 border-b border-gray-100'>
+        <div className='flex-shrink-0 px-4 py-3 border-b border-gray-100'>
           <div className='flex items-center justify-between'>
-            <div className='flex items-center'>
-              <button
-                onClick={onClose}
-                className='p-2 hover:bg-gray-100 rounded-lg mr-3'
-                aria-label='Go back'
-              >
-                <ChevronLeftIcon className='w-5 h-5' />
-              </button>
-              <div>
-                <h3 className='text-xl font-bold text-gray-900'>
-                  Book Appointment
-                </h3>
-                {service && (
-                  <p className='text-gray-600 mt-1 text-sm'>
-                    {service.service_name}
-                  </p>
-                )}
-              </div>
+            <button
+              onClick={onClose}
+              className='flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors'
+              aria-label='Go back'
+            >
+              <ChevronLeftIcon className='w-4 h-4' />
+              Back
+            </button>
+            <div className='text-center'>
+              <h3 className='text-lg font-bold text-gray-900'>
+                Book Appointment
+              </h3>
+              {service && (
+                <p className='text-gray-500 text-xs'>
+                  {service.service_name}
+                </p>
+              )}
             </div>
             <button
               onClick={onClose}
-              className='p-2 hover:bg-gray-100 rounded-lg'
+              className='p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-600 transition-colors'
+              aria-label='Close'
             >
               <XMarkIcon className='w-5 h-5' />
             </button>

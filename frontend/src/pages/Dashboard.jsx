@@ -77,8 +77,8 @@ const UserDashboard = () => {
         Array.isArray(servicesRes.data.data) ? servicesRes.data.data : []
       ).map((s) => ({
         ...s,
-        service_name: s.service_name,
-        duration_minutes: s.duration_minutes,
+        service_name: s.service_name || s.name,
+        duration_minutes: s.duration_minutes ?? s.duration,
         providerId: s.provider_id || "default-provider-id"
       }));
       setServices(servicesWithProvider);
@@ -220,12 +220,20 @@ const UserDashboard = () => {
                     </span>
                   </div>
 
-                  <button
-                    onClick={() => setBookingModal({ open: true, service })}
-                    className='btn btn-primary w-full touch-target text-sm sm:text-base'
-                  >
-                    Book Appointment
-                  </button>
+                  <div className='flex gap-2'>
+                    <button
+                      onClick={() => navigate(`/provider/${service.booking_slug}`)}
+                      className='flex-1 btn btn-secondary touch-target text-sm sm:text-base'
+                    >
+                      View Profile
+                    </button>
+                    <button
+                      onClick={() => setBookingModal({ open: true, service })}
+                      className='flex-1 btn btn-primary touch-target text-sm sm:text-base'
+                    >
+                      Book
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
