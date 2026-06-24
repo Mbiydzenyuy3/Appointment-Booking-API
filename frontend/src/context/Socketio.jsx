@@ -22,9 +22,10 @@ export const SocketProvider = ({ children }) => {
     const socketInstance = io(backendUrl, {
       // Start with polling so Render's free tier works; upgrade to WS if available.
       transports: ["polling", "websocket"],
-      timeout: 5000,
-      reconnectionAttempts: 3,
-      reconnectionDelay: 2000
+      timeout: 10000,
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 2000,
+      reconnectionDelayMax: 10000
     });
 
     socketInstance.on("connect", () => setIsConnected(true));

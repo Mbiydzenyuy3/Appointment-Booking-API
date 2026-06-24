@@ -252,32 +252,6 @@ const initializeDbSchema = async () => {
       );
     `);
 
-    // Idempotent migrations to support guest bookings on existing appointments table
-    // Make user_id nullable to allow guest bookings without a registered account
-    await client.query(`
-      ALTER TABLE appointments ALTER COLUMN user_id DROP NOT NULL;
-    `).catch(() => { /* already nullable, ignore */ });
-
-    // Add guest booking columns if they don't exist
-    await client.query(`
-      ALTER TABLE appointments
-        ADD COLUMN IF NOT EXISTS guest_name VARCHAR(255),
-        ADD COLUMN IF NOT EXISTS guest_email VARCHAR(255),
-        ADD COLUMN IF NOT EXISTS guest_phone VARCHAR(50),
-        ADD COLUMN IF NOT EXISTS is_guest_booking BOOLEAN DEFAULT FALSE;
-    `);
-
-    // Fix status check constraint to allow all statuses used in code
-    // (ignore errors — constraint may already be correct or table may differ)
-    await client.query(`
-      ALTER TABLE appointments DROP CONSTRAINT IF EXISTS appointments_status_check;
-    `).catch(() => {});
-    await client.query(`
-      ALTER TABLE appointments
-        ADD CONSTRAINT appointments_status_check
-        CHECK (status IN ('booked','canceled','cancelled','completed','no-show','no_show','pending','confirmed'));
-    `).catch(() => {});
-
     await client.query("COMMIT");
     logInfo("🎉 Database schema ready");
   } catch (err) {
@@ -288,6 +262,52 @@ const initializeDbSchema = async () => {
     await client.query("SELECT pg_advisory_unlock(20250424)");
     client.release();
   }
+
+  // Post-transaction idempotent migrations — run OUTSIDE the main transaction
+  // so a failure in one doesn't roll back the entire schema.
+  // Each ALTER is already atomic in PostgreSQL without explicit BEGIN/COMMIT.
+  await _runPostMigrations();
 };
+
+async function _runPostMigrations() {
+  const safeAlter = async (sql, description) => {
+    try {
+      const c = await pool.connect();
+      try { await c.query(sql); }
+      finally { c.release(); }
+    } catch (err) {
+      // Log but don't throw — the migration either already ran or is a no-op
+      logInfo(`Post-migration skipped (${description}): ${err.message}`);
+    }
+  };
+
+  // Make appointments.user_id nullable to support guest bookings
+  await safeAlter(
+    `ALTER TABLE appointments ALTER COLUMN user_id DROP NOT NULL`,
+    "appointments.user_id DROP NOT NULL"
+  );
+
+  // Add guest booking columns if they don't exist
+  await safeAlter(
+    `ALTER TABLE appointments
+       ADD COLUMN IF NOT EXISTS guest_name VARCHAR(255),
+       ADD COLUMN IF NOT EXISTS guest_email VARCHAR(255),
+       ADD COLUMN IF NOT EXISTS guest_phone VARCHAR(50),
+       ADD COLUMN IF NOT EXISTS is_guest_booking BOOLEAN DEFAULT FALSE`,
+    "appointments guest columns"
+  );
+
+  // Widen status constraint to include all values used in code
+  await safeAlter(
+    `ALTER TABLE appointments DROP CONSTRAINT IF EXISTS appointments_status_check`,
+    "drop old status check"
+  );
+  await safeAlter(
+    `ALTER TABLE appointments ADD CONSTRAINT appointments_status_check
+       CHECK (status IN ('booked','canceled','cancelled','completed',
+                         'no-show','no_show','pending','confirmed'))`,
+    "add new status check"
+  );
+}
 
 export { pool, query, withTransaction, connectToDb, initializeDbSchema };
