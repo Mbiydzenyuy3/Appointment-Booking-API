@@ -6,4 +6,20 @@ const api = axios.create({
   headers: { "Content-Type": "application/json" }
 });
 
+// Redirect to /login on any 401 that isn't the initial profile check.
+// /auth/profile returning 401 on page load just means "not logged in" — handled by AuthContext.
+// All other 401s mean the session expired mid-use and the user needs to re-authenticate.
+api.interceptors.response.use(
+  (res) => res,
+  (error) => {
+    if (error.response?.status === 401) {
+      const url = error.config?.url || "";
+      if (!url.includes("/auth/profile") && !url.includes("/auth/login")) {
+        window.location.href = "/login";
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;

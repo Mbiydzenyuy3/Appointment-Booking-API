@@ -193,9 +193,14 @@ export async function getUserProfile(req, res, next) {
       providerInfo = providerRows.rows[0] || null;
     }
 
-    res
-      .status(200)
-      .json({ success: true, data: { ...user, provider_info: providerInfo } });
+    res.status(200).json({
+      success: true,
+      data: {
+        ...user,
+        provider_id: providerInfo?.provider_id || null,
+        provider_info: providerInfo
+      }
+    });
   } catch (err) {
     logError("Get profile error:", err);
     next(err);
