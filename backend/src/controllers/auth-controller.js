@@ -9,11 +9,14 @@ import { sendPasswordResetEmail } from "../services/email-service.js";
 /* ---------------------------------------
    AUTH HELPERS
 ---------------------------------------- */
+// SameSite=None is required because the frontend and backend are on different
+// origins (different Render subdomains). SameSite=Strict silently blocks the
+// cookie on all cross-origin requests. CORS already enforces allowed origins.
 const COOKIE_OPTS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "strict",
-  maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days (matches JWT expiry)
+  secure: true, // SameSite=None requires Secure=true
+  sameSite: "none",
+  maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
 };
 
 function setCookieToken(res, token) {
