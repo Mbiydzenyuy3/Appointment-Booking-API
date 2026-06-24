@@ -1,5 +1,18 @@
 // src/models/slot-model.js
 import { pool } from "../config/db.js";
+import { redisClient } from "../config/redis.js";
+
+const SLOTS_CACHE_TTL = 60; // 60 seconds — slots are time-sensitive
+
+function slotsCacheKey(providerId, serviceId) {
+  return `slots:available:${providerId}:${serviceId}`;
+}
+
+async function invalidateSlotsCache(providerId, serviceId) {
+  try {
+    if (redisClient.isOpen) await redisClient.del(slotsCacheKey(providerId, serviceId));
+  } catch { /* non-critical */ }
+}
 
 // Create a slot by fetching provider_id from the request
 export const createSlot = async ({
@@ -55,6 +68,7 @@ export const createSlot = async ({
     );
 
     await client.query("COMMIT");
+    await invalidateSlotsCache(providerId, serviceId);
     return newSlotInsert.rows[0];
   } catch (err) {
     await client.query("ROLLBACK");
@@ -158,6 +172,7 @@ export const deleteSlot = async (slotId, providerId) => {
     ]);
 
     await client.query("COMMIT");
+    await invalidateSlotsCache(slot.provider_id, slot.service_id);
     return slot;
   } catch (err) {
     await client.query("ROLLBACK");
@@ -194,6 +209,17 @@ export async function searchAvailableSlots({
   limit = 10,
   offset = 0
 }) {
+  // Cache only the common case: specific provider+service, no day filter, fetching the full set
+  const isCacheable = providerId && serviceId && !day && offset === 0 && limit >= 100;
+  const cacheKey = isCacheable ? slotsCacheKey(providerId, serviceId) : null;
+
+  if (cacheKey && redisClient.isOpen) {
+    try {
+      const cached = await redisClient.get(cacheKey);
+      if (cached) return JSON.parse(cached);
+    } catch { /* fall through to DB */ }
+  }
+
   let query = `
     SELECT ts.*, s.service_name as name, u.user_id as provider_user_id
     FROM time_slots ts
@@ -268,6 +294,12 @@ export async function searchAvailableSlots({
     }
 
     slots = filteredSlots;
+  }
+
+  if (cacheKey && redisClient.isOpen) {
+    try {
+      await redisClient.set(cacheKey, JSON.stringify(slots), { EX: SLOTS_CACHE_TTL });
+    } catch { /* non-critical */ }
   }
 
   return slots;

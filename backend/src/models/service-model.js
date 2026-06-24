@@ -1,6 +1,16 @@
 // src/models/service-model.js - Simplified for MVP
 import { query } from "../config/db.js";
 import { logError } from "../utils/logger.js";
+import { redisClient } from "../config/redis.js";
+
+const SERVICES_CACHE_KEY = "services:all";
+const SERVICES_CACHE_TTL = 300; // 5 minutes
+
+async function invalidateServicesCache() {
+  try {
+    if (redisClient.isOpen) await redisClient.del(SERVICES_CACHE_KEY);
+  } catch { /* non-critical */ }
+}
 
 export async function createService({
   providerId,
@@ -36,6 +46,7 @@ export async function createService({
     ];
 
     const result = await query(queryText, params);
+    await invalidateServicesCache();
     return result.rows[0];
   } catch (err) {
     logError("Failed to create service:", err);
@@ -45,6 +56,11 @@ export async function createService({
 
 export async function findAllServices() {
   try {
+    if (redisClient.isOpen) {
+      const cached = await redisClient.get(SERVICES_CACHE_KEY);
+      if (cached) return JSON.parse(cached);
+    }
+
     const queryText = `SELECT s.service_id, s.provider_id, s.service_name as name, s.description, s.price, s.duration_minutes as duration, s.location, s.category,
                               u.name as provider_name, p.booking_slug,
                               COALESCE(AVG(pr.rating), 0) as average_rating, COUNT(pr.review_id) as review_count
@@ -55,6 +71,11 @@ export async function findAllServices() {
                        GROUP BY s.service_id, s.provider_id, s.service_name, s.description, s.price, s.duration_minutes, s.location, s.category, u.name, p.booking_slug`;
 
     const result = await query(queryText);
+    try {
+      if (redisClient.isOpen) {
+        await redisClient.set(SERVICES_CACHE_KEY, JSON.stringify(result.rows), { EX: SERVICES_CACHE_TTL });
+      }
+    } catch { /* non-critical */ }
     return result.rows;
   } catch (err) {
     logError("DB Error (find all services):", err);
@@ -134,6 +155,7 @@ export async function deleteById(serviceId) {
     `DELETE FROM services WHERE service_id = $1 RETURNING *`,
     [serviceId]
   );
+  await invalidateServicesCache();
   return rows[0];
 }
 
@@ -161,6 +183,7 @@ export async function updateById(serviceId, updates) {
                  location, additional_description, image_url, category`,
       [service_name, description, price, duration_minutes, category, location, additional_description, image_url, serviceId]
     );
+    await invalidateServicesCache();
     return rows[0];
   } catch (err) {
     logError("DB Error (update service):", err);
