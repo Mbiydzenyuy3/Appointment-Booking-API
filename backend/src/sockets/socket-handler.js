@@ -3,6 +3,11 @@ import { logError, logInfo } from '../utils/logger.js'
 export const socketHandler = (socket) => {
   logInfo('🛜 Client connected:', socket.id)
 
+  // Join a personal room so server can push messages directly to this user
+  if (socket.user?.sub) {
+    socket.join(`user:${socket.user.sub}`)
+  }
+
   // Handle disconnect
   socket.on('disconnect', (reason) => {
     logInfo(`⚡ Client disconnected: ${socket.id} due to ${reason}`)

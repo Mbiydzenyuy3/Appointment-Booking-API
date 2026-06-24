@@ -353,6 +353,28 @@ async function _runPostMigrations() {
     `ALTER TABLE providers ADD COLUMN IF NOT EXISTS logo_url TEXT`,
     "providers.logo_url"
   );
+
+  // Messages table for client↔provider conversations
+  await safeAlter(
+    `CREATE TABLE IF NOT EXISTS messages (
+       message_id   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+       provider_id  UUID NOT NULL REFERENCES providers(provider_id) ON DELETE CASCADE,
+       sender_id    UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+       receiver_id  UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+       content      TEXT NOT NULL,
+       is_read      BOOLEAN DEFAULT false,
+       created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+     )`,
+    "create messages table"
+  );
+  await safeAlter(
+    `CREATE INDEX IF NOT EXISTS idx_messages_provider ON messages(provider_id)`,
+    "messages provider index"
+  );
+  await safeAlter(
+    `CREATE INDEX IF NOT EXISTS idx_messages_conversation ON messages(provider_id, sender_id, receiver_id)`,
+    "messages conversation index"
+  );
 }
 
 export { pool, query, withTransaction, connectToDb, initializeDbSchema };

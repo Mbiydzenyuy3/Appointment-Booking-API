@@ -26,6 +26,7 @@ import serviceRoutes from "./src/routes/service.js";
 import calendarRouter from "./src/routes/calendar.js";
 import aiSchedulerRouter from "./src/routes/ai-scheduler.js";
 import performanceRouter from "./src/routes/performance.js";
+import messageRouter from "./src/routes/message.js";
 
 const app = express();
 
@@ -85,6 +86,7 @@ app.use("/services", serviceRoutes);
 app.use("/calendar", calendarRouter);
 app.use("/api/ai-scheduler", aiSchedulerRouter);
 app.use("/api/performance", performanceRouter);
+app.use("/messages", messageRouter);
 
 // Cron job
 cron.schedule("1 0 * * *", async () => {
