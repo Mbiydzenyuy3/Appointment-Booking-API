@@ -5,6 +5,7 @@ import ServiceList from "../components/Providers/ServiceList.jsx";
 import TimeslotForm from "../components/Providers/TimeSlotForm.jsx";
 import TimeslotList from "../components/Providers/TimeSlotList.jsx";
 import CalendarSync from "../components/Providers/CalendarSync.jsx";
+import GalleryManager from "../components/Providers/GalleryManager.jsx";
 import api from "../services/api.js";
 import { toast } from "react-toastify";
 import {
@@ -12,7 +13,8 @@ import {
   ClockIcon,
   LightBulbIcon,
   CalendarDaysIcon,
-  LinkIcon
+  LinkIcon,
+  PhotoIcon
 } from "@heroicons/react/24/outline";
 
 export default function ProviderDashboard() {
@@ -248,6 +250,19 @@ export default function ProviderDashboard() {
                   </div>
                 </button>
                 <button
+                  onClick={() => setActiveTab("gallery")}
+                  className={`py-3 px-4 rounded-lg font-medium text-sm touch-target transition-all duration-200 ${
+                    activeTab === "gallery"
+                      ? "bg-green-600 text-white"
+                      : "text-gray-600 hover:text-green-600 hover:bg-green-50"
+                  }`}
+                >
+                  <div className='flex items-center justify-center'>
+                    <PhotoIcon className='w-4 h-4 mr-2' />
+                    Gallery
+                  </div>
+                </button>
+                <button
                   onClick={() => setActiveTab("calendar")}
                   className={`py-3 px-4 rounded-lg font-medium text-sm touch-target transition-all duration-200 ${
                     activeTab === "calendar"
@@ -310,6 +325,16 @@ export default function ProviderDashboard() {
                     }`}
                   >
                     Bookings
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("gallery")}
+                    className={`flex-1 py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
+                      activeTab === "gallery"
+                        ? "bg-green-600 text-white"
+                        : "text-gray-600 hover:text-green-600 hover:bg-green-50"
+                    }`}
+                  >
+                    Gallery
                   </button>
                   <button
                     onClick={() => setActiveTab("calendar")}
@@ -507,11 +532,23 @@ export default function ProviderDashboard() {
               </>
             )}
 
+            {activeTab === "gallery" && (
+              <div className='bg-white rounded-xl shadow-sm p-6'>
+                <GalleryManager providerId={user?.provider_id} />
+              </div>
+            )}
+
             {activeTab === "calendar" && <CalendarSync />}
           </div>
 
           {/* Mobile Content */}
           <div className='sm:hidden'>
+            {activeTab === "gallery" && (
+              <div className='bg-white rounded-xl shadow-sm p-4'>
+                <GalleryManager providerId={user?.provider_id} />
+              </div>
+            )}
+
             {activeTab === "services" && (
               <div className='space-y-6'>
                 <div className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden'>
