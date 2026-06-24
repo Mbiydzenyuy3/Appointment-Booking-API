@@ -160,6 +160,23 @@ export default function ServiceForm({ onCreate, onUpdate, editingService, onCanc
             <CurrencySelector />
           </div>
         </div>
+
+        {/* Visibility tip banner */}
+        <div className="flex gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4">
+          <span className="text-amber-500 text-xl flex-shrink-0 mt-0.5">💡</span>
+          <div>
+            <p className="text-sm font-semibold text-amber-800 mb-1">
+              Complete your listing to attract more clients
+            </p>
+            <p className="text-sm text-amber-700 leading-relaxed">
+              While some fields are optional, a fully completed service listing is{" "}
+              <span className="font-semibold">3× more likely</span> to be booked.
+              Clients trust businesses that show a clear description, a photo, and
+              extra details — it signals professionalism and helps your service stand
+              out in search results.
+            </p>
+          </div>
+        </div>
       </div>
 
       <div className="space-y-5 mb-8">
