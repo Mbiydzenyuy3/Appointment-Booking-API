@@ -165,11 +165,21 @@ const initializeDbSchema = async () => {
       );
     `);
 
-    // Add booking_slug to providers if the table pre-dates this column
+    // Idempotent migrations for providers columns added after initial table creation.
+    // ALTER TABLE ... ADD COLUMN IF NOT EXISTS is safe to run on every startup.
     await client.query(`
       ALTER TABLE providers
-      ADD COLUMN IF NOT EXISTS booking_slug VARCHAR(255) UNIQUE,
-      ADD COLUMN IF NOT EXISTS phone VARCHAR(50);
+      ADD COLUMN IF NOT EXISTS phone VARCHAR(50),
+      ADD COLUMN IF NOT EXISTS hourly_rate DECIMAL(10,2),
+      ADD COLUMN IF NOT EXISTS referral_code VARCHAR(50);
+    `);
+    // booking_slug must be added separately because of the UNIQUE constraint.
+    await client.query(`
+      ALTER TABLE providers
+      ADD COLUMN IF NOT EXISTS booking_slug VARCHAR(255);
+    `);
+    await client.query(`
+      CREATE UNIQUE INDEX IF NOT EXISTS providers_booking_slug_key ON providers (booking_slug);
     `);
 
     await client.query(`

@@ -29,6 +29,10 @@ import performanceRouter from "./src/routes/performance.js";
 
 const app = express();
 
+// Trust the first proxy (Cloudflare → Render) so express-rate-limit
+// and req.ip correctly read the real client IP from X-Forwarded-For.
+app.set("trust proxy", 1);
+
 // dirname fix for ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
