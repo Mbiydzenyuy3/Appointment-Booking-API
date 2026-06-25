@@ -123,48 +123,16 @@ export default defineConfig({
     reportCompressedSize: false, // Faster builds
     rollupOptions: {
       output: {
-        manualChunks(id) {
-          // Core React runtime — cached long-term
-          if (id.includes("node_modules/react-dom") || id.includes("node_modules/react/")) {
-            return "vendor";
-          }
-          // Router — needed early
-          if (id.includes("node_modules/react-router")) {
-            return "router";
-          }
-          // Form libraries — only needed on form pages
-          if (id.includes("node_modules/formik") || id.includes("node_modules/yup")) {
-            return "forms";
-          }
-          // UI libraries
-          if (id.includes("node_modules/react-modal") || id.includes("node_modules/react-datepicker")) {
-            return "ui";
-          }
-          // Utility libraries
-          if (id.includes("node_modules/date-fns") || id.includes("node_modules/axios")) {
-            return "utils";
-          }
-          // Framer motion — heavy, only load when needed
-          if (id.includes("node_modules/framer-motion")) {
-            return "motion";
-          }
-          // Socket.io — only needed when authenticated
-          if (id.includes("node_modules/socket.io")) {
-            return "socket";
-          }
-          // Other node_modules
-          if (id.includes("node_modules")) {
-            return "vendor-misc";
-          }
-          // Pages are automatically split by React.lazy() dynamic imports
+        // Static object avoids circular-dependency issues with function-based splitting.
+        // React.lazy() in App.jsx handles page-level code splitting automatically.
+        manualChunks: {
+          vendor: ["react", "react-dom"],
+          router: ["react-router-dom"],
+          forms: ["formik", "yup"],
+          utils: ["date-fns", "axios"]
         },
-        // Optimize chunk size for mobile networks
-        chunkFileNames: (chunkInfo) => {
-          const facadeModuleId = chunkInfo.facadeModuleId
-            ? chunkInfo.facadeModuleId.split("/").pop().replace(".js", "")
-            : "chunk";
-          return `js/${facadeModuleId}-[hash].js`;
-        },
+        // Optimize chunk naming for caching
+        chunkFileNames: "js/[name]-[hash].js",
         assetFileNames: (assetInfo) => {
           if (assetInfo.name && assetInfo.name.endsWith(".css")) {
             return "css/[name]-[hash][extname]";

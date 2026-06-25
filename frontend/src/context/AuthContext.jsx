@@ -1,4 +1,3 @@
-import React from "react";
 import { createContext, useContext, useState, useEffect } from "react";
 import api from "../services/api.js";
 import { connectSocket, disconnectSocket } from "../services/socket.js";
