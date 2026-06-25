@@ -123,14 +123,40 @@ export default defineConfig({
     reportCompressedSize: false, // Faster builds
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ["react", "react-dom"],
-          router: ["react-router-dom"],
-          forms: ["formik", "yup"],
-          ui: ["react-modal", "react-datepicker"],
-          utils: ["date-fns", "axios"],
-          // Mobile-first chunks
-          mobile: ["react-intersection-observer"]
+        manualChunks(id) {
+          // Core React runtime — cached long-term
+          if (id.includes("node_modules/react-dom") || id.includes("node_modules/react/")) {
+            return "vendor";
+          }
+          // Router — needed early
+          if (id.includes("node_modules/react-router")) {
+            return "router";
+          }
+          // Form libraries — only needed on form pages
+          if (id.includes("node_modules/formik") || id.includes("node_modules/yup")) {
+            return "forms";
+          }
+          // UI libraries
+          if (id.includes("node_modules/react-modal") || id.includes("node_modules/react-datepicker")) {
+            return "ui";
+          }
+          // Utility libraries
+          if (id.includes("node_modules/date-fns") || id.includes("node_modules/axios")) {
+            return "utils";
+          }
+          // Framer motion — heavy, only load when needed
+          if (id.includes("node_modules/framer-motion")) {
+            return "motion";
+          }
+          // Socket.io — only needed when authenticated
+          if (id.includes("node_modules/socket.io")) {
+            return "socket";
+          }
+          // Other node_modules
+          if (id.includes("node_modules")) {
+            return "vendor-misc";
+          }
+          // Pages are automatically split by React.lazy() dynamic imports
         },
         // Optimize chunk size for mobile networks
         chunkFileNames: (chunkInfo) => {

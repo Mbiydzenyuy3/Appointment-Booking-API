@@ -10,18 +10,45 @@ import {
 const Context = createContext();
 
 export const Provider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // Use cached auth state for instant initial render on return visits
+  const [user, setUser] = useState(() => {
+    try {
+      const cached = sessionStorage.getItem("auth_user");
+      return cached ? JSON.parse(cached) : null;
+    } catch {
+      return null;
+    }
+  });
+  // Skip loading state if we have a cached user (show page instantly)
+  const [isLoading, setIsLoading] = useState(() => {
+    try {
+      return !sessionStorage.getItem("auth_user");
+    } catch {
+      return true;
+    }
+  });
 
   useEffect(() => {
     api
       .get("/auth/profile")
       .then((response) => {
-        setUser(response.data.data);
+        const userData = response.data.data;
+        setUser(userData);
+        // Cache for instant loads on subsequent navigations
+        try {
+          sessionStorage.setItem("auth_user", JSON.stringify(userData));
+        } catch {
+          // Storage full or unavailable — no problem
+        }
         connectSocket();
       })
       .catch(() => {
         setUser(null);
+        try {
+          sessionStorage.removeItem("auth_user");
+        } catch {
+          // Ignore
+        }
       })
       .finally(() => {
         setIsLoading(false);
@@ -92,6 +119,11 @@ export const Provider = ({ children }) => {
     }
     disconnectSocket();
     setUser(null);
+    try {
+      sessionStorage.removeItem("auth_user");
+    } catch {
+      // Ignore
+    }
   };
 
   return (
