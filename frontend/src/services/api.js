@@ -3,7 +3,8 @@ import axios from "axios";
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   withCredentials: true,
-  headers: { "Content-Type": "application/json" }
+  headers: { "Content-Type": "application/json" },
+  timeout: 30000
 });
 
 // Redirect to /login on any 401 that isn't the initial profile check.

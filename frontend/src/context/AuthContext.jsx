@@ -28,9 +28,24 @@ export const Provider = ({ children }) => {
   });
 
   useEffect(() => {
-    api
-      .get("/auth/profile")
+    let cancelled = false;
+    let timeoutId;
+
+    // Race the profile check against an 8-second deadline so a cold-starting
+    // server (e.g. Render free tier) never blocks the login/register pages
+    // indefinitely. On timeout we treat the user as unauthenticated and let
+    // them proceed; the next navigation will retry automatically.
+    const timeout = new Promise((_, reject) => {
+      timeoutId = setTimeout(
+        () => reject(new Error("profile check timed out")),
+        8000
+      );
+    });
+
+    Promise.race([api.get("/auth/profile"), timeout])
       .then((response) => {
+        if (cancelled) return;
+        clearTimeout(timeoutId);
         const userData = response.data.data;
         setUser(userData);
         // Cache for instant loads on subsequent navigations
@@ -42,6 +57,8 @@ export const Provider = ({ children }) => {
         connectSocket();
       })
       .catch(() => {
+        if (cancelled) return;
+        clearTimeout(timeoutId);
         setUser(null);
         try {
           sessionStorage.removeItem("auth_user");
@@ -50,8 +67,13 @@ export const Provider = ({ children }) => {
         }
       })
       .finally(() => {
-        setIsLoading(false);
+        if (!cancelled) setIsLoading(false);
       });
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timeoutId);
+    };
   }, []);
 
   const login = async (email, password) => {
