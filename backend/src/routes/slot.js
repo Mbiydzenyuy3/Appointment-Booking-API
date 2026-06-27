@@ -85,6 +85,54 @@ router.get("/provider/:providerId", authMiddleware, SlotController.list);
  *       401:
  *         description: Unauthorized
  */
+/**
+ * @swagger
+ * /slots/search/available:
+ *   get:
+ *     summary: Search available time slots (public)
+ *     tags: [Slots]
+ *     parameters:
+ *       - in: query
+ *         name: providerId
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Filter by provider ID
+ *       - in: query
+ *         name: serviceId
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Filter by service ID
+ *       - in: query
+ *         name: day
+ *         schema:
+ *           type: string
+ *           format: date
+ *         required: false
+ *         description: Filter by day (YYYY-MM-DD)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         required: false
+ *         description: Number of results to return
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *         required: false
+ *         description: Number of items to skip
+ *     responses:
+ *       200:
+ *         description: List of available slots
+ */
+router.get(
+  "/search/available",
+  validate(slotSearchSchema, "query"),
+  SlotController.search
+);
+
 router.get("/:slotId", authMiddleware, SlotController.get);
 
 /**
@@ -154,54 +202,6 @@ router.delete(
   authMiddleware,
   requireProvider,
   SlotController.remove
-);
-
-/**
- * @swagger
- * /slots/search/available:
- *   get:
- *     summary: Search available time slots (public)
- *     tags: [Slots]
- *     parameters:
- *       - in: query
- *         name: providerId
- *         schema:
- *           type: string
- *         required: false
- *         description: Filter by provider ID
- *       - in: query
- *         name: serviceId
- *         schema:
- *           type: string
- *         required: false
- *         description: Filter by service ID
- *       - in: query
- *         name: day
- *         schema:
- *           type: string
- *           format: date
- *         required: false
- *         description: Filter by day (YYYY-MM-DD)
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *         required: false
- *         description: Number of results to return
- *       - in: query
- *         name: offset
- *         schema:
- *           type: integer
- *         required: false
- *         description: Number of items to skip
- *     responses:
- *       200:
- *         description: List of available slots
- */
-router.get(
-  "/search/available",
-  validate(slotSearchSchema, "query"),
-  SlotController.search
 );
 
 export default router;

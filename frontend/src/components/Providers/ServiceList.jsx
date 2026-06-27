@@ -7,6 +7,18 @@ import {
   MapPinIcon
 } from "@heroicons/react/24/outline";
 
+function formatDuration(minutes) {
+  if (!minutes && minutes !== 0) return "N/A";
+  const m = Number(minutes);
+  if (isNaN(m) || m <= 0) return "N/A";
+  if (m >= 60) {
+    const h = Math.floor(m / 60);
+    const rem = m % 60;
+    return rem === 0 ? `${h} hr` : `${h} hr ${rem} min`;
+  }
+  return `${m} min`;
+}
+
 export default function ServiceList({ services = [], onDelete, onEdit }) {
   const { selectedCurrency, formatPrice } = useCurrency();
 
@@ -38,10 +50,10 @@ export default function ServiceList({ services = [], onDelete, onEdit }) {
               </div>
               <div className='flex-1 min-w-0'>
                 <h3 className='text-lg font-semibold text-gray-900 truncate'>
-                  {service.name}
+                  {service.name || service.service_name}
                 </h3>
                 <p className='text-sm text-gray-500'>
-                  {service.duration || "N/A"} min •{" "}
+                  {formatDuration(service.duration ?? service.duration_minutes)} •{" "}
                   {formatPrice(service.price, selectedCurrency)}
                 </p>
                 {service.description && (
@@ -57,7 +69,7 @@ export default function ServiceList({ services = [], onDelete, onEdit }) {
                   {formatPrice(service.price, selectedCurrency)}
                 </div>
                 <div className='text-xs text-gray-500'>
-                  {service.duration} min
+                  {formatDuration(service.duration ?? service.duration_minutes)}
                 </div>
               </div>
               <div className='flex gap-2'>

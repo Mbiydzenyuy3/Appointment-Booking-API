@@ -9,6 +9,20 @@ import { sendPasswordResetEmail } from "../services/email-service.js";
 /* ---------------------------------------
    AUTH HELPERS
 ---------------------------------------- */
+// SameSite=None is required because the frontend and backend are on different
+// origins (different Render subdomains). SameSite=Strict silently blocks the
+// cookie on all cross-origin requests. CORS already enforces allowed origins.
+const COOKIE_OPTS = {
+  httpOnly: true,
+  secure: true, // SameSite=None requires Secure=true
+  sameSite: "none",
+  maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+};
+
+function setCookieToken(res, token) {
+  res.cookie("token", token, COOKIE_OPTS);
+}
+
 const generateToken = (user) => {
   return jwt.sign(
     {
@@ -79,11 +93,11 @@ export async function register(req, res, next) {
     });
 
     const token = generateToken(result);
+    setCookieToken(res, token);
 
     res.status(201).json({
       success: true,
       message: "Account created successfully!",
-      token,
       data: result
     });
   } catch (err) {
@@ -135,14 +149,15 @@ export async function login(req, res, next) {
     }
 
     const token = generateToken({ ...user, provider_id: providerId });
+    setCookieToken(res, token);
 
     logInfo("User logged in:", user.email);
 
+    const { password: _p, reset_password_token: _rpt, reset_password_expires: _rpe, ...safeUser } = user;
     res.status(200).json({
       success: true,
       message: "Login successful",
-      token,
-      data: { ...user, provider_id: providerId }
+      data: { ...safeUser, provider_id: providerId }
     });
   } catch (err) {
     logError("Login error:", err);
@@ -178,9 +193,14 @@ export async function getUserProfile(req, res, next) {
       providerInfo = providerRows.rows[0] || null;
     }
 
-    res
-      .status(200)
-      .json({ success: true, data: { ...user, provider_info: providerInfo } });
+    res.status(200).json({
+      success: true,
+      data: {
+        ...user,
+        provider_id: providerInfo?.provider_id || null,
+        provider_info: providerInfo
+      }
+    });
   } catch (err) {
     logError("Get profile error:", err);
     next(err);
@@ -279,11 +299,16 @@ export async function forgotPassword(req, res, next) {
     const expires = new Date(Date.now() + 3600 * 1000); // 1 hour
 
     await query(
-      "UPDATE users SET reset_password_token=$1, reset_password_expires=$2 WHERE user_id=$3",
+      "UPDATE users SET reset_token=$1, reset_token_expiry=$2 WHERE user_id=$3",
       [resetToken, expires, userId]
     );
 
-    await sendPasswordResetEmail(email, resetToken);
+    try {
+      await sendPasswordResetEmail(email, resetToken);
+    } catch (emailErr) {
+      // Log email failure but don't expose it — the token is saved; user can retry.
+      logError("Failed to send password reset email:", emailErr);
+    }
 
     res.status(200).json({
       success: true,
@@ -318,7 +343,7 @@ export async function resetPassword(req, res, next) {
 
   try {
     const { rows } = await query(
-      "SELECT user_id, reset_password_expires FROM users WHERE reset_password_token=$1",
+      "SELECT user_id, reset_token_expiry FROM users WHERE reset_token=$1",
       [token]
     );
 
@@ -328,7 +353,7 @@ export async function resetPassword(req, res, next) {
         .json({ success: false, message: "Invalid reset token." });
 
     const user = rows[0];
-    if (new Date(user.reset_password_expires) < new Date()) {
+    if (new Date(user.reset_token_expiry) < new Date()) {
       return res
         .status(400)
         .json({ success: false, message: "Reset token has expired." });
@@ -337,7 +362,7 @@ export async function resetPassword(req, res, next) {
     const hashed = await bcrypt.hash(newPassword, 10);
 
     await query(
-      "UPDATE users SET password=$1, reset_password_token=NULL, reset_password_expires=NULL, updated_at=NOW() WHERE user_id=$2",
+      "UPDATE users SET password=$1, reset_token=NULL, reset_token_expiry=NULL, updated_at=NOW() WHERE user_id=$2",
       [hashed, user.user_id]
     );
 
@@ -473,11 +498,11 @@ export async function convertGuestToUser(req, res, next) {
     );
 
     const token = generateToken(rows[0]);
+    setCookieToken(res, token);
 
     res.status(201).json({
       success: true,
       message: "Guest converted to user.",
-      token,
       data: rows[0]
     });
   } catch (err) {
@@ -506,11 +531,21 @@ export async function googleAuthCallback(req, res, next) {
     }
 
     const token = generateToken(user);
+    setCookieToken(res, token);
+    const { password: _p, reset_password_token: _rpt, reset_password_expires: _rpe, ...safeUser } = user;
     res
       .status(200)
-      .json({ success: true, message: "Login successful.", token, data: user });
+      .json({ success: true, message: "Login successful.", data: safeUser });
   } catch (err) {
     logError("Google auth callback error:", err);
     next(err);
   }
+}
+
+/* ---------------------------------------
+   LOGOUT
+---------------------------------------- */
+export async function logout(req, res) {
+  res.clearCookie("token", COOKIE_OPTS);
+  res.json({ success: true, message: "Logged out." });
 }

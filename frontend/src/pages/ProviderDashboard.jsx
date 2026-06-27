@@ -5,16 +5,20 @@ import ServiceList from "../components/Providers/ServiceList.jsx";
 import TimeslotForm from "../components/Providers/TimeSlotForm.jsx";
 import TimeslotList from "../components/Providers/TimeSlotList.jsx";
 import CalendarSync from "../components/Providers/CalendarSync.jsx";
-import AuthDebugger from "../components/Providers/AuthDebugger.jsx";
+import GalleryManager from "../components/Providers/GalleryManager.jsx";
 import api from "../services/api.js";
-import toast from "react-hot-toast";
+import { toast } from "react-toastify";
 import {
   CheckCircleIcon,
   ClockIcon,
   LightBulbIcon,
   CalendarDaysIcon,
-  LinkIcon
+  LinkIcon,
+  PhotoIcon,
+  ChatBubbleLeftRightIcon
 } from "@heroicons/react/24/outline";
+import ConversationList from "../components/Messaging/ConversationList.jsx";
+import MessageThread from "../components/Messaging/MessageThread.jsx";
 
 export default function ProviderDashboard() {
   const { user } = useAuth();
@@ -26,18 +30,9 @@ export default function ProviderDashboard() {
   const [bookingLink, setBookingLink] = useState("");
   const [profileComplete, setProfileComplete] = useState(false);
   const [editingService, setEditingService] = useState(null);
-
-  // Debug logging
-  console.log("ProviderDashboard render:", {
-    user,
-    provider_id: user?.provider_id
-  });
+  const [activeConversation, setActiveConversation] = useState(null);
 
   useEffect(() => {
-    console.log("ProviderDashboard useEffect:", {
-      user,
-      provider_id: user?.provider_id
-    });
     if (!user?.provider_id) {
       setLoading(false);
       return;
@@ -54,13 +49,6 @@ export default function ProviderDashboard() {
             api.get("/providers/me")
           ]);
 
-        console.log("Fetch responses:", {
-          servicesRes,
-          slotsRes,
-          appointmentsRes,
-          linkRes,
-          profileRes
-        });
         setServices(servicesRes.data.data);
         setTimeSlots(slotsRes.data.data);
         setAppointments(appointmentsRes.data.data || []);
@@ -149,6 +137,20 @@ export default function ProviderDashboard() {
     }
   };
 
+  const handleMarkComplete = async (appointmentId) => {
+    try {
+      await api.put(`/appointments/${appointmentId}/complete`);
+      setAppointments((prev) =>
+        prev.map((a) =>
+          a.appointment_id === appointmentId ? { ...a, status: "completed" } : a
+        )
+      );
+      toast.success("Appointment marked as completed. The client can now leave a review.");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to mark appointment as completed.");
+    }
+  };
+
   const handleDeleteTimeSlot = async (slotId) => {
     try {
       await api.delete(`/slots/${slotId}`);
@@ -223,7 +225,6 @@ export default function ProviderDashboard() {
         </div>
       ) : (
         <>
-          <AuthDebugger />
           <div className='mb-6 sm:hidden'>
             <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-2'>
               <div className='grid grid-cols-3 gap-2'>
@@ -267,6 +268,19 @@ export default function ProviderDashboard() {
                   </div>
                 </button>
                 <button
+                  onClick={() => setActiveTab("gallery")}
+                  className={`py-3 px-4 rounded-lg font-medium text-sm touch-target transition-all duration-200 ${
+                    activeTab === "gallery"
+                      ? "bg-green-600 text-white"
+                      : "text-gray-600 hover:text-green-600 hover:bg-green-50"
+                  }`}
+                >
+                  <div className='flex items-center justify-center'>
+                    <PhotoIcon className='w-4 h-4 mr-2' />
+                    Gallery
+                  </div>
+                </button>
+                <button
                   onClick={() => setActiveTab("calendar")}
                   className={`py-3 px-4 rounded-lg font-medium text-sm touch-target transition-all duration-200 ${
                     activeTab === "calendar"
@@ -290,6 +304,19 @@ export default function ProviderDashboard() {
                   <div className='flex items-center justify-center'>
                     <LightBulbIcon className='w-4 h-4 mr-2' />
                     Marketing
+                  </div>
+                </button>
+                <button
+                  onClick={() => setActiveTab("messages")}
+                  className={`py-3 px-4 rounded-lg font-medium text-sm touch-target transition-all duration-200 ${
+                    activeTab === "messages"
+                      ? "bg-green-600 text-white"
+                      : "text-gray-600 hover:text-green-600 hover:bg-green-50"
+                  }`}
+                >
+                  <div className='flex items-center justify-center'>
+                    <ChatBubbleLeftRightIcon className='w-4 h-4 mr-2' />
+                    Messages
                   </div>
                 </button>
               </div>
@@ -331,6 +358,16 @@ export default function ProviderDashboard() {
                     Bookings
                   </button>
                   <button
+                    onClick={() => setActiveTab("gallery")}
+                    className={`flex-1 py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
+                      activeTab === "gallery"
+                        ? "bg-green-600 text-white"
+                        : "text-gray-600 hover:text-green-600 hover:bg-green-50"
+                    }`}
+                  >
+                    Gallery
+                  </button>
+                  <button
                     onClick={() => setActiveTab("calendar")}
                     className={`flex-1 py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
                       activeTab === "calendar"
@@ -339,6 +376,16 @@ export default function ProviderDashboard() {
                     }`}
                   >
                     Calendar
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("messages")}
+                    className={`flex-1 py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
+                      activeTab === "messages"
+                        ? "bg-green-600 text-white"
+                        : "text-gray-600 hover:text-green-600 hover:bg-green-50"
+                    }`}
+                  >
+                    Messages
                   </button>
                 </div>
               </div>
@@ -457,9 +504,20 @@ export default function ProviderDashboard() {
                           >
                             <div className='flex flex-col sm:flex-row sm:items-center gap-4'>
                               <div className='flex-1 min-w-0'>
-                                <h3 className='text-lg font-semibold text-gray-900 truncate'>
-                                  {appt.service_name}
-                                </h3>
+                                <div className='flex items-center gap-2 mb-1'>
+                                  <h3 className='text-lg font-semibold text-gray-900 truncate'>
+                                    {appt.service_name}
+                                  </h3>
+                                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 ${
+                                    appt.status === "completed"
+                                      ? "bg-green-100 text-green-700"
+                                      : appt.status === "cancelled"
+                                      ? "bg-red-100 text-red-700"
+                                      : "bg-blue-100 text-blue-700"
+                                  }`}>
+                                    {appt.status || "booked"}
+                                  </span>
+                                </div>
                                 <div className='mt-2 space-y-1 text-sm text-gray-600'>
                                   <p className='flex items-center'>
                                     <CalendarDaysIcon className='w-4 h-4 mr-2 text-gray-400' />
@@ -477,6 +535,14 @@ export default function ProviderDashboard() {
                                   <p>Client: {appt.client_name}</p>
                                 </div>
                               </div>
+                              {appt.status !== "completed" && appt.status !== "cancelled" && (
+                                <button
+                                  onClick={() => handleMarkComplete(appt.appointment_id)}
+                                  className='flex-shrink-0 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors'
+                                >
+                                  Mark as Done
+                                </button>
+                              )}
                             </div>
                           </div>
                         ))}
@@ -526,11 +592,41 @@ export default function ProviderDashboard() {
               </>
             )}
 
+            {activeTab === "gallery" && (
+              <div className='bg-white rounded-xl shadow-sm p-6'>
+                <GalleryManager providerId={user?.provider_id} />
+              </div>
+            )}
+
             {activeTab === "calendar" && <CalendarSync />}
+
+            {activeTab === "messages" && (
+              <div
+                className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden'
+                style={{ minHeight: 340 }}
+              >
+                {activeConversation ? (
+                  <MessageThread
+                    conversation={activeConversation}
+                    onBack={() => setActiveConversation(null)}
+                  />
+                ) : (
+                  <div className='p-4'>
+                    <ConversationList onSelect={setActiveConversation} />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Mobile Content */}
           <div className='sm:hidden'>
+            {activeTab === "gallery" && (
+              <div className='bg-white rounded-xl shadow-sm p-4'>
+                <GalleryManager providerId={user?.provider_id} />
+              </div>
+            )}
+
             {activeTab === "services" && (
               <div className='space-y-6'>
                 <div className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden'>
@@ -615,6 +711,24 @@ export default function ProviderDashboard() {
               </div>
             )}
 
+            {activeTab === "messages" && (
+              <div
+                className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden'
+                style={{ minHeight: 280 }}
+              >
+                {activeConversation ? (
+                  <MessageThread
+                    conversation={activeConversation}
+                    onBack={() => setActiveConversation(null)}
+                  />
+                ) : (
+                  <div className='p-4'>
+                    <ConversationList onSelect={setActiveConversation} />
+                  </div>
+                )}
+              </div>
+            )}
+
             {activeTab === "bookings" && (
               <div className='space-y-6'>
                 <div className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden'>
@@ -640,12 +754,23 @@ export default function ProviderDashboard() {
                             key={appt.appointment_id}
                             className='bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover-lift'
                           >
-                            <div className='flex flex-col gap-4'>
+                            <div className='flex flex-col gap-3'>
                               <div className='min-w-0'>
-                                <h3 className='text-lg font-semibold text-gray-900 truncate'>
-                                  {appt.service_name}
-                                </h3>
-                                <div className='mt-2 space-y-1 text-sm text-gray-600'>
+                                <div className='flex items-center gap-2 mb-1'>
+                                  <h3 className='text-base font-semibold text-gray-900 truncate'>
+                                    {appt.service_name}
+                                  </h3>
+                                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 ${
+                                    appt.status === "completed"
+                                      ? "bg-green-100 text-green-700"
+                                      : appt.status === "cancelled"
+                                      ? "bg-red-100 text-red-700"
+                                      : "bg-blue-100 text-blue-700"
+                                  }`}>
+                                    {appt.status || "booked"}
+                                  </span>
+                                </div>
+                                <div className='space-y-1 text-sm text-gray-600'>
                                   <p className='flex items-center'>
                                     <CalendarDaysIcon className='w-4 h-4 mr-2 text-gray-400' />
                                     {new Date(appt.created_at).toLocaleString(
@@ -662,6 +787,14 @@ export default function ProviderDashboard() {
                                   <p>Client: {appt.client_name}</p>
                                 </div>
                               </div>
+                              {appt.status !== "completed" && appt.status !== "cancelled" && (
+                                <button
+                                  onClick={() => handleMarkComplete(appt.appointment_id)}
+                                  className='w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors'
+                                >
+                                  Mark as Done
+                                </button>
+                              )}
                             </div>
                           </div>
                         ))}

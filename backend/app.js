@@ -26,9 +26,13 @@ import serviceRoutes from "./src/routes/service.js";
 import calendarRouter from "./src/routes/calendar.js";
 import aiSchedulerRouter from "./src/routes/ai-scheduler.js";
 import performanceRouter from "./src/routes/performance.js";
-import debugAuthRouter from "./src/routes/debug-auth.js";
+import messageRouter from "./src/routes/message.js";
 
 const app = express();
+
+// Trust the first proxy (Cloudflare → Render) so express-rate-limit
+// and req.ip correctly read the real client IP from X-Forwarded-For.
+app.set("trust proxy", 1);
 
 // dirname fix for ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -74,7 +78,7 @@ app.use((req, res, next) => {
 // Routes
 app.use("/", indexRouter);
 app.use("/auth", authRouter);
-app.use("/debug-auth", debugAuthRouter);
+
 app.use("/appointments", appointmentRouter);
 app.use("/slots", slotRouter);
 app.use("/providers", providerRouter);
@@ -82,6 +86,7 @@ app.use("/services", serviceRoutes);
 app.use("/calendar", calendarRouter);
 app.use("/api/ai-scheduler", aiSchedulerRouter);
 app.use("/api/performance", performanceRouter);
+app.use("/messages", messageRouter);
 
 // Cron job
 cron.schedule("1 0 * * *", async () => {

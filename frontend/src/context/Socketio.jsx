@@ -16,43 +16,21 @@ export const SocketProvider = ({ children }) => {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    const backendUrl =
-      import.meta.env.VITE_API_URL ||
-      "https://appointment-booking-api-yzxg.onrender.com"; // use HTTPS in prod
-
-    const token = localStorage.getItem("token"); // fetch JWT
-
-    if (!token) {
-      console.warn("No token found, socket will not connect");
-      return;
-    }
+    const backendUrl = import.meta.env.VITE_API_URL;
+    if (!backendUrl) return;
 
     const socketInstance = io(backendUrl, {
-      transports: ["websocket", "polling"],
-      upgrade: true,
-      timeout: 5000,
-      reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
-      auth: {
-        token
-      }
+      // Start with polling so Render's free tier works; upgrade to WS if available.
+      transports: ["polling", "websocket"],
+      timeout: 10000,
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 2000,
+      reconnectionDelayMax: 10000
     });
 
-    socketInstance.on("connect", () => {
-      console.log("✅ Socket connected:", socketInstance.id);
-      setIsConnected(true);
-    });
-
-    socketInstance.on("disconnect", (reason) => {
-      console.log("⚠️ Socket disconnected:", reason);
-      setIsConnected(false);
-    });
-
-    socketInstance.on("connect_error", (error) => {
-      console.error("❌ Socket connection error:", error.message);
-      setIsConnected(false);
-    });
+    socketInstance.on("connect", () => setIsConnected(true));
+    socketInstance.on("disconnect", () => setIsConnected(false));
+    socketInstance.on("connect_error", () => setIsConnected(false));
 
     setSocket(socketInstance);
 

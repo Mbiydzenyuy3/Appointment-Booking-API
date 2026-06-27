@@ -5,6 +5,7 @@ import { ArrowRight, Star, Users, Clock } from "lucide-react";
 // eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import { useAuth } from "../../context/AuthContext.jsx";
+import nadineDjuikoImg from "../../assets/nadinedjioko.jpeg";
 
 export default function HeroSection() {
   const { user } = useAuth();
@@ -281,7 +282,7 @@ export default function HeroSection() {
           >
             <div className='relative'>
               <img
-                src='https://scontent.fdla3-2.fna.fbcdn.net/v/t39.30808-6/518255149_1168095368677556_4133013233611453877_n.jpg?_nc_cat=111&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeE1kCC70kc2UglNAGvQQfwHWvrvyBSzekFa-u_IFLN6QaoZa2WNkpAqBnLPwnRVZyzU27r9TiAabyP13gAsY7r9&_nc_ohc=KyH9AGzZ1UQQ7kNvwGBNaTG&_nc_oc=AdlxGB32ZbE_RAwT_LMOkAyBGBWg50BR01JehiW0zsnWI02l9miDRNFpOEsmjloD5Zs&_nc_zt=23&_nc_ht=scontent.fdla3-2.fna&_nc_gid=0aGjjobdJtVDkr-nxgJweQ&oh=00_AfrNbW0mdXOiukRge56taQrzcaJ4Sl_sJ4ZUL244KwVx0Q&oe=697726CD'
+                src={nadineDjuikoImg}
                 alt='Happy Cameroonian business owner smiling with phone showing BOOKEasy results'
                 className='w-full h-[32rem] object-cover rounded-2xl shadow-2xl'
               />

@@ -165,6 +165,23 @@ const initializeDbSchema = async () => {
       );
     `);
 
+    // Idempotent migrations for providers columns added after initial table creation.
+    // ALTER TABLE ... ADD COLUMN IF NOT EXISTS is safe to run on every startup.
+    await client.query(`
+      ALTER TABLE providers
+      ADD COLUMN IF NOT EXISTS phone VARCHAR(50),
+      ADD COLUMN IF NOT EXISTS hourly_rate DECIMAL(10,2),
+      ADD COLUMN IF NOT EXISTS referral_code VARCHAR(50);
+    `);
+    // booking_slug must be added separately because of the UNIQUE constraint.
+    await client.query(`
+      ALTER TABLE providers
+      ADD COLUMN IF NOT EXISTS booking_slug VARCHAR(255);
+    `);
+    await client.query(`
+      CREATE UNIQUE INDEX IF NOT EXISTS providers_booking_slug_key ON providers (booking_slug);
+    `);
+
     await client.query(`
       CREATE TABLE IF NOT EXISTS services (
         service_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -181,10 +198,15 @@ const initializeDbSchema = async () => {
       );
     `);
 
-    // Add category column if it doesn't exist
+    // Idempotent migrations for services columns added after initial deployment
     await client.query(`
       ALTER TABLE services
-      ADD COLUMN IF NOT EXISTS category VARCHAR(100);
+      ADD COLUMN IF NOT EXISTS location TEXT,
+      ADD COLUMN IF NOT EXISTS additional_description TEXT,
+      ADD COLUMN IF NOT EXISTS image_url TEXT,
+      ADD COLUMN IF NOT EXISTS category VARCHAR(100),
+      ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
     `);
 
     await client.query(`
@@ -235,6 +257,17 @@ const initializeDbSchema = async () => {
       );
     `);
 
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS provider_gallery (
+        gallery_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        provider_id UUID NOT NULL REFERENCES providers(provider_id) ON DELETE CASCADE,
+        image_url TEXT NOT NULL,
+        caption VARCHAR(255),
+        display_order INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
     await client.query("COMMIT");
     logInfo("🎉 Database schema ready");
   } catch (err) {
@@ -245,6 +278,103 @@ const initializeDbSchema = async () => {
     await client.query("SELECT pg_advisory_unlock(20250424)");
     client.release();
   }
+
+  // Post-transaction idempotent migrations — run OUTSIDE the main transaction
+  // so a failure in one doesn't roll back the entire schema.
+  // Each ALTER is already atomic in PostgreSQL without explicit BEGIN/COMMIT.
+  await _runPostMigrations();
 };
+
+async function _runPostMigrations() {
+  const safeAlter = async (sql, description) => {
+    try {
+      const c = await pool.connect();
+      try { await c.query(sql); }
+      finally { c.release(); }
+    } catch (err) {
+      // Log but don't throw — the migration either already ran or is a no-op
+      logInfo(`Post-migration skipped (${description}): ${err.message}`);
+    }
+  };
+
+  // Make appointments.user_id nullable to support guest bookings
+  await safeAlter(
+    `ALTER TABLE appointments ALTER COLUMN user_id DROP NOT NULL`,
+    "appointments.user_id DROP NOT NULL"
+  );
+
+  // Add guest booking columns if they don't exist
+  await safeAlter(
+    `ALTER TABLE appointments
+       ADD COLUMN IF NOT EXISTS guest_name VARCHAR(255),
+       ADD COLUMN IF NOT EXISTS guest_email VARCHAR(255),
+       ADD COLUMN IF NOT EXISTS guest_phone VARCHAR(50),
+       ADD COLUMN IF NOT EXISTS is_guest_booking BOOLEAN DEFAULT FALSE`,
+    "appointments guest columns"
+  );
+
+  // Widen status constraint to include all values used in code
+  await safeAlter(
+    `ALTER TABLE appointments DROP CONSTRAINT IF EXISTS appointments_status_check`,
+    "drop old status check"
+  );
+  await safeAlter(
+    `ALTER TABLE appointments ADD CONSTRAINT appointments_status_check
+       CHECK (status IN ('booked','canceled','cancelled','completed',
+                         'no-show','no_show','pending','confirmed'))`,
+    "add new status check"
+  );
+
+  // Provider gallery table (added after initial schema deployment)
+  await safeAlter(
+    `CREATE TABLE IF NOT EXISTS provider_gallery (
+      gallery_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      provider_id UUID NOT NULL REFERENCES providers(provider_id) ON DELETE CASCADE,
+      image_url TEXT NOT NULL,
+      caption VARCHAR(255),
+      display_order INTEGER DEFAULT 0,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`,
+    "create provider_gallery table"
+  );
+
+  // Ensure provider_reviews has correct columns (handles tables created with old schema
+  // that used 'user_id'/'review_text' instead of 'reviewer_user_id'/'comment')
+  await safeAlter(
+    `ALTER TABLE provider_reviews
+       ADD COLUMN IF NOT EXISTS reviewer_user_id UUID REFERENCES users(user_id),
+       ADD COLUMN IF NOT EXISTS comment TEXT,
+       ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP`,
+    "provider_reviews column additions"
+  );
+
+  // Provider logo URL (added after initial schema deployment)
+  await safeAlter(
+    `ALTER TABLE providers ADD COLUMN IF NOT EXISTS logo_url TEXT`,
+    "providers.logo_url"
+  );
+
+  // Messages table for client↔provider conversations
+  await safeAlter(
+    `CREATE TABLE IF NOT EXISTS messages (
+       message_id   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+       provider_id  UUID NOT NULL REFERENCES providers(provider_id) ON DELETE CASCADE,
+       sender_id    UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+       receiver_id  UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+       content      TEXT NOT NULL,
+       is_read      BOOLEAN DEFAULT false,
+       created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+     )`,
+    "create messages table"
+  );
+  await safeAlter(
+    `CREATE INDEX IF NOT EXISTS idx_messages_provider ON messages(provider_id)`,
+    "messages provider index"
+  );
+  await safeAlter(
+    `CREATE INDEX IF NOT EXISTS idx_messages_conversation ON messages(provider_id, sender_id, receiver_id)`,
+    "messages conversation index"
+  );
+}
 
 export { pool, query, withTransaction, connectToDb, initializeDbSchema };

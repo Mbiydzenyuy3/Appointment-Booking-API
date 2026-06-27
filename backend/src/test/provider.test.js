@@ -14,29 +14,28 @@ test("Register provider for profile", async () => {
   const res = await request(app).post("/auth/register").send({
     name: "Salon Owner",
     email: uniqueEmail,
-    password: "test123",
-    confirmPassword: "test123",
+    password: "Test1234!",
     user_type: "provider"
   });
 
   assert.strictEqual(res.statusCode, 201);
-  assert.ok(res.body.token);
-  providerToken = res.body.token;
-  providerId = res.body.user.id;
+  assert.ok(res.headers["set-cookie"]);
+  const cookieHeader = (res.headers["set-cookie"] || []).find((c) => c.startsWith("token=")) || "";
+  providerToken = cookieHeader.split(";")[0].replace("token=", "");
+  assert.ok(providerToken);
+  providerId = res.body.data?.user_id;
 });
 
-test("Create provider profile", async () => {
+test("Get own provider profile (auto-created on registration)", async () => {
+  // Registration already creates the provider profile — retrieve it to get booking_slug
   const res = await request(app)
-    .post("/providers/create")
-    .set("Authorization", `Bearer ${providerToken}`)
-    .send({
-      bio: "Professional salon offering haircuts and beauty services",
-      phone: "+1234567890"
-    });
+    .get("/providers/me")
+    .set("Authorization", `Bearer ${providerToken}`);
 
-  assert.strictEqual(res.statusCode, 201);
+  assert.strictEqual(res.statusCode, 200);
   assert.ok(res.body.data);
   bookingSlug = res.body.data.booking_slug;
+  assert.ok(bookingSlug, "booking_slug must be set");
 });
 
 test("Get all providers", async () => {

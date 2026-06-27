@@ -13,15 +13,14 @@ const ProviderModel = {
       const { rows } = await db.query(
         `
         INSERT INTO providers (
-          user_id, bio, phone, hourly_rate, referral_code, booking_slug
+          user_id, bio, hourly_rate, referral_code, booking_slug
         )
-        VALUES ($1,$2,$3,$4,$5,$6)
+        VALUES ($1,$2,$3,$4,$5)
         RETURNING *;
         `,
         [
           user_id,
           bio || "",
-          phone || null,
           hourly_rate || null,
           referral_code || null,
           bookingSlug
@@ -122,6 +121,25 @@ const ProviderModel = {
       );
     } catch (err) {
       logError("DB Error (mark referral used):", err);
+      throw err;
+    }
+  },
+
+  async listAll({ limit = 10, offset = 0 } = {}) {
+    try {
+      const { rows } = await query(
+        `SELECT p.provider_id, p.user_id, p.bio, p.hourly_rate,
+                p.booking_slug, p.referral_code, p.created_at,
+                u.name, u.email
+         FROM providers p
+         JOIN users u ON p.user_id = u.user_id
+         ORDER BY p.created_at DESC
+         LIMIT $1 OFFSET $2`,
+        [limit, offset]
+      );
+      return rows;
+    } catch (err) {
+      logError("DB Error (list all providers):", err);
       throw err;
     }
   }

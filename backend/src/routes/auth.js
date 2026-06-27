@@ -1,5 +1,6 @@
 // src/routes/auth.js
 import express from "express";
+import rateLimit from "express-rate-limit";
 import { validate } from "../middlewares/validate-middleware.js";
 import { registerSchema, loginSchema } from "../validators/auth-validator.js";
 import authMiddleware from "../middlewares/auth-middleware.js";
@@ -7,45 +8,14 @@ import * as AuthController from "../controllers/auth-controller.js";
 
 const router = express.Router();
 
-/**
- * @swagger
- * /auth/register:
- *   post:
- *     summary: Register a new user (client or provider)
- *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - name
- *               - email
- *               - password
- *               - confirmPassword
- *               - user_type
- *             properties:
- *               name:
- *                 type: string
- *               email:
- *                 type: string
- *                 format: email
- *               password:
- *                 type: string
- *               confirmPassword:
- *                 type: string
- *               user_type:
- *                 type: string
- *                 enum: [client, provider]
- *     responses:
- *       201:
- *         description: User registered successfully
- *       400:
- *         description: Validation error or duplicate email
- */
-
-router.post("/register", validate(registerSchema), AuthController.register);
+// Strict limiter for mutation endpoints (login, register, password reset)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: "Too many requests, please try again later." }
+});
 
 /**
  * @swagger
@@ -85,10 +55,50 @@ router.post("/register", validate(registerSchema), AuthController.register);
  *         description: Validation error or duplicate email
  */
 
-router.post("/login", validate(loginSchema), AuthController.login);
+router.post("/register", authLimiter, validate(registerSchema), AuthController.register);
 
-router.post("/forgot-password", AuthController.forgotPassword);
-router.post("/reset-password", AuthController.resetPassword);
+/**
+ * @swagger
+ * /auth/register:
+ *   post:
+ *     summary: Register a new user (client or provider)
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - password
+ *               - confirmPassword
+ *               - user_type
+ *             properties:
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               password:
+ *                 type: string
+ *               confirmPassword:
+ *                 type: string
+ *               user_type:
+ *                 type: string
+ *                 enum: [client, provider]
+ *     responses:
+ *       201:
+ *         description: User registered successfully
+ *       400:
+ *         description: Validation error or duplicate email
+ */
+
+router.post("/login", authLimiter, validate(loginSchema), AuthController.login);
+
+router.post("/forgot-password", authLimiter, AuthController.forgotPassword);
+router.post("/reset-password", authLimiter, AuthController.resetPassword);
 
 // Google OAuth routes
 router.post("/google-auth", AuthController.googleAuthCallback);
@@ -115,5 +125,8 @@ router.put("/update-user-type", authMiddleware, AuthController.updateUserType);
 
 // Guest conversion route (public)
 router.post("/convert-guest", AuthController.convertGuestToUser);
+
+// Logout route (public — clears cookie)
+router.post("/logout", AuthController.logout);
 
 export default router;

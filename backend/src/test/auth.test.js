@@ -15,7 +15,7 @@ test("Register new client", async () => {
   });
 
   assert.strictEqual(res.statusCode, 201);
-  assert.ok(res.body.token);
+  assert.ok(res.headers["set-cookie"]);
 });
 
 test("Login with wrong password fails", async () => {
@@ -34,5 +34,5 @@ test("Login with correct password succeeds", async () => {
   });
 
   assert.strictEqual(res.statusCode, 200);
-  assert.ok(res.body.token);
+  assert.ok(res.headers["set-cookie"]);
 });

@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useCurrency } from "../context/CurrencyContext.jsx";
+import { useAuth } from "../context/AuthContext.jsx";
 import BookAppointmentForm from "../components/BookAppointments/BookAppointment.jsx";
+import MessageThread from "../components/Messaging/MessageThread.jsx";
+import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
 import ProgressiveImage from "../components/Common/ProgressiveImage.jsx";
 import { useConnectionSpeed } from "../hooks/useConnectionSpeed.js";
 import api from "../services/api.js";
@@ -25,6 +28,7 @@ const ProviderProfile = () => {
   const { bookingSlug } = useParams();
   const navigate = useNavigate();
   const { formatPrice } = useCurrency();
+  const { user } = useAuth();
 
   // Enable connection speed detection for slow network optimizations
   useConnectionSpeed();
@@ -33,10 +37,14 @@ const ProviderProfile = () => {
   const [services, setServices] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [bookingModal, setBookingModal] = useState({
-    open: false,
-    service: null
-  });
+  const [bookingModal, setBookingModal] = useState({ open: false, service: null });
+
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewHover, setReviewHover] = useState(0);
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewState, setReviewState] = useState("idle"); // idle | submitting | success | no_booking | already_reviewed | error
+  const [reviewError, setReviewError] = useState("");
+  const [hasBooked, setHasBooked] = useState(false);
 
   const fetchProviderProfile = async () => {
     try {
@@ -74,6 +82,14 @@ const ProviderProfile = () => {
       fetchProviderProfile();
     }
   }, [bookingSlug]);
+
+  // After provider data loads, check if this logged-in client has a booking with them
+  useEffect(() => {
+    if (!user || user.user_type !== "client" || !provider?.provider_id) return;
+    api.get(`/appointments/has-booked?providerId=${provider.provider_id}`)
+      .then((res) => setHasBooked(res.data.data?.hasBooked === true))
+      .catch(() => setHasBooked(false));
+  }, [user, provider?.provider_id]);
 
   const handleBookClick = (service) => {
     setBookingModal({ open: true, service });
@@ -158,6 +174,72 @@ const ProviderProfile = () => {
       ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
       : 0;
 
+  function detectUrlType(url) {
+    if (!url || !url.trim()) return "image";
+    const u = url.trim().toLowerCase();
+    if (u.includes("tiktok.com")) return "tiktok";
+    if (u.includes("youtube.com") || u.includes("youtu.be/")) return "youtube";
+    if (u.includes("vimeo.com")) return "vimeo";
+    return "image";
+  }
+
+  function getYoutubeEmbedUrl(url) {
+    try {
+      const u = new URL(url.trim());
+      const v = u.searchParams.get("v");
+      if (v) return `https://www.youtube.com/embed/${v}`;
+      if (u.hostname === "youtu.be") return `https://www.youtube.com/embed/${u.pathname.slice(1)}`;
+      if (u.pathname.startsWith("/shorts/")) return `https://www.youtube.com/embed/${u.pathname.replace("/shorts/", "")}`;
+      if (u.pathname.startsWith("/embed/")) return url.trim();
+      return null;
+    } catch { return null; }
+  }
+
+  function getTikTokEmbedUrl(url) {
+    try {
+      const u = new URL(url.trim());
+      const match = u.pathname.match(/\/video\/(\d+)/);
+      if (match) return `https://www.tiktok.com/embed/v2/${match[1]}`;
+      return null;
+    } catch { return null; }
+  }
+
+  function getVimeoEmbedUrl(url) {
+    try {
+      const u = new URL(url.trim());
+      const match = u.pathname.match(/\/(?:video\/)?(\d+)/);
+      if (match) return `https://player.vimeo.com/video/${match[1]}`;
+      return null;
+    } catch { return null; }
+  }
+
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
+    if (reviewRating === 0) { setReviewError("Please select a star rating."); return; }
+    setReviewState("submitting");
+    setReviewError("");
+    try {
+      const res = await api.post("/providers/reviews", {
+        provider_id: provider.provider_id,
+        rating: reviewRating,
+        comment: reviewComment.trim()
+      });
+      const newReview = res.data.data;
+      setReviews((prev) => [{ ...newReview, reviewer_name: user?.name || "You" }, ...prev]);
+      setReviewState("success");
+    } catch (err) {
+      const code = err.response?.data?.error_code;
+      if (code === "REVIEW_NOT_ALLOWED") {
+        setReviewState("no_booking");
+      } else if (code === "REVIEW_ALREADY_EXISTS") {
+        setReviewState("already_reviewed");
+      } else {
+        setReviewState("error");
+        setReviewError(err.response?.data?.message || "Failed to submit review. Please try again.");
+      }
+    }
+  };
+
   return (
     <div className='min-h-screen bg-gray-50 relative'>
       {/* Back Button */}
@@ -173,7 +255,21 @@ const ProviderProfile = () => {
         <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6 critical-content progressive-content'>
           <div className='flex flex-col md:flex-row items-start md:items-center justify-between mb-6'>
             <div className='flex items-center space-x-4 mb-4 md:mb-0'>
-              <div className='w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg'>
+              {provider.logo_url ? (
+                <img
+                  src={provider.logo_url}
+                  alt={provider.name}
+                  className='w-20 h-20 rounded-full object-cover shadow-lg border-2 border-white'
+                  onError={(e) => {
+                    e.target.style.display = "none";
+                    e.target.nextSibling.style.display = "flex";
+                  }}
+                />
+              ) : null}
+              <div
+                className='w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg'
+                style={{ display: provider.logo_url ? "none" : "flex" }}
+              >
                 <span className='text-3xl font-bold text-white'>
                   {provider.name?.charAt(0)?.toUpperCase() || "P"}
                 </span>
@@ -239,9 +335,15 @@ const ProviderProfile = () => {
             {provider.phone && (
               <div className='flex items-center space-x-2'>
                 <PhoneIcon className='w-5 h-5 text-green-600' />
-                <span className='text-sm font-medium text-gray-700'>
-                  {provider.phone}
-                </span>
+                {hasBooked ? (
+                  <span className='text-sm font-medium text-gray-700'>
+                    {provider.phone}
+                  </span>
+                ) : (
+                  <span className='text-sm text-gray-400 italic'>
+                    Book to see contact
+                  </span>
+                )}
               </div>
             )}
             {provider.certifications && provider.certifications.length > 0 && (
@@ -252,12 +354,12 @@ const ProviderProfile = () => {
                 </span>
               </div>
             )}
-            {provider.business_photos &&
-              provider.business_photos.length > 0 && (
+            {provider.gallery &&
+              provider.gallery.length > 0 && (
                 <div className='flex items-center space-x-2'>
                   <PhotoIcon className='w-5 h-5 text-purple-600' />
                   <span className='text-sm font-medium text-gray-700'>
-                    Business Photos Available
+                    Portfolio Available
                   </span>
                 </div>
               )}
@@ -274,31 +376,77 @@ const ProviderProfile = () => {
           <p className='text-gray-600 leading-relaxed'>{provider.bio}</p>
         </div>
 
-        {/* Business Photos Gallery - Non-critical content */}
-        {provider.business_photos && provider.business_photos.length > 0 && (
+        {/* Portfolio & Gallery - Non-critical content */}
+        {provider.gallery && provider.gallery.length > 0 && (
           <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6 non-critical'>
             <h2 className='text-xl font-semibold text-gray-900 mb-4'>
-              Business Gallery
+              Portfolio &amp; Gallery
             </h2>
             <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
-              {provider.business_photos.slice(0, 8).map((photo, index) => (
-                <div
-                  key={index}
-                  className='aspect-square rounded-lg overflow-hidden bg-gray-100'
-                >
-                  <ProgressiveImage
-                    src={photo}
-                    webpSrc={photo} // Assuming photos are already WebP from backend
-                    alt={`Business photo ${index + 1}`}
-                    className='w-full h-full object-cover hover:scale-105 transition-transform duration-200'
-                    priority={index < 2} // Load first 2 images immediately
-                  />
-                </div>
-              ))}
+              {provider.gallery.slice(0, 12).map((item) => {
+                const urlType = detectUrlType(item.image_url);
+                const isVideo = urlType === "youtube" || urlType === "tiktok" || urlType === "vimeo";
+                return (
+                  <div key={item.gallery_id} className='rounded-lg overflow-hidden bg-gray-100'>
+                    <div className={isVideo ? "aspect-video" : "aspect-square"}>
+                      {urlType === "youtube" ? (
+                        <iframe
+                          src={getYoutubeEmbedUrl(item.image_url)}
+                          className='w-full h-full'
+                          frameBorder='0'
+                          allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
+                          allowFullScreen
+                          title={item.caption || "YouTube video"}
+                        />
+                      ) : urlType === "tiktok" ? (
+                        (() => {
+                          const embedUrl = getTikTokEmbedUrl(item.image_url);
+                          return embedUrl ? (
+                            <iframe
+                              src={embedUrl}
+                              className='w-full h-full'
+                              frameBorder='0'
+                              allow='autoplay; gyroscope;'
+                              allowFullScreen
+                              title={item.caption || "TikTok video"}
+                            />
+                          ) : (
+                            <a href={item.image_url} target='_blank' rel='noopener noreferrer'
+                               className='w-full h-full bg-gray-900 flex flex-col items-center justify-center gap-2 no-underline'>
+                              <span className='text-3xl'>🎵</span>
+                              <span className='text-xs text-gray-300'>Watch on TikTok</span>
+                            </a>
+                          );
+                        })()
+                      ) : urlType === "vimeo" ? (
+                        <iframe
+                          src={getVimeoEmbedUrl(item.image_url)}
+                          className='w-full h-full'
+                          frameBorder='0'
+                          allow='autoplay; fullscreen; picture-in-picture'
+                          allowFullScreen
+                          title={item.caption || "Vimeo video"}
+                        />
+                      ) : (
+                        <img
+                          src={item.image_url}
+                          alt={item.caption || "Gallery photo"}
+                          className='w-full h-full object-cover hover:scale-105 transition-transform duration-200'
+                        />
+                      )}
+                    </div>
+                    {item.caption && (
+                      <p className='text-xs text-gray-600 text-center px-2 py-1 truncate'>
+                        {item.caption}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
             </div>
-            {provider.business_photos.length > 8 && (
+            {provider.gallery.length > 12 && (
               <p className='text-sm text-gray-500 mt-4 text-center'>
-                +{provider.business_photos.length - 8} more photos
+                +{provider.gallery.length - 12} more items
               </p>
             )}
           </div>
@@ -372,7 +520,7 @@ const ProviderProfile = () => {
                       {renderStars(review.rating)}
                     </div>
                   </div>
-                  <p className='text-gray-700'>{review.review_text}</p>
+                  <p className='text-gray-700'>{review.comment}</p>
                   <p className='text-xs text-gray-500 mt-1'>
                     {new Date(review.created_at).toLocaleDateString()}
                   </p>
@@ -388,6 +536,87 @@ const ProviderProfile = () => {
                   View all {reviews.length} reviews
                 </button>
               </div>
+            )}
+          </div>
+        )}
+
+        {/* Leave a Review */}
+        {user && user.user_type !== "provider" && (
+          <div className='bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6'>
+            <h2 className='text-xl font-semibold text-gray-900 mb-4'>Leave a Review</h2>
+
+            {reviewState === "success" && (
+              <div className='bg-green-50 border border-green-200 rounded-lg p-4 text-green-800 text-sm font-medium'>
+                ✅ Thank you! Your review has been submitted.
+              </div>
+            )}
+
+            {reviewState === "no_booking" && (
+              <div className='bg-amber-50 border border-amber-200 rounded-lg p-4 text-amber-800 text-sm'>
+                You can only leave a review after completing an appointment with this provider.
+              </div>
+            )}
+
+            {reviewState === "already_reviewed" && (
+              <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 text-blue-800 text-sm'>
+                You have already reviewed this provider.
+              </div>
+            )}
+
+            {(reviewState === "idle" || reviewState === "error" || reviewState === "submitting") && (
+              <form onSubmit={handleSubmitReview} className='space-y-4'>
+                <div>
+                  <p className='text-sm font-medium text-gray-700 mb-2'>Your Rating <span className='text-red-500'>*</span></p>
+                  <div className='flex gap-1'>
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type='button'
+                        onClick={() => setReviewRating(star)}
+                        onMouseEnter={() => setReviewHover(star)}
+                        onMouseLeave={() => setReviewHover(0)}
+                        className='text-3xl focus:outline-none transition-transform hover:scale-110'
+                        aria-label={`Rate ${star} star${star > 1 ? "s" : ""}`}
+                      >
+                        {star <= (reviewHover || reviewRating)
+                          ? <StarIcon className='w-8 h-8 text-yellow-400' />
+                          : <StarOutlineIcon className='w-8 h-8 text-gray-300' />}
+                      </button>
+                    ))}
+                    {reviewRating > 0 && (
+                      <span className='ml-2 text-sm text-gray-500 self-center'>
+                        {["", "Poor", "Fair", "Good", "Very Good", "Excellent"][reviewRating]}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label className='block text-sm font-medium text-gray-700 mb-1'>
+                    Comment <span className='text-gray-400 font-normal'>(optional)</span>
+                  </label>
+                  <textarea
+                    value={reviewComment}
+                    onChange={(e) => setReviewComment(e.target.value)}
+                    placeholder='Share your experience with this provider...'
+                    rows={3}
+                    maxLength={1000}
+                    className='w-full px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 resize-none'
+                  />
+                </div>
+
+                {reviewError && (
+                  <p className='text-sm text-red-600'>{reviewError}</p>
+                )}
+
+                <button
+                  type='submit'
+                  disabled={reviewState === "submitting" || reviewRating === 0}
+                  className='px-6 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium text-sm rounded-lg transition-colors'
+                >
+                  {reviewState === "submitting" ? "Submitting..." : "Submit Review"}
+                </button>
+              </form>
             )}
           </div>
         )}
@@ -519,6 +748,72 @@ const ProviderProfile = () => {
             </div>
           )}
         </section>
+
+        {/* Messaging Section — only for clients who have booked with this provider */}
+        {user && user.user_type !== "provider" && provider?.provider_id && hasBooked && (
+          <section className='mt-8'>
+            <div className='flex items-center gap-2 mb-4'>
+              <ChatBubbleLeftRightIcon className='w-5 h-5 text-green-600' />
+              <h2 className='text-xl font-semibold text-gray-900'>
+                Message {provider.name}
+              </h2>
+            </div>
+            <div
+              className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden'
+              style={{ minHeight: 360 }}
+            >
+              <MessageThread
+                conversation={{ provider_id: provider.provider_id, provider_name: provider.name }}
+                onBack={null}
+              />
+            </div>
+          </section>
+        )}
+
+        {/* Show "book first" prompt to clients who haven't booked yet */}
+        {user && user.user_type !== "provider" && provider?.provider_id && !hasBooked && (
+          <section className='mt-8'>
+            <div className='bg-green-50 border border-green-100 rounded-xl p-6 text-center'>
+              <ChatBubbleLeftRightIcon className='w-8 h-8 text-green-600 mx-auto mb-3' />
+              <h3 className='font-semibold text-gray-900 mb-1'>
+                Book first to message {provider.name}
+              </h3>
+              <p className='text-gray-600 text-sm mb-4'>
+                Messaging and full contact details are available to clients who have booked an appointment.
+                Book a service below to unlock direct messaging.
+              </p>
+              {services.length > 0 && (
+                <button
+                  onClick={() => handleBookClick(services[0])}
+                  className='bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-lg font-medium transition-colors'
+                >
+                  Book an appointment
+                </button>
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* Prompt non-logged-in visitors to sign in */}
+        {!user && provider?.provider_id && (
+          <section className='mt-8'>
+            <div className='bg-green-50 border border-green-100 rounded-xl p-6 text-center'>
+              <ChatBubbleLeftRightIcon className='w-8 h-8 text-green-600 mx-auto mb-3' />
+              <h3 className='font-semibold text-gray-900 mb-1'>
+                Want to message {provider.name}?
+              </h3>
+              <p className='text-gray-600 text-sm mb-4'>
+                Sign in and book an appointment to unlock direct messaging and full contact details.
+              </p>
+              <button
+                onClick={() => navigate("/login")}
+                className='bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-lg font-medium transition-colors'
+              >
+                Sign in
+              </button>
+            </div>
+          </section>
+        )}
 
         {/* Back to Explore */}
         <div className='mt-8 text-center'>

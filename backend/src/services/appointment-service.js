@@ -33,7 +33,7 @@ export async function book({
         a.*,
         s.service_name,
         u.name as client_name,
-        p.name as provider_name,
+        pu.name as provider_name,
         pu.email as provider_email
       FROM appointments a
       LEFT JOIN services s ON a.service_id = s.service_id
@@ -105,7 +105,7 @@ export async function bookAsGuest({
       SELECT
         a.*,
         s.service_name,
-        p.name as provider_name,
+        pu.name as provider_name,
         pu.email as provider_email
       FROM appointments a
       LEFT JOIN services s ON a.service_id = s.service_id
@@ -265,6 +265,15 @@ export async function list(
     let paramIndex = 1;
 
     if (userType === "provider") {
+      // Resolve provider_id from users.user_id — appointments.provider_id is a FK to providers.provider_id
+      const providerRes = await pool.query(
+        "SELECT provider_id FROM providers WHERE user_id = $1",
+        [userId]
+      );
+      const providerId = providerRes.rows[0]?.provider_id;
+      if (!providerId) {
+        return [];
+      }
       // For providers, list appointments for their services
       query = `
          SELECT
@@ -287,7 +296,7 @@ export async function list(
          LEFT JOIN users u ON a.user_id = u.user_id
          WHERE a.provider_id = $${paramIndex++}
        `;
-      params.push(userId);
+      params.push(providerId);
     } else {
       // For clients, list their booked appointments
       query = `
@@ -341,7 +350,6 @@ export async function list(
     return result.rows;
   } catch (err) {
     logError("Appointment list query failed:", err);
-    // Return empty array to prevent 500 errors
-    return [];
+    throw err;
   }
 }

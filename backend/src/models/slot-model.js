@@ -1,5 +1,18 @@
 // src/models/slot-model.js
 import { pool } from "../config/db.js";
+import { redisClient } from "../config/redis.js";
+
+const SLOTS_CACHE_TTL = 60; // 60 seconds — slots are time-sensitive
+
+function slotsCacheKey(providerId, serviceId) {
+  return `slots:available:${providerId}:${serviceId}`;
+}
+
+async function invalidateSlotsCache(providerId, serviceId) {
+  try {
+    if (redisClient.isOpen) await redisClient.del(slotsCacheKey(providerId, serviceId));
+  } catch { /* non-critical */ }
+}
 
 // Create a slot by fetching provider_id from the request
 export const createSlot = async ({
@@ -9,21 +22,11 @@ export const createSlot = async ({
   startTime,
   endTime
 }) => {
-  console.log("createSlot called with:", {
-    providerId,
-    serviceId,
-    day,
-    startTime,
-    endTime
-  });
   const client = await pool.connect();
 
   try {
     await client.query("BEGIN");
-    console.log("Transaction begun");
 
-    // Check for exact duplicate
-    console.log("Checking for exact duplicate");
     const exactDuplicate = await client.query(
       `
   SELECT * FROM time_slots
@@ -38,8 +41,6 @@ export const createSlot = async ({
       );
     }
 
-    // Check for overlapping slots
-    console.log("Checking for overlapping slots");
     const overlapCheck = await client.query(
       `
       SELECT * FROM time_slots
@@ -56,8 +57,6 @@ export const createSlot = async ({
       );
     }
 
-    // Insert new slot
-    console.log("Inserting new slot");
     const newSlotInsert = await client.query(
       `
       INSERT INTO time_slots (
@@ -69,6 +68,7 @@ export const createSlot = async ({
     );
 
     await client.query("COMMIT");
+    await invalidateSlotsCache(providerId, serviceId);
     return newSlotInsert.rows[0];
   } catch (err) {
     await client.query("ROLLBACK");
@@ -172,6 +172,7 @@ export const deleteSlot = async (slotId, providerId) => {
     ]);
 
     await client.query("COMMIT");
+    await invalidateSlotsCache(slot.provider_id, slot.service_id);
     return slot;
   } catch (err) {
     await client.query("ROLLBACK");
@@ -208,6 +209,17 @@ export async function searchAvailableSlots({
   limit = 10,
   offset = 0
 }) {
+  // Cache only the common case: specific provider+service, no day filter, fetching the full set
+  const isCacheable = providerId && serviceId && !day && offset === 0 && limit >= 100;
+  const cacheKey = isCacheable ? slotsCacheKey(providerId, serviceId) : null;
+
+  if (cacheKey && redisClient.isOpen) {
+    try {
+      const cached = await redisClient.get(cacheKey);
+      if (cached) return JSON.parse(cached);
+    } catch { /* fall through to DB */ }
+  }
+
   let query = `
     SELECT ts.*, s.service_name as name, u.user_id as provider_user_id
     FROM time_slots ts
@@ -242,28 +254,52 @@ export async function searchAvailableSlots({
   const result = await pool.query(query, params);
   let slots = result.rows;
 
-  // Filter out slots that conflict with Google Calendar events
+  // Filter out slots that conflict with Google Calendar events.
+  // Batch by provider: one getCalendarEvents call per unique provider, then filter locally.
   if (slots.length > 0) {
-    const { checkCalendarConflicts } =
-      await import("../services/calendar-service.js");
+    const { getCalendarEvents } = await import("../services/calendar-service.js");
+
+    // Group slots by provider_user_id
+    const providerSlotMap = new Map();
+    for (const slot of slots) {
+      const pid = slot.provider_user_id;
+      if (!providerSlotMap.has(pid)) providerSlotMap.set(pid, []);
+      providerSlotMap.get(pid).push(slot);
+    }
 
     const filteredSlots = [];
-    for (const slot of slots) {
-      const slotStart = new Date(`${slot.day}T${slot.start_time}`);
-      const slotEnd = new Date(`${slot.day}T${slot.end_time}`);
+    for (const [providerId, providerSlots] of providerSlotMap.entries()) {
+      // Compute the full time range for this provider's slots in one shot
+      const starts = providerSlots.map(s => new Date(`${s.day}T${s.start_time}`));
+      const ends   = providerSlots.map(s => new Date(`${s.day}T${s.end_time}`));
+      const rangeStart = new Date(Math.min(...starts) - 60 * 60 * 1000); // 1h buffer
+      const rangeEnd   = new Date(Math.max(...ends)   + 60 * 60 * 1000);
 
-      const conflict = await checkCalendarConflicts(
-        slot.provider_user_id,
-        slotStart,
-        slotEnd
-      );
+      // One API call per provider (returns [] when calendar sync not enabled)
+      const events = await getCalendarEvents(providerId, rangeStart, rangeEnd);
+      const confirmedEvents = events.filter(e => e.status === "confirmed");
 
-      if (!conflict.conflict) {
-        filteredSlots.push(slot);
+      for (const slot of providerSlots) {
+        const slotStart = new Date(`${slot.day}T${slot.start_time}`);
+        const slotEnd   = new Date(`${slot.day}T${slot.end_time}`);
+
+        const hasConflict = confirmedEvents.some(e => {
+          const eStart = new Date(e.start.dateTime || e.start.date);
+          const eEnd   = new Date(e.end.dateTime   || e.end.date);
+          return slotStart < eEnd && slotEnd > eStart;
+        });
+
+        if (!hasConflict) filteredSlots.push(slot);
       }
     }
 
     slots = filteredSlots;
+  }
+
+  if (cacheKey && redisClient.isOpen) {
+    try {
+      await redisClient.set(cacheKey, JSON.stringify(slots), { EX: SLOTS_CACHE_TTL });
+    } catch { /* non-critical */ }
   }
 
   return slots;
@@ -286,12 +322,11 @@ export const advanceSlots = async () => {
     for (const slot of slots) {
       let currentDay = slot.day;
       while (currentDay < today) {
-        let d = new Date(currentDay);
-        d.setDate(d.getDate() + 1);
-        if (d.getDay() === 0) {
-          // Sunday
-          d.setDate(d.getDate() + 1);
-        }
+        const d = new Date(currentDay + "T00:00:00Z"); // parse as UTC to avoid DST shift
+        d.setUTCDate(d.getUTCDate() + 1);
+        // Skip weekends: 0 = Sunday, 6 = Saturday
+        if (d.getUTCDay() === 6) d.setUTCDate(d.getUTCDate() + 2); // Sat → Mon
+        if (d.getUTCDay() === 0) d.setUTCDate(d.getUTCDate() + 1); // Sun → Mon
         currentDay = d.toISOString().split("T")[0];
       }
       // Update the slot

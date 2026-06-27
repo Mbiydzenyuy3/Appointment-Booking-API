@@ -13,12 +13,12 @@ test("Register provider", async () => {
     .send({
       name: "Provider",
       email: `provider${Date.now()}@mail.com`,
-      password: "pass123",
-      confirmPassword: "pass123",
+      password: "Test1234!",
       user_type: "provider"
     });
 
-  providerToken = res.body.token;
+  const cookieHeader = (res.headers["set-cookie"] || []).find((c) => c.startsWith("token=")) || "";
+  providerToken = cookieHeader.split(";")[0].replace("token=", "");
   assert.ok(providerToken);
 });
 

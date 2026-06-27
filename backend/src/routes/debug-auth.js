@@ -48,16 +48,14 @@ router.post("/google-auth-debug", async (req, res) => {
       return res.status(500).json({
         success: false,
         message: "Google OAuth verification failed",
-        error: googleError.message,
-        stack: googleError.stack
+        error: googleError.message
       });
     }
   } catch (error) {
     return res.status(500).json({
       success: false,
       message: "Debug endpoint error",
-      error: error.message,
-      stack: error.stack
+      error: error.message
     });
   }
 });

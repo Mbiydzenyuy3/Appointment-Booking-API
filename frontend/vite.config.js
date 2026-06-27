@@ -55,25 +55,14 @@ export default defineConfig({
         dir: "ltr"
       },
       workbox: {
+        skipWaiting: true,
+        clientsClaim: true,
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,jpg,jpeg}"],
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/api\./,
-            handler: "NetworkFirst",
-            options: {
-              cacheName: "api-cache",
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 2 // 2 hours
-              },
-              networkTimeoutSeconds: 3,
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          },
-          {
-            urlPattern: /^https:\/\/.*\.(?:png|jpg|jpeg|svg|gif|webp|avif)$/,
+            urlPattern: ({ url }) =>
+              /\.(png|jpg|jpeg|svg|gif|webp|avif)$/.test(url.pathname) &&
+              !url.hostname.includes("onrender.com"),
             handler: "CacheFirst",
             options: {
               cacheName: "images-cache",
@@ -134,22 +123,16 @@ export default defineConfig({
     reportCompressedSize: false, // Faster builds
     rollupOptions: {
       output: {
+        // Static object avoids circular-dependency issues with function-based splitting.
+        // React.lazy() in App.jsx handles page-level code splitting automatically.
         manualChunks: {
           vendor: ["react", "react-dom"],
           router: ["react-router-dom"],
           forms: ["formik", "yup"],
-          ui: ["react-modal", "react-datepicker", "react-hot-toast"],
-          utils: ["date-fns", "axios", "jwt-decode"],
-          // Mobile-first chunks
-          mobile: ["react-intersection-observer"]
+          utils: ["date-fns", "axios"]
         },
-        // Optimize chunk size for mobile networks
-        chunkFileNames: (chunkInfo) => {
-          const facadeModuleId = chunkInfo.facadeModuleId
-            ? chunkInfo.facadeModuleId.split("/").pop().replace(".js", "")
-            : "chunk";
-          return `js/${facadeModuleId}-[hash].js`;
-        },
+        // Optimize chunk naming for caching
+        chunkFileNames: "js/[name]-[hash].js",
         assetFileNames: (assetInfo) => {
           if (assetInfo.name && assetInfo.name.endsWith(".css")) {
             return "css/[name]-[hash][extname]";

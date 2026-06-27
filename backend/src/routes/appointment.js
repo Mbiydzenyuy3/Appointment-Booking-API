@@ -4,7 +4,9 @@ import {
   CreateAppointment,
   CreateGuestAppointment,
   cancelAppointment,
-  listAppointments
+  listAppointments,
+  hasBookedWithProvider,
+  completeAppointment
 } from "../controllers/appointment-controller.js";
 import {
   appointmentSchema,
@@ -13,6 +15,7 @@ import {
 } from "../validators/appointment-validator.js";
 import { validate } from "../middlewares/validate-middleware.js";
 import authMiddleware from "../middlewares/auth-middleware.js";
+import { idempotencyGuard } from "../middlewares/idempotency-middleware.js";
 
 const router = express.Router();
 
@@ -20,6 +23,7 @@ const router = express.Router();
 router.post(
   "/guest-book",
   validate(guestAppointmentSchema),
+  idempotencyGuard(),
   CreateGuestAppointment
 );
 
@@ -50,7 +54,7 @@ router.use(authMiddleware);
  *         description: Forbidden – only clients allowed
  */
 
-router.post("/book", validate(appointmentSchema), CreateAppointment);
+router.post("/book", validate(appointmentSchema), idempotencyGuard(), CreateAppointment);
 
 /**
  * @swagger
@@ -80,9 +84,9 @@ router.post("/book", validate(appointmentSchema), CreateAppointment);
  */
 router.delete(
   "/:appointmentId",
-  validate(cancelAppointmentSchema),
+  validate(cancelAppointmentSchema, "params"),
   cancelAppointment
-); // optional path param validation
+);
 
 /**
  * @swagger
@@ -131,5 +135,11 @@ router.delete(
  */
 
 router.get("/list", listAppointments);
+
+// Check if current client has any booking with a provider (used to gate contacts/messaging)
+router.get("/has-booked", hasBookedWithProvider);
+
+// Provider marks an appointment as completed — unlocks client review
+router.put("/:appointmentId/complete", completeAppointment);
 
 export default router;

@@ -9,7 +9,8 @@ export const providerSchema = Joi.object({
   phone: Joi.string().optional(),
   address: Joi.string().optional(),
   profile_picture: Joi.string().uri().optional(),
-  hourly_rate: Joi.number().min(0).optional()
+  hourly_rate: Joi.number().min(0).optional(),
+  logo_url: Joi.string().uri().max(2000).optional().allow("").allow(null)
 });
 
 export const availabilitySchema = Joi.object({

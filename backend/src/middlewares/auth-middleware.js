@@ -4,16 +4,18 @@ import { logError, logInfo, logDebug } from "../utils/logger.js";
 import { query } from "../config/db.js";
 
 const authMiddleware = async (req, res, next) => {
-  const authHeader = req.headers.authorization;
+  const token =
+    req.cookies?.token ||
+    (req.headers.authorization?.startsWith("Bearer ")
+      ? req.headers.authorization.split(" ")[1]
+      : null);
 
-  if (!authHeader?.startsWith("Bearer ")) {
+  if (!token) {
     logInfo("Auth middleware: No token provided.");
     return res.status(401).json({
       message: "No token provided, authorization denied."
     });
   }
-
-  const token = authHeader.split(" ")[1];
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);

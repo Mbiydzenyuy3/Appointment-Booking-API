@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git commit -m ' *)",
+      "Bash(xargs ls -la)",
+      "Bash(npx vitest *)"
+    ]
+  }
+}

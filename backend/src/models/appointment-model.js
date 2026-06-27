@@ -44,8 +44,8 @@ export const CreateAppointment = async ({
       `
       INSERT INTO appointments (
         timeslot_id, user_id, provider_id, service_id, appointment_date, appointment_time,
-        guest_name, guest_email, guest_phone, is_guest_booking, created_at, updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW())
+        created_at, updated_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
       RETURNING *
       `,
       [
@@ -54,11 +54,7 @@ export const CreateAppointment = async ({
         provider_id,
         service_id,
         finalAppointmentDate,
-        finalAppointmentTime,
-        guest_name || null,
-        guest_email || null,
-        guest_phone || null,
-        is_guest_booking
+        finalAppointmentTime
       ]
     );
 

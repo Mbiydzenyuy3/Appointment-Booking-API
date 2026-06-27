@@ -1,7 +1,6 @@
-import React from "react";
 import { createContext, useContext, useState, useEffect } from "react";
 import api from "../services/api.js";
-import { jwtDecode } from "jwt-decode";
+import { connectSocket, disconnectSocket } from "../services/socket.js";
 import {
   trackLogin,
   trackRegistrationCompleted
@@ -10,51 +9,85 @@ import {
 const Context = createContext();
 
 export const Provider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // Use cached auth state for instant initial render on return visits
+  const [user, setUser] = useState(() => {
+    try {
+      const cached = sessionStorage.getItem("auth_user");
+      return cached ? JSON.parse(cached) : null;
+    } catch {
+      return null;
+    }
+  });
+  // Skip loading state if we have a cached user (show page instantly)
+  const [isLoading, setIsLoading] = useState(() => {
+    try {
+      return !sessionStorage.getItem("auth_user");
+    } catch {
+      return true;
+    }
+  });
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    let cancelled = false;
+    let timeoutId;
 
-    // ✅ Ensure token is valid before decoding
-    if (token) {
-      try {
-        const decoded = jwtDecode(token);
-        setUser(decoded);
-      } catch (err) {
-        console.error("Invalid token:", err);
-        localStorage.removeItem("token");
+    // Race the profile check against an 8-second deadline so a cold-starting
+    // server (e.g. Render free tier) never blocks the login/register pages
+    // indefinitely. On timeout we treat the user as unauthenticated and let
+    // them proceed; the next navigation will retry automatically.
+    const timeout = new Promise((_, reject) => {
+      timeoutId = setTimeout(
+        () => reject(new Error("profile check timed out")),
+        8000
+      );
+    });
+
+    Promise.race([api.get("/auth/profile"), timeout])
+      .then((response) => {
+        if (cancelled) return;
+        clearTimeout(timeoutId);
+        const userData = response.data.data;
+        setUser(userData);
+        // Cache for instant loads on subsequent navigations
+        try {
+          sessionStorage.setItem("auth_user", JSON.stringify(userData));
+        } catch {
+          // Storage full or unavailable — no problem
+        }
+        connectSocket();
+      })
+      .catch(() => {
+        if (cancelled) return;
+        clearTimeout(timeoutId);
         setUser(null);
-      }
-    } else {
-      setUser(null);
-    }
+        try {
+          sessionStorage.removeItem("auth_user");
+        } catch {
+          // Ignore
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
 
-    setIsLoading(false);
+    return () => {
+      cancelled = true;
+      clearTimeout(timeoutId);
+    };
   }, []);
 
   const login = async (email, password) => {
     try {
       const response = await api.post("/auth/login", { email, password });
-      const { token } = response.data;
+      const userData = response.data.data;
 
-      if (token) {
-        localStorage.setItem("token", token);
-        try {
-          const decoded = jwtDecode(token);
-          setUser(decoded);
+      setUser(userData);
+      connectSocket();
 
-          // Track login event
-          trackLogin(decoded.sub, decoded.user_type);
+      // Track login event
+      trackLogin(userData.user_id, userData.user_type);
 
-          return { success: true, user_type: decoded.user_type };
-        } catch {
-          localStorage.removeItem("token");
-          return { success: false, message: "Invalid token received" };
-        }
-      } else {
-        return { success: false, message: "No token received" };
-      }
+      return { success: true, user_type: userData.user_type };
     } catch (error) {
       let message = "Login failed";
       if (!error.response) {
@@ -74,28 +107,16 @@ export const Provider = ({ children }) => {
   const register = async (userData) => {
     try {
       const response = await api.post("/auth/register", userData);
-      const { token } = response.data;
+      const newUser = response.data.data;
 
-      if (token) {
-        localStorage.setItem("token", token);
-        try {
-          const decoded = jwtDecode(token);
-          setUser(decoded);
+      setUser(newUser);
+      connectSocket();
 
-          // Track registration completion
-          trackRegistrationCompleted(decoded.sub, decoded.user_type);
+      // Track registration completion
+      trackRegistrationCompleted(newUser.user_id, newUser.user_type);
 
-          return { success: true, user_type: decoded.user_type };
-        } catch (decodeError) {
-          console.error("Token decode error:", decodeError);
-          localStorage.removeItem("token");
-          return { success: false, message: "Invalid token received" };
-        }
-      } else {
-        return { success: false, message: "No token received" };
-      }
+      return { success: true, user_type: newUser.user_type };
     } catch (error) {
-      console.error("Register API error:", error);
       let message = "Registration failed";
       if (!error.response) {
         message =
@@ -111,9 +132,19 @@ export const Provider = ({ children }) => {
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem("token");
+  const logout = async () => {
+    try {
+      await api.post("/auth/logout");
+    } catch {
+      // Ignore errors — cookie will be cleared on the server anyway
+    }
+    disconnectSocket();
     setUser(null);
+    try {
+      sessionStorage.removeItem("auth_user");
+    } catch {
+      // Ignore
+    }
   };
 
   return (

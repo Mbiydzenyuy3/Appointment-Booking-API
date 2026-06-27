@@ -11,9 +11,11 @@ import {
   ClockIcon,
   CalendarDaysIcon
 } from "@heroicons/react/24/outline";
+import ConversationList from "../components/Messaging/ConversationList.jsx";
+import MessageThread from "../components/Messaging/MessageThread.jsx";
 
 const UserDashboard = () => {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
   const [services, setServices] = useState([]);
@@ -30,6 +32,7 @@ const UserDashboard = () => {
     open: false,
     service: null
   });
+  const [activeConversation, setActiveConversation] = useState(null);
 
   const handleReschedule = async (newDate) => {
     const appt = rescheduleModal.appointment;
@@ -77,8 +80,8 @@ const UserDashboard = () => {
         Array.isArray(servicesRes.data.data) ? servicesRes.data.data : []
       ).map((s) => ({
         ...s,
-        service_name: s.service_name,
-        duration_minutes: s.duration_minutes,
+        service_name: s.service_name || s.name,
+        duration_minutes: s.duration_minutes ?? s.duration,
         providerId: s.provider_id || "default-provider-id"
       }));
       setServices(servicesWithProvider);
@@ -89,9 +92,10 @@ const UserDashboard = () => {
   };
 
   useEffect(() => {
+    if (isLoading) return;
+
     const fetchData = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
+      if (!user) {
         toast.error("Unauthorized. Please log in.");
         navigate("/login");
         return;
@@ -114,7 +118,7 @@ const UserDashboard = () => {
     };
 
     fetchData();
-  }, []);
+  }, [isLoading, user]);
 
   // useEffect(() => {
   //   const debounceTimer = setTimeout(() => {
@@ -219,12 +223,20 @@ const UserDashboard = () => {
                     </span>
                   </div>
 
-                  <button
-                    onClick={() => setBookingModal({ open: true, service })}
-                    className='btn btn-primary w-full touch-target text-sm sm:text-base'
-                  >
-                    Book Appointment
-                  </button>
+                  <div className='flex gap-2'>
+                    <button
+                      onClick={() => navigate(`/provider/${service.booking_slug}`)}
+                      className='flex-1 btn btn-secondary touch-target text-sm sm:text-base'
+                    >
+                      View Profile
+                    </button>
+                    <button
+                      onClick={() => setBookingModal({ open: true, service })}
+                      className='flex-1 btn btn-primary touch-target text-sm sm:text-base'
+                    >
+                      Book
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -316,6 +328,28 @@ const UserDashboard = () => {
         onSubmit={handleReschedule}
         initialDate={rescheduleModal.appointment?.created_at}
       />
+
+      {/* Messages Section */}
+      <section className='mt-8'>
+        <h2 className='text-xl sm:text-2xl font-semibold text-gray-900 mb-4'>
+          Messages
+        </h2>
+        <div
+          className='bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden'
+          style={{ minHeight: 280 }}
+        >
+          {activeConversation ? (
+            <MessageThread
+              conversation={activeConversation}
+              onBack={() => setActiveConversation(null)}
+            />
+          ) : (
+            <div className='p-4'>
+              <ConversationList onSelect={setActiveConversation} />
+            </div>
+          )}
+        </div>
+      </section>
     </div>
   );
 };
